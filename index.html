@@ -45,8 +45,17 @@
             display: none; background-color: #1e252d; width: 100%; max-width: 600px;
             border-radius: 12px; padding: 20px; box-sizing: border-box;
         }
+        
+        /* Nuevo Panel de Configuración */
+        .config-club { background-color: #242c36; padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #2c3540; }
+        .inputs-horarios { display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; margin-top: 10px; }
+        .inputs-horarios div { display: flex; flex-direction: column; gap: 5px; font-size: 0.9em; color: #d1d5db; }
+        .inputs-horarios input { padding: 8px; border-radius: 5px; border: 1px solid #44505d; background-color: #171d24; color: white; color-scheme: dark; font-family: inherit;}
+        .btn-guardar { background-color: #10b981; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-guardar:hover { background-color: #059669; }
+
         .reservas-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 15px;
         }
         .tarjeta-reserva {
             background-color: #f6a74b; color: #171d24; padding: 12px; border-radius: 8px; font-size: 0.9em; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
@@ -71,13 +80,31 @@
 
     <div id="pantalla-club" class="vista-club">
         <h2 style="margin-top: 0; text-align: center;">Panel de Control - Reservas</h2>
+        
+        <div class="config-club">
+            <h3 style="margin: 0; font-size: 1.1em;">⚙️ Configurar Horario Comercial</h3>
+            <div class="inputs-horarios">
+                <div>
+                    <label>Abre a las:</label>
+                    <input type="time" id="input-apertura" value="08:00">
+                </div>
+                <div>
+                    <label>Cierra a las:</label>
+                    <input type="time" id="input-cierre" value="23:30">
+                </div>
+                <button class="btn-guardar" onclick="window.guardarHorariosClub()">Guardar Horario</button>
+            </div>
+        </div>
+
+        <h3 style="margin-top: 10px; border-bottom: 1px solid #2c3540; padding-bottom: 10px;">Reservas de Hoy</h3>
         <div class="reservas-grid" id="lista-reservas-club">
             </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        // IMPORTAMOS DOC y SETDOC para guardar la configuración
+        import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAMRLDlarJiomWY4IX5c6CR3RFWHqmMu30",
@@ -91,21 +118,44 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- ACTUALIZADO: Generador de horarios cada 30 min (De 00:00 a 23:30) ---
+        // Generador de turnos de 00:00 a 23:30
         const horariosBase = [];
         for (let h = 0; h <= 23; h++) { 
             let horaStr = h.toString().padStart(2, '0');
             horariosBase.push(`${horaStr}:00`);
             horariosBase.push(`${horaStr}:30`);
         }
-        horariosBase.reverse(); // Invertimos para que 23:30 quede arriba y 00:00 abajo
-        // -------------------------------------------------------------------------
+        horariosBase.reverse(); 
+
+        // Variables globales para la memoria del sistema
+        let horaApertura = "08:00"; // Valor por defecto
+        let horaCierre = "23:30";   // Valor por defecto
+        let reservasGlobales = [];
 
         window.cambiarVista = function(vista) {
             document.getElementById('pantalla-jugador').style.display = vista === 'jugador' ? 'block' : 'none';
             document.getElementById('pantalla-club').style.display = vista === 'club' ? 'block' : 'none';
             document.getElementById('btn-jugador').classList.toggle('activo', vista === 'jugador');
             document.getElementById('btn-club').classList.toggle('activo', vista === 'club');
+        }
+
+        // --- NUEVO: Función para guardar los horarios del club en Firebase ---
+        window.guardarHorariosClub = async function() {
+            const apertura = document.getElementById('input-apertura').value;
+            const cierre = document.getElementById('input-cierre').value;
+            
+            if(apertura && cierre) {
+                try {
+                    await setDoc(doc(db, "configuracion", "club"), {
+                        horaApertura: apertura,
+                        horaCierre: cierre
+                    });
+                    alert("¡Horario actualizado correctamente!");
+                } catch (error) {
+                    console.error("Error al guardar:", error);
+                    alert("Hubo un error al guardar.");
+                }
+            }
         }
 
         window.reservarCancha = async function(hora) {
@@ -126,19 +176,38 @@
             }
         }
 
-        onSnapshot(collection(db, "reservas"), (snapshot) => {
-            const reservas = [];
-            snapshot.forEach((doc) => reservas.push(doc.data()));
+        // --- NUEVO: Escuchar cambios en la configuración del Club ---
+        onSnapshot(doc(db, "configuracion", "club"), (documento) => {
+            if (documento.exists()) {
+                horaApertura = documento.data().horaApertura;
+                horaCierre = documento.data().horaCierre;
+                document.getElementById('input-apertura').value = horaApertura;
+                document.getElementById('input-cierre').value = horaCierre;
+            }
+            renderizarPantallas(); // Redibujar todo si cambian las horas
+        });
 
+        // Escuchar las reservas
+        onSnapshot(collection(db, "reservas"), (snapshot) => {
+            reservasGlobales = [];
+            snapshot.forEach((doc) => reservasGlobales.push(doc.data()));
+            renderizarPantallas(); // Redibujar todo si hay una nueva reserva
+        });
+
+        // --- NUEVO: Función maestra que dibuja todo aplicando los filtros ---
+        function renderizarPantallas() {
             const contenedorHorarios = document.getElementById('lista-horarios');
             const contenedorClub = document.getElementById('lista-reservas-club');
             
             contenedorHorarios.innerHTML = '';
             contenedorClub.innerHTML = '';
 
-            const horasOcupadas = reservas.map(r => r.hora);
+            const horasOcupadas = reservasGlobales.map(r => r.hora);
 
-            horariosBase.forEach(hora => {
+            // FILTRO DE HORARIO: Solo muestra turnos entre la apertura y el cierre
+            const horariosFiltrados = horariosBase.filter(h => h >= horaApertura && h <= horaCierre);
+
+            horariosFiltrados.forEach(hora => {
                 if (!horasOcupadas.includes(hora)) {
                     const div = document.createElement('div');
                     div.className = 'turno-item';
@@ -148,11 +217,12 @@
                 }
             });
 
-            if (reservas.length === 0) {
+            if (reservasGlobales.length === 0) {
                 contenedorClub.innerHTML = '<div class="mensaje-vacio">Aún no hay reservas hoy.</div>';
             } else {
-                reservas.sort((a, b) => b.hora.localeCompare(a.hora)); 
-                reservas.forEach(reserva => {
+                // Hacemos una copia para no alterar el array original y las ordenamos
+                const reservasOrdenadas = [...reservasGlobales].sort((a, b) => b.hora.localeCompare(a.hora)); 
+                reservasOrdenadas.forEach(reserva => {
                     const tarjeta = document.createElement('div');
                     tarjeta.className = 'tarjeta-reserva';
                     tarjeta.innerHTML = `
@@ -164,7 +234,7 @@
                     contenedorClub.appendChild(tarjeta);
                 });
             }
-        });
+        }
     </script>
 </body>
 </html>
