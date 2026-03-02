@@ -27,7 +27,12 @@
             background-color: #1e252d; width: 100%; max-width: 400px;
             border-radius: 12px; padding: 20px; box-sizing: border-box;
         }
-        .header-fecha { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1.2em; margin-bottom: 15px; }
+        /* Fechas interacticas */
+        .header-fecha { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1.2em; margin-bottom: 15px; user-select: none;}
+        .btn-nav-fecha { color: #9ca3af; cursor: pointer; padding: 0 10px; font-size: 1.2em; transition: color 0.2s;}
+        .btn-nav-fecha:hover { color: #ffffff; }
+        .btn-nav-fecha.disabled { opacity: 0.2; cursor: default; }
+        
         .sub-header { display: flex; justify-content: space-between; color: #9ca3af; font-size: 0.9em; padding-bottom: 10px; border-bottom: 1px solid #2c3540; margin-bottom: 10px; }
         
         #lista-horarios { max-height: 500px; overflow-y: auto; padding-right: 5px; }
@@ -99,7 +104,13 @@
 
     <div id="pantalla-jugador" class="vista-jugador">
         <h2 style="margin-top: 0; margin-bottom: 25px;">Reserva de canchas</h2>
-        <div class="header-fecha"><span style="color:#9ca3af; cursor:pointer;">&lt;</span><span>Hoy</span><span style="color:#9ca3af; cursor:pointer;">&gt;</span></div>
+        
+        <div class="header-fecha">
+            <span class="btn-nav-fecha btn-prev" onclick="window.cambiarFecha('prev')">&lt;</span>
+            <span id="display-fecha-jugador">Hoy</span>
+            <span class="btn-nav-fecha btn-next" onclick="window.cambiarFecha('next')">&gt;</span>
+        </div>
+
         <div class="sub-header"><span>Cancha 1</span><span>Greenpoint</span></div>
         <div id="lista-horarios">Cargando horarios...</div>
     </div>
@@ -110,23 +121,19 @@
         <div class="config-club">
             <h3 style="margin: 0; font-size: 1.1em;">⚙️ Configuración del Club</h3>
             <div class="inputs-horarios">
-                <div>
-                    <label>Abre a las:</label>
-                    <input type="time" id="input-apertura" value="08:00">
-                </div>
-                <div>
-                    <label>Cierra a las:</label>
-                    <input type="time" id="input-cierre" value="23:30">
-                </div>
-                <div>
-                    <label>Precio Turno ($):</label>
-                    <input type="number" id="input-precio" value="15000" step="500">
-                </div>
-                <button class="btn-guardar" onclick="window.guardarConfiguracion()">Guardar Todo</button>
+                <div><label>Abre:</label><input type="time" id="input-apertura" value="08:00"></div>
+                <div><label>Cierra:</label><input type="time" id="input-cierre" value="23:30"></div>
+                <div><label>Precio ($):</label><input type="number" id="input-precio" value="15000" step="500"></div>
+                <button class="btn-guardar" onclick="window.guardarConfiguracion()">Guardar</button>
             </div>
         </div>
 
-        <h3 style="margin-top: 10px; border-bottom: 1px solid #2c3540; padding-bottom: 10px;">Reservas de Hoy</h3>
+        <div class="header-fecha" style="justify-content: center; gap: 30px; border-bottom: 1px solid #2c3540; padding-bottom: 15px;">
+            <span class="btn-nav-fecha btn-prev" onclick="window.cambiarFecha('prev')">&lt;</span>
+            <span id="display-fecha-club">Hoy</span>
+            <span class="btn-nav-fecha btn-next" onclick="window.cambiarFecha('next')">&gt;</span>
+        </div>
+
         <div class="reservas-grid" id="lista-reservas-club">
             </div>
     </div>
@@ -158,6 +165,58 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // --- GENERADOR DE FECHAS (Hoy + 7 días) ---
+        let fechasValidas = [];
+        let fechaActual = new Date();
+        
+        for (let i = 0; i <= 7; i++) {
+            let f = new Date(fechaActual);
+            f.setDate(f.getDate() + i);
+            let anio = f.getFullYear();
+            let mes = (f.getMonth() + 1).toString().padStart(2, '0');
+            let dia = f.getDate().toString().padStart(2, '0');
+            fechasValidas.push(`${anio}-${mes}-${dia}`); // Formato: "2024-03-25"
+        }
+        
+        let indiceFechaActual = 0;
+        let fechaSeleccionada = fechasValidas[0]; // Empieza en "Hoy"
+
+        // Formatear fecha para que se vea linda ("lunes 02")
+        function formatearFechaUI(fechaISO) {
+            if (fechaISO === fechasValidas[0]) return "Hoy";
+            if (fechaISO === fechasValidas[1]) return "Mañana";
+
+            const partes = fechaISO.split('-');
+            const f = new Date(partes[0], partes[1] - 1, partes[2]);
+            const dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+            return `${dias[f.getDay()]} ${f.getDate().toString().padStart(2, '0')}`;
+        }
+
+        // Navegación de fechas
+        window.cambiarFecha = function(direccion) {
+            if (direccion === 'prev' && indiceFechaActual > 0) {
+                indiceFechaActual--;
+            } else if (direccion === 'next' && indiceFechaActual < fechasValidas.length - 1) {
+                indiceFechaActual++;
+            }
+            fechaSeleccionada = fechasValidas[indiceFechaActual];
+            actualizarTextosFecha();
+            renderizarPantallas();
+        }
+
+        function actualizarTextosFecha() {
+            const texto = formatearFechaUI(fechaSeleccionada);
+            document.getElementById('display-fecha-jugador').innerText = texto;
+            document.getElementById('display-fecha-club').innerText = texto;
+
+            // Apagar flechas si llegamos al límite
+            const prevBtns = document.querySelectorAll('.btn-prev');
+            const nextBtns = document.querySelectorAll('.btn-next');
+            prevBtns.forEach(btn => btn.classList.toggle('disabled', indiceFechaActual === 0));
+            nextBtns.forEach(btn => btn.classList.toggle('disabled', indiceFechaActual === fechasValidas.length - 1));
+        }
+        // ------------------------------------------
+
         const horariosBase = [];
         for (let h = 0; h <= 23; h++) { 
             let horaStr = h.toString().padStart(2, '0');
@@ -168,21 +227,15 @@
 
         let horaApertura = "08:00"; 
         let horaCierre = "23:30";   
-        let precioGlobal = "15000"; // Precio por defecto
+        let precioGlobal = "15000"; 
         let reservasGlobales = [];
         let reservaSeleccionadaId = null; 
 
-        window.aMinutos = function(horaStr) {
-            let [h, m] = horaStr.split(':').map(Number);
-            return (h * 60) + m;
-        }
+        window.aMinutos = function(horaStr) { let [h, m] = horaStr.split(':').map(Number); return (h * 60) + m; }
         window.sumarMinutos = function(horaStr, minutosAñadir) {
-            let [h, m] = horaStr.split(':').map(Number);
-            let total = (h * 60) + m + minutosAñadir;
-            let nuevaH = Math.floor(total / 60);
-            let nuevoM = total % 60;
-            if (nuevaH >= 24) nuevaH -= 24;
-            return `${nuevaH.toString().padStart(2, '0')}:${nuevoM.toString().padStart(2, '0')}`;
+            let [h, m] = horaStr.split(':').map(Number); let total = (h * 60) + m + minutosAñadir;
+            let nuevaH = Math.floor(total / 60); let nuevoM = total % 60;
+            if (nuevaH >= 24) nuevaH -= 24; return `${nuevaH.toString().padStart(2, '0')}:${nuevoM.toString().padStart(2, '0')}`;
         }
 
         window.cambiarVista = function(vista) {
@@ -192,31 +245,23 @@
             document.getElementById('btn-club').classList.toggle('activo', vista === 'club');
         }
 
-        // NUEVO: Guardar también el precio en la base de datos
         window.guardarConfiguracion = async function() {
             const apertura = document.getElementById('input-apertura').value;
             const cierre = document.getElementById('input-cierre').value;
             const precio = document.getElementById('input-precio').value;
-            
             if(apertura && cierre && precio) {
-                try {
-                    await setDoc(doc(db, "configuracion", "club"), { 
-                        horaApertura: apertura, 
-                        horaCierre: cierre,
-                        precioTurno: precio
-                    });
-                    alert("¡Configuración actualizada correctamente!");
-                } catch (error) {
-                    alert("Hubo un error al guardar.");
-                }
+                try { await setDoc(doc(db, "configuracion", "club"), { horaApertura: apertura, horaCierre: cierre, precioTurno: precio }); alert("¡Guardado!"); } 
+                catch (error) { alert("Error al guardar."); }
             }
         }
 
+        // Modificamos el guardado para que incluya la fecha seleccionada
         window.reservarCancha = async function(hora) {
-            const nombre = prompt(`Vas a reservar a las ${hora} hs (Duración: 1h 30m).\nPor favor, ingresa tu Nombre y Apellido:`);
+            const nombre = prompt(`Vas a reservar el ${formatearFechaUI(fechaSeleccionada)} a las ${hora} hs (1.5h).\nIngresa tu Nombre y Apellido:`);
             if (nombre && nombre.trim() !== "") {
                 try {
                     await addDoc(collection(db, "reservas"), { 
+                        fecha: fechaSeleccionada, // Guardamos la fecha
                         hora: hora, 
                         jugador: nombre, 
                         fechaRegistro: new Date(),
@@ -224,58 +269,22 @@
                         pagado: false      
                     });
                     alert("¡Reserva guardada con éxito!");
-                } catch (error) {
-                    alert("Hubo un error de conexión.");
-                }
+                } catch (error) { alert("Hubo un error de conexión."); }
             }
         }
 
-        window.abrirModal = function(id) {
-            reservaSeleccionadaId = id;
-            document.getElementById('modal-acciones').style.display = 'flex';
-        }
+        window.abrirModal = function(id) { reservaSeleccionadaId = id; document.getElementById('modal-acciones').style.display = 'flex'; }
+        window.cerrarModal = function() { reservaSeleccionadaId = null; document.getElementById('modal-acciones').style.display = 'none'; }
+        window.accionAsistencia = async function() { if(reservaSeleccionadaId) { await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { asistencia: true }); window.cerrarModal(); } }
+        window.accionPago = async function() { if(reservaSeleccionadaId) { await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { pagado: true }); window.cerrarModal(); } }
+        window.accionNoPago = async function() { if(reservaSeleccionadaId) { await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { pagado: false }); window.cerrarModal(); } }
+        window.accionEliminar = async function() { if(reservaSeleccionadaId && confirm("¿Borrar reserva?")) { await deleteDoc(doc(db, "reservas", reservaSeleccionadaId)); window.cerrarModal(); } }
 
-        window.cerrarModal = function() {
-            reservaSeleccionadaId = null;
-            document.getElementById('modal-acciones').style.display = 'none';
-        }
-
-        window.accionAsistencia = async function() {
-            if(reservaSeleccionadaId) {
-                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { asistencia: true });
-                window.cerrarModal();
-            }
-        }
-
-        window.accionPago = async function() {
-            if(reservaSeleccionadaId) {
-                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { pagado: true });
-                window.cerrarModal();
-            }
-        }
-
-        // NUEVO: Función para revertir el pago
-        window.accionNoPago = async function() {
-            if(reservaSeleccionadaId) {
-                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { pagado: false });
-                window.cerrarModal();
-            }
-        }
-
-        window.accionEliminar = async function() {
-            if(reservaSeleccionadaId && confirm("¿Estás seguro que deseas eliminar esta reserva? Este horario volverá a estar disponible.")) {
-                await deleteDoc(doc(db, "reservas", reservaSeleccionadaId));
-                window.cerrarModal();
-            }
-        }
-
-        // Escuchar los cambios de configuración y cargar el precio
         onSnapshot(doc(db, "configuracion", "club"), (documento) => {
             if (documento.exists()) {
                 horaApertura = documento.data().horaApertura || "08:00";
                 horaCierre = documento.data().horaCierre || "23:30";
-                precioGlobal = documento.data().precioTurno || "15000"; // Cargamos el precio
-                
+                precioGlobal = documento.data().precioTurno || "15000";
                 document.getElementById('input-apertura').value = horaApertura;
                 document.getElementById('input-cierre').value = horaCierre;
                 document.getElementById('input-precio').value = precioGlobal;
@@ -295,8 +304,15 @@
             contenedorHorarios.innerHTML = '';
             contenedorClub.innerHTML = '';
 
+            // FILTRAMOS LAS RESERVAS: Solo tomamos las que correspondan a la fecha que estamos mirando
+            // (Si una reserva vieja no tiene fecha, la asignamos al primer día para que no se rompa)
+            const reservasDelDia = reservasGlobales.filter(r => {
+                const fechaReserva = r.fecha || fechasValidas[0]; 
+                return fechaReserva === fechaSeleccionada;
+            });
+
             let bloquesOcupados = [];
-            reservasGlobales.forEach(r => {
+            reservasDelDia.forEach(r => {
                 bloquesOcupados.push(r.hora); 
                 bloquesOcupados.push(window.sumarMinutos(r.hora, 30));
                 bloquesOcupados.push(window.sumarMinutos(r.hora, 60));
@@ -328,20 +344,17 @@
                 }
             });
 
-            if (reservasGlobales.length === 0) {
-                contenedorClub.innerHTML = '<div class="mensaje-vacio">Aún no hay reservas hoy.</div>';
+            if (reservasDelDia.length === 0) {
+                contenedorClub.innerHTML = '<div class="mensaje-vacio">No hay reservas para este día.</div>';
             } else {
-                const reservasOrdenadas = [...reservasGlobales].sort((a, b) => b.hora.localeCompare(a.hora)); 
+                const reservasOrdenadas = [...reservasDelDia].sort((a, b) => b.hora.localeCompare(a.hora)); 
                 reservasOrdenadas.forEach(reserva => {
                     const horaFin = window.sumarMinutos(reserva.hora, 90);
                     const tarjeta = document.createElement('div');
                     tarjeta.className = 'tarjeta-reserva';
                     
-                    if (reserva.asistencia) {
-                        tarjeta.classList.add('asistio');
-                    }
+                    if (reserva.asistencia) tarjeta.classList.add('asistio');
 
-                    // Calculamos el texto del saldo leyendo el precioGlobal
                     let textoSaldo = reserva.pagado 
                         ? `<span class="estado-pagado">✅ Pagado</span>` 
                         : `<span class="estado-deuda">Pendiente ($${precioGlobal})</span>`;
@@ -359,6 +372,10 @@
                 });
             }
         }
+
+        // Inicializamos los textos al cargar la web por primera vez
+        actualizarTextosFecha();
+
     </script>
 </body>
 </html>
