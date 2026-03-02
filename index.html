@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva de Canchas de Pádel</title>
+    <style>
+        /* CSS: Tema oscuro inspirado en las imágenes */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #171d24; /* Color de fondo oscuro */
+            color: #ffffff; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Botones para cambiar de pantalla */
+        .controles-vista {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .btn-vista {
+            background-color: #2c3540;
+            color: white;
+            border: 1px solid #44505d;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-vista.activo {
+            background-color: #3b82f6; /* Azul para resaltar la vista activa */
+            border-color: #3b82f6;
+        }
+
+        /* --- ESTILOS: VISTA DEL JUGADOR (Lista) --- */
+        .vista-jugador {
+            background-color: #1e252d;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .header-fecha {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+        .sub-header {
+            display: flex;
+            justify-content: space-between;
+            color: #9ca3af;
+            font-size: 0.9em;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2c3540;
+            margin-bottom: 10px;
+        }
+        .turno-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #2c3540;
+            cursor: pointer;
+        }
+        .turno-item:hover { background-color: #242c36; }
+        .punto-verde {
+            height: 10px; width: 10px; 
+            background-color: #10b981; 
+            border-radius: 50%; 
+            margin-right: 15px;
+        }
+        .hora { font-weight: bold; margin-right: 8px; }
+        .texto-disponible { color: #d1d5db; font-size: 0.9em; }
+
+        /* --- ESTILOS: VISTA DEL CLUB (Grilla) --- */
+        .vista-club {
+            display: none; /* Oculto por defecto */
+            background-color: #1e252d;
+            width: 100%;
+            max-width: 900px;
+            border-radius: 12px;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-x: auto; /* Permite scroll horizontal si no entra */
+        }
+        .grilla-canchas {
+            display: grid;
+            grid-template-columns: 50px repeat(5, 1fr);
+            gap: 1px;
+            background-color: #2c3540; /* Color de las líneas divisorias */
+            border: 1px solid #2c3540;
+        }
+        .celda-header {
+            background-color: #1e252d;
+            padding: 15px 5px;
+            text-align: center;
+            font-size: 0.85em;
+            font-weight: bold;
+            color: #d1d5db;
+        }
+        .celda-hora {
+            background-color: #1e252d;
+            padding: 10px;
+            text-align: right;
+            color: #d1d5db;
+            font-size: 0.9em;
+        }
+        .celda {
+            background-color: #1e252d;
+            min-height: 120px;
+            padding: 5px;
+            position: relative;
+        }
+        /* Las tarjetas naranjas de reserva */
+        .tarjeta-reserva {
+            background-color: #f6a74b;
+            color: #171d24;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: bold;
+            height: 90%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .tarjeta-reserva p { margin: 3px 0; }
+        .icono { font-size: 1.2em; }
+
+    </style>
+</head>
+<body>
+
+    <div class="controles-vista">
+        <button id="btn-jugador" class="btn-vista activo" onclick="cambiarVista('jugador')">?? Vista Jugadores (Link)</button>
+        <button id="btn-club" class="btn-vista" onclick="cambiarVista('club')">?? Vista Club (Grilla)</button>
+    </div>
+
+    <div id="pantalla-jugador" class="vista-jugador">
+        <h2 style="margin-top: 0; margin-bottom: 25px;">Reserva de canchas</h2>
+        
+        <div class="header-fecha">
+            <span style="cursor:pointer; color:#9ca3af;">&lt;</span>
+            <span>lunes 02</span>
+            <span style="cursor:pointer; color:#9ca3af;">&gt;</span>
+        </div>
+        
+        <div class="sub-header">
+            <span>lunes</span>
+            <span>2 de marzo de 2026</span>
+        </div>
+
+        <div id="lista-horarios">
+            </div>
+    </div>
+
+    <div id="pantalla-club" class="vista-club">
+        <div class="header-fecha" style="justify-content: center; gap: 20px;">
+            <span style="cursor:pointer; color:#9ca3af;">&lt;</span>
+            <span>lunes 02</span>
+            <span style="cursor:pointer; color:#9ca3af;">&gt;</span>
+        </div>
+
+        <div class="grilla-canchas">
+            <div class="celda-header"></div>
+            <div class="celda-header">PÁDEL -<br>Cancha 1</div>
+            <div class="celda-header">PÁDEL -<br>Cancha 2</div>
+            <div class="celda-header">PÁDEL -<br>Cancha 3</div>
+            <div class="celda-header">PÁDEL -<br>Cancha 4</div>
+            <div class="celda-header">PÁDEL -<br>Cancha 5</div>
+
+            <div class="celda-hora">18</div>
+            <div class="celda"></div>
+            <div class="celda"></div>
+            <div class="celda"></div>
+            <div class="celda">
+                <div class="tarjeta-reserva">
+                    <p>Franco Aramayo</p>
+                    <p class="icono">??</p>
+                    <p>0 / 38k</p>
+                    <p>Saldo: 38k</p>
+                </div>
+            </div>
+            <div class="celda"></div>
+
+            <div class="celda-hora">19</div>
+            <div class="celda">
+                <div class="tarjeta-reserva">
+                    <p>Tomas Prato</p>
+                    <p class="icono">??</p>
+                    <p>0 / 38k</p>
+                    <p>Saldo: 38k</p>
+                </div>
+            </div>
+            <div class="celda">
+                <div class="tarjeta-reserva">
+                    <p>Aurelia Fernandez</p>
+                    <p class="icono">??</p>
+                    <p>0 / 38k</p>
+                    <p>Saldo: 38k</p>
+                </div>
+            </div>
+            <div class="celda">
+                <div class="tarjeta-reserva">
+                    <p>Pao Merida</p>
+                    <p class="icono">??</p>
+                    <p>0 / 38k</p>
+                    <p>Saldo: 38k</p>
+                </div>
+            </div>
+            <div class="celda">
+                <div class="tarjeta-reserva">
+                    <p>Gonzalo Del boca</p>
+                    <p class="icono">??</p>
+                    <p>0 / 38k</p>
+                    <p>Saldo: 38k</p>
+                </div>
+            </div>
+            <div class="celda">
+                <div class="tarjeta-reserva">
+                    <p>Adrian Ferrari</p>
+                    <p class="icono">??</p>
+                    <p>0 / 38k</p>
+                    <p>Saldo: 38k</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Generador de la lista de horarios para el jugador ---
+        const horariosDisponibles = [
+            "23:00", "22:30", "22:00", "21:30", "18:00", 
+            "17:30", "17:00", "16:30", "16:00", "15:30", "15:00"
+        ];
+
+        const contenedorHorarios = document.getElementById('lista-horarios');
+        
+        horariosDisponibles.forEach(hora => {
+            const div = document.createElement('div');
+            div.className = 'turno-item';
+            // Al hacer clic, simula que se seleccionó
+            div.onclick = () => alert(`Elegiste reservar a las ${hora} hs. Aquí se abriría un formulario de pago o datos.`);
+            
+            div.innerHTML = `
+                <span class="punto-verde"></span>
+                <span class="hora">${hora} hs | </span>
+                <span class="texto-disponible">Turno disponible para Padel</span>
+            `;
+            contenedorHorarios.appendChild(div);
+        });
+
+        // --- 2. Función para alternar entre las dos pantallas ---
+        function cambiarVista(vista) {
+            const pantallaJugador = document.getElementById('pantalla-jugador');
+            const pantallaClub = document.getElementById('pantalla-club');
+            const btnJugador = document.getElementById('btn-jugador');
+            const btnClub = document.getElementById('btn-club');
+
+            if (vista === 'jugador') {
+                pantallaJugador.style.display = 'block';
+                pantallaClub.style.display = 'none';
+                btnJugador.classList.add('activo');
+                btnClub.classList.remove('activo');
+            } else {
+                pantallaJugador.style.display = 'none';
+                pantallaClub.style.display = 'block';
+                btnClub.classList.add('activo');
+                btnJugador.classList.remove('activo');
+            }
+        }
+    </script>
+</body>
+</html>
