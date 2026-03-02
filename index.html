@@ -49,7 +49,7 @@
         .config-club { background-color: #242c36; padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #2c3540; }
         .inputs-horarios { display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; margin-top: 10px; }
         .inputs-horarios div { display: flex; flex-direction: column; gap: 5px; font-size: 0.9em; color: #d1d5db; }
-        .inputs-horarios input { padding: 8px; border-radius: 5px; border: 1px solid #44505d; background-color: #171d24; color: white; color-scheme: dark; font-family: inherit;}
+        .inputs-horarios input { padding: 8px; border-radius: 5px; border: 1px solid #44505d; background-color: #171d24; color: white; color-scheme: dark; font-family: inherit; max-width: 120px;}
         .btn-guardar { background-color: #10b981; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn-guardar:hover { background-color: #059669; }
 
@@ -57,23 +57,19 @@
             display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; margin-top: 15px;
         }
         
-        /* NUEVO: Estados de la tarjeta */
         .tarjeta-reserva {
             background-color: #f6a74b; color: #171d24; padding: 12px; border-radius: 8px; font-size: 0.9em; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             border-left: 6px solid #d97706; cursor: pointer; transition: transform 0.1s;
         }
         .tarjeta-reserva:hover { transform: scale(1.02); }
-        
-        /* Tarjeta cuando confirman asistencia */
-        .tarjeta-reserva.asistio {
-            background-color: #3b82f6; color: #ffffff; border-left: 6px solid #1d4ed8;
-        }
+        .tarjeta-reserva.asistio { background-color: #3b82f6; color: #ffffff; border-left: 6px solid #1d4ed8; }
         
         .tarjeta-reserva p { margin: 5px 0; }
         .estado-pagado { color: #047857; background: rgba(255,255,255,0.4); padding: 2px 6px; border-radius: 4px; }
+        .estado-deuda { color: #b91c1c; }
         .mensaje-vacio { color: #9ca3af; text-align: center; margin-top: 20px; grid-column: 1 / -1; }
 
-        /* NUEVO: Ventana modal de acciones */
+        /* Modal de acciones */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000;
@@ -87,6 +83,8 @@
         .btn-asistencia:hover { background-color: #2563eb; }
         .btn-pago { background-color: #10b981; }
         .btn-pago:hover { background-color: #059669; }
+        .btn-nopago { background-color: #f59e0b; }
+        .btn-nopago:hover { background-color: #d97706; }
         .btn-eliminar { background-color: #ef4444; }
         .btn-eliminar:hover { background-color: #dc2626; }
         .btn-cerrar { background-color: #4b5563; margin-top: 10px;}
@@ -110,7 +108,7 @@
         <h2 style="margin-top: 0; text-align: center;">Panel de Control - Reservas</h2>
         
         <div class="config-club">
-            <h3 style="margin: 0; font-size: 1.1em;">⚙️ Configurar Horario Comercial</h3>
+            <h3 style="margin: 0; font-size: 1.1em;">⚙️ Configuración del Club</h3>
             <div class="inputs-horarios">
                 <div>
                     <label>Abre a las:</label>
@@ -120,7 +118,11 @@
                     <label>Cierra a las:</label>
                     <input type="time" id="input-cierre" value="23:30">
                 </div>
-                <button class="btn-guardar" onclick="window.guardarHorariosClub()">Guardar Horario</button>
+                <div>
+                    <label>Precio Turno ($):</label>
+                    <input type="number" id="input-precio" value="15000" step="500">
+                </div>
+                <button class="btn-guardar" onclick="window.guardarConfiguracion()">Guardar Todo</button>
             </div>
         </div>
 
@@ -133,7 +135,8 @@
         <div class="modal-content">
             <h3 style="margin: 0; margin-bottom: 10px;">Gestionar Turno</h3>
             <button class="btn-modal btn-asistencia" onclick="window.accionAsistencia()">✔️ Confirmar Asistencia</button>
-            <button class="btn-modal btn-pago" onclick="window.accionPago()">💰 Marcar como Pagado</button>
+            <button class="btn-modal btn-pago" onclick="window.accionPago()">✅ Marcar como Pagado</button>
+            <button class="btn-modal btn-nopago" onclick="window.accionNoPago()">❌ Marcar como No Pagado</button>
             <button class="btn-modal btn-eliminar" onclick="window.accionEliminar()">🗑️ Eliminar Reserva</button>
             <button class="btn-modal btn-cerrar" onclick="window.cerrarModal()">Cancelar</button>
         </div>
@@ -141,7 +144,6 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        // AGREGAMOS updateDoc y deleteDoc para modificar o borrar reservas
         import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -166,10 +168,10 @@
 
         let horaApertura = "08:00"; 
         let horaCierre = "23:30";   
+        let precioGlobal = "15000"; // Precio por defecto
         let reservasGlobales = [];
-        let reservaSeleccionadaId = null; // Guarda el ID de la tarjeta a la que le hacemos clic
+        let reservaSeleccionadaId = null; 
 
-        // Herramientas matemáticas de tiempo
         window.aMinutos = function(horaStr) {
             let [h, m] = horaStr.split(':').map(Number);
             return (h * 60) + m;
@@ -190,13 +192,20 @@
             document.getElementById('btn-club').classList.toggle('activo', vista === 'club');
         }
 
-        window.guardarHorariosClub = async function() {
+        // NUEVO: Guardar también el precio en la base de datos
+        window.guardarConfiguracion = async function() {
             const apertura = document.getElementById('input-apertura').value;
             const cierre = document.getElementById('input-cierre').value;
-            if(apertura && cierre) {
+            const precio = document.getElementById('input-precio').value;
+            
+            if(apertura && cierre && precio) {
                 try {
-                    await setDoc(doc(db, "configuracion", "club"), { horaApertura: apertura, horaCierre: cierre });
-                    alert("¡Horario actualizado correctamente!");
+                    await setDoc(doc(db, "configuracion", "club"), { 
+                        horaApertura: apertura, 
+                        horaCierre: cierre,
+                        precioTurno: precio
+                    });
+                    alert("¡Configuración actualizada correctamente!");
                 } catch (error) {
                     alert("Hubo un error al guardar.");
                 }
@@ -211,8 +220,8 @@
                         hora: hora, 
                         jugador: nombre, 
                         fechaRegistro: new Date(),
-                        asistencia: false, // Por defecto no han llegado
-                        pagado: false      // Por defecto no han pagado
+                        asistencia: false, 
+                        pagado: false      
                     });
                     alert("¡Reserva guardada con éxito!");
                 } catch (error) {
@@ -221,7 +230,6 @@
             }
         }
 
-        // --- NUEVAS FUNCIONES PARA EL MODAL DE ACCIONES ---
         window.abrirModal = function(id) {
             reservaSeleccionadaId = id;
             document.getElementById('modal-acciones').style.display = 'flex';
@@ -246,27 +254,37 @@
             }
         }
 
+        // NUEVO: Función para revertir el pago
+        window.accionNoPago = async function() {
+            if(reservaSeleccionadaId) {
+                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { pagado: false });
+                window.cerrarModal();
+            }
+        }
+
         window.accionEliminar = async function() {
             if(reservaSeleccionadaId && confirm("¿Estás seguro que deseas eliminar esta reserva? Este horario volverá a estar disponible.")) {
                 await deleteDoc(doc(db, "reservas", reservaSeleccionadaId));
                 window.cerrarModal();
             }
         }
-        // ---------------------------------------------------
 
+        // Escuchar los cambios de configuración y cargar el precio
         onSnapshot(doc(db, "configuracion", "club"), (documento) => {
             if (documento.exists()) {
-                horaApertura = documento.data().horaApertura;
-                horaCierre = documento.data().horaCierre;
+                horaApertura = documento.data().horaApertura || "08:00";
+                horaCierre = documento.data().horaCierre || "23:30";
+                precioGlobal = documento.data().precioTurno || "15000"; // Cargamos el precio
+                
                 document.getElementById('input-apertura').value = horaApertura;
                 document.getElementById('input-cierre').value = horaCierre;
+                document.getElementById('input-precio').value = precioGlobal;
             }
             renderizarPantallas(); 
         });
 
         onSnapshot(collection(db, "reservas"), (snapshot) => {
             reservasGlobales = [];
-            // Ahora guardamos también el ID interno de Firebase (fundamental para poder borrar o actualizar el documento correcto)
             snapshot.forEach((doc) => reservasGlobales.push({ id: doc.id, ...doc.data() }));
             renderizarPantallas(); 
         });
@@ -319,21 +337,22 @@
                     const tarjeta = document.createElement('div');
                     tarjeta.className = 'tarjeta-reserva';
                     
-                    // Si asistió, le ponemos la clase que la pinta de azul
                     if (reserva.asistencia) {
                         tarjeta.classList.add('asistio');
                     }
 
-                    // Preparamos el texto del saldo
-                    let textoSaldo = reserva.pagado ? '<span class="estado-pagado">✅ Pagado</span>' : 'Pendiente';
+                    // Calculamos el texto del saldo leyendo el precioGlobal
+                    let textoSaldo = reserva.pagado 
+                        ? `<span class="estado-pagado">✅ Pagado</span>` 
+                        : `<span class="estado-deuda">Pendiente ($${precioGlobal})</span>`;
 
-                    // Al hacer clic en la tarjeta, abrimos el modal pasándole el ID de Firebase
                     tarjeta.onclick = () => window.abrirModal(reserva.id);
 
                     tarjeta.innerHTML = `
                         <p style="font-size: 1.1em; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; margin-top: 0;">⏱️ ${reserva.hora} a ${horaFin} hs</p>
                         <p>👤 ${reserva.jugador}</p>
                         <p>📌 Cancha 1</p>
+                        <p>Precio: $${precioGlobal}</p>
                         <p>Saldo: ${textoSaldo}</p>
                     `;
                     contenedorClub.appendChild(tarjeta);
