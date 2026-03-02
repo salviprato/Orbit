@@ -104,7 +104,6 @@
         .btn-cerrar { background-color: #4b5563; margin-top: 10px;}
         .btn-gray-two-col { background-color: #4b5563; flex: 1; } .btn-gray-two-col:hover { background-color: #444c56; }
 
-        /* Estilo para las barras de scroll internas en métricas */
         .scroll-interno::-webkit-scrollbar { width: 6px; }
         .scroll-interno::-webkit-scrollbar-thumb { background: #44505d; border-radius: 4px; }
     </style>
@@ -190,7 +189,7 @@
             <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">📊 Métricas de Reservas</h3>
             
             <div id="contenido-metricas" class="scroll-interno" style="text-align: left; max-height: 350px; overflow-y: auto; padding-right: 5px;">
-                </div>
+            </div>
 
             <button class="btn-modal btn-cerrar" style="margin-top: 15px;" onclick="window.cerrarModalMetricas()">Cerrar</button>
         </div>
@@ -228,7 +227,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- CALENDARIO ---
         let fechasValidas = [];
         let fechaActual = new Date();
         for (let i = 0; i <= 7; i++) {
@@ -265,7 +263,6 @@
             renderizarCalendarios(); renderizarPantallas();   
         }
 
-        // --- VARIABLES GLOBALES ---
         const horariosBase = [];
         for (let h = 0; h <= 23; h++) { 
             let horaStr = h.toString().padStart(2, '0');
@@ -282,7 +279,6 @@
         let reservaSeleccionadaId = null; 
         let reservaEnProcesoHora = null;
 
-        // --- MATEMÁTICAS DE TIEMPO ---
         window.aMinutos = function(horaStr) { let [h, m] = horaStr.split(':').map(Number); return (h * 60) + m; }
         window.sumarMinutos = function(horaStr, minutosAñadir) {
             let [h, m] = horaStr.split(':').map(Number); let total = (h * 60) + m + minutosAñadir;
@@ -295,7 +291,6 @@
             return f.getDay(); 
         }
 
-        // --- NAVEGACIÓN Y MODALES ---
         window.cambiarVista = function(vista) {
             document.getElementById('pantalla-jugador').style.display = vista === 'jugador' ? 'block' : 'none';
             document.getElementById('pantalla-club').style.display = vista === 'club' ? 'block' : 'none';
@@ -321,7 +316,6 @@
         }
         window.cerrarModalAcciones = function() { reservaSeleccionadaId = null; document.getElementById('modal-acciones').style.display = 'none'; }
 
-        // --- NUEVO: LÓGICA DE MÉTRICAS ---
         window.abrirModalMetricas = function() {
             calcularMetricas();
             document.getElementById('modal-metricas').style.display = 'flex';
@@ -334,7 +328,6 @@
             const metricas = {}; 
             const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
-            // Agrupar reservas
             reservasGlobales.forEach(r => {
                 if(!r.fecha) return;
                 const partes = r.fecha.split('-'); 
@@ -343,7 +336,7 @@
                 const dia = parseInt(partes[2], 10);
 
                 const mesTexto = `${mesesNombres[mesNum - 1]} ${anio}`;
-                const semanaNum = Math.ceil(dia / 7); // Semana 1, 2, 3, 4, 5 del mes
+                const semanaNum = Math.ceil(dia / 7); 
                 const semanaTexto = `Semana ${semanaNum}`;
 
                 if(!metricas[mesTexto]) {
@@ -362,7 +355,6 @@
                 }
             });
 
-            // Dibujar el HTML
             const contenedor = document.getElementById('contenido-metricas');
             let html = "";
 
@@ -372,7 +364,6 @@
                 return;
             }
 
-            // Ordenamos los meses al revés (los más recientes arriba)
             mesesKeys.sort().reverse().forEach(mes => {
                 html += `<div style="background:#242c36; padding:15px; border-radius:8px; margin-bottom:15px; border: 1px solid #2c3540;">`;
                 html += `<h4 style="margin:0 0 10px 0; color:#3b82f6; border-bottom:1px solid #44505d; padding-bottom:8px;">📅 ${mes}</h4>`;
@@ -387,7 +378,6 @@
                             </div>
                          </div>`;
 
-                // Subdivisión semanal
                 html += `<p style="font-size: 0.85em; color: #d1d5db; margin: 0 0 8px 0; font-weight: bold;">Desglose Semanal:</p>`;
                 
                 const semanasKeys = Object.keys(metricas[mes].semanas).sort();
@@ -404,9 +394,7 @@
 
             contenedor.innerHTML = html;
         }
-        // ------------------------------------
 
-        // --- MODAL RESERVA JUGADOR Y CLUB ---
         window.abrirModalReservaJugador = function(hora, canchaPredeterminada = null) {
             
             let minInicio = window.aMinutos(hora);
@@ -487,7 +475,6 @@
             } catch (error) { alert("Hubo un error de conexión."); }
         }
 
-        // --- CONFIGURACIÓN Y ACCIONES ---
         window.guardarConfiguracion = async function() {
             const inputPrimero = document.getElementById('input-primer-turno').value;
             const inputUltimo = document.getElementById('input-ultimo-turno').value;
@@ -545,7 +532,6 @@
             renderizarPantallas(); 
         });
 
-        // --- RENDERIZADO PANTALLAS ---
         window.renderizarPantallas = function() {
             // 1. VISTA JUGADOR
             const contenedorHorarios = document.getElementById('lista-horarios');
@@ -589,7 +575,7 @@
                 }
             });
 
-            // 2. VISTA CLUB (Grilla con espacios clickeables)
+            // 2. VISTA CLUB
             const contenedorClub = document.getElementById('lista-reservas-club');
             contenedorClub.innerHTML = '';
 
@@ -662,13 +648,14 @@
                     let textoSaldo = res.pagado ? "✅" : "Pend";
                     let textoFijo = res.fijo === true ? ' 📌' : '';
                     
+                    // LÍNEA MODIFICADA: Se quitó el 📌 que estaba al lado de ${res.hora} hs
                     htmlGrilla += `
                         <div class="tarjeta-reserva-grilla ${extraClass}" onclick="window.abrirModal('${res.id}')" 
                              style="position: absolute; top: ${offsetTop}px; left: 4px; right: 4px; height: ${height - 6}px; 
                                     padding: 8px; font-size: 0.85em; overflow: hidden; border-radius: 6px; cursor: pointer; 
                                     box-shadow: 0 4px 6px rgba(0,0,0,0.4); display: flex; flex-direction: column; z-index: 10;">
                             <span style="font-weight: 900; font-size: 1.1em; color: ${colorTexto}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${res.jugador}${textoFijo}</span>
-                            <span style="margin-top: 4px; color: ${colorTexto}; opacity: 0.8; font-weight: 700;">📌 ${res.hora} hs</span>
+                            <span style="margin-top: 4px; color: ${colorTexto}; opacity: 0.8; font-weight: 700;">${res.hora} hs</span>
                             <span style="margin-top: auto; font-weight: bold; color: ${colorTexto};">Pago: ${textoSaldo}</span>
                         </div>
                     `;
