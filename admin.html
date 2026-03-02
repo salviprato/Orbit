@@ -3,17 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - Greenpoint</title>
+    <title>Panel de Administración</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #171d24; color: #ffffff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         
-        /* PANTALLA DE LOGIN */
         #login-screen { background-color: #1e252d; padding: 40px; border-radius: 12px; border: 1px solid #2c3540; text-align: center; width: 100%; max-width: 350px; margin-top: 50px; }
         .input-login { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #44505d; background-color: #171d24; color: white; box-sizing: border-box; }
         .btn-login { width: 100%; padding: 12px; background-color: #3b82f6; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-login:hover { background-color: #2563eb; }
 
-        /* PANTALLA ADMIN */
         #admin-screen { display: none; width: 100%; max-width: 900px; }
         .header-admin { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background-color: #1e252d; padding: 15px 20px; border-radius: 12px; }
         .btn-logout { background-color: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
@@ -36,7 +34,6 @@
         .celda-vacia-hover:hover { background-color: rgba(59, 130, 246, 0.15); cursor: pointer;}
         .mensaje-vacio { color: #9ca3af; text-align: center; margin-top: 20px; width: 100%; }
 
-        /* Modales */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: #1e252d; padding: 25px; border-radius: 12px; width: 90%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; border: 1px solid #44505d; text-align: center; }
         .input-form { padding: 10px; border-radius: 6px; border: 1px solid #44505d; background-color: #171d24; color: white; color-scheme: dark; font-family: inherit; width: 100%; box-sizing: border-box; }
@@ -48,31 +45,30 @@
 <body>
 
     <div id="login-screen">
-        <h2 style="margin-top: 0;">Acceso Restringido</h2>
-        <p style="color: #9ca3af; font-size: 0.9em; margin-bottom: 20px;">Ingresa tus credenciales de administrador.</p>
+        <h2 style="margin-top: 0;" id="titulo-login">Acceso Restringido</h2>
+        <p style="color: #9ca3af; font-size: 0.9em; margin-bottom: 20px;">Ingresa tus credenciales para administrar.</p>
         <input type="email" id="email-input" class="input-login" placeholder="Correo electrónico">
         <input type="password" id="password-input" class="input-login" placeholder="Contraseña">
-        <button class="btn-login" onclick="iniciarSesion()">Iniciar Sesión</button>
+        <button class="btn-login" onclick="window.iniciarSesion()">Iniciar Sesión</button>
         <p id="login-error" style="color: #ef4444; font-size: 0.85em; display: none; margin-top: 15px;">Usuario o contraseña incorrectos.</p>
     </div>
 
     <div id="admin-screen">
         <div class="header-admin">
-            <h2 style="margin: 0;">Panel de Control</h2>
+            <h2 style="margin: 0; text-transform: capitalize;" id="nombre-panel-club">Panel - Cargando...</h2>
             <div style="display: flex; gap: 15px; align-items: center;">
-                <button onclick="abrirModalMetricas()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #9ca3af;" title="Métricas">📊</button>
-                <button onclick="abrirModalConfig()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #9ca3af;" title="Configuración">⚙️</button>
-                <button class="btn-logout" onclick="cerrarSesion()">Salir</button>
+                <button onclick="window.abrirModalMetricas()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #9ca3af;" title="Métricas">📊</button>
+                <button onclick="window.abrirModalConfig()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #9ca3af;" title="Configuración">⚙️</button>
+                <button class="btn-logout" onclick="window.cerrarSesion()">Salir</button>
             </div>
         </div>
-
         <div id="calendario-club" class="calendario-strip"></div>
         <div id="lista-reservas-club"></div>
     </div>
 
     <div id="modal-config" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">⚙️ Configuración del Club</h3>
+            <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">⚙️ Configuración</h3>
             <div style="text-align: left; display: flex; flex-direction: column; gap: 15px;">
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1;"><label style="font-size: 0.9em; color: #d1d5db;">Primer Turno:</label><input type="time" id="input-primer-turno" class="input-form" style="margin-top: 4px;"></div>
@@ -91,16 +87,16 @@
                     </select>
                 </div>
             </div>
-            <button class="btn-modal btn-guardar" style="margin-top: 20px;" onclick="guardarConfiguracion()">Guardar Todo</button>
-            <button class="btn-modal btn-cerrar" style="margin-top: 0;" onclick="cerrarModalConfig()">Cancelar</button>
+            <button class="btn-modal btn-guardar" style="margin-top: 20px;" onclick="window.guardarConfiguracion()">Guardar Todo</button>
+            <button class="btn-modal btn-cerrar" style="margin-top: 0;" onclick="window.cerrarModalConfig()">Cancelar</button>
         </div>
     </div>
 
     <div id="modal-metricas" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">📊 Métricas de Reservas</h3>
+            <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">📊 Métricas</h3>
             <div id="contenido-metricas" class="scroll-interno" style="text-align: left; max-height: 350px; overflow-y: auto;"></div>
-            <button class="btn-modal btn-cerrar" style="margin-top: 15px;" onclick="cerrarModalMetricas()">Cerrar</button>
+            <button class="btn-modal btn-cerrar" style="margin-top: 15px;" onclick="window.cerrarModalMetricas()">Cerrar</button>
         </div>
     </div>
 
@@ -108,14 +104,14 @@
         <div class="modal-content">
             <h3 style="margin: 0; margin-bottom: 10px;">Gestionar Turno</h3>
             <div style="display: flex; flex-direction: column; gap: 10px;">
-                <button class="btn-modal btn-asistencia" onclick="accionAsistencia()">✔️ Confirmar Asistencia</button>
-                <button class="btn-modal btn-guardar" id="btn-toggle-fijo" onclick="accionFijarTurno()">📌 Fijar Turno</button>
+                <button class="btn-modal btn-asistencia" onclick="window.accionAsistencia()">✔️ Confirmar Asistencia</button>
+                <button class="btn-modal btn-guardar" id="btn-toggle-fijo" onclick="window.accionFijarTurno()">📌 Fijar Turno</button>
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn-modal btn-cerrar" onclick="accionPago()">✅ Pagado</button>
-                    <button class="btn-modal btn-cerrar" onclick="accionNoPago()">❌ Pendiente</button>
+                    <button class="btn-modal btn-cerrar" style="flex: 1;" onclick="window.accionPago()">✅ Pagado</button>
+                    <button class="btn-modal btn-cerrar" style="flex: 1;" onclick="window.accionNoPago()">❌ Pendiente</button>
                 </div>
-                <button class="btn-modal btn-eliminar" onclick="accionEliminar()">🗑️ Eliminar Reserva</button>
-                <button class="btn-modal btn-cerrar" onclick="cerrarModalAcciones()">Cancelar</button>
+                <button class="btn-modal btn-eliminar" onclick="window.accionEliminar()">🗑️ Eliminar Reserva</button>
+                <button class="btn-modal btn-cerrar" onclick="window.cerrarModalAcciones()">Cancelar</button>
             </div>
         </div>
     </div>
@@ -128,53 +124,51 @@
                 <div><label style="color: #d1d5db;">1. Cancha:</label><select id="select-cancha-modal" class="input-form"></select></div>
                 <div><label style="color: #d1d5db;">2. Jugador:</label><input type="text" id="input-nombre-jugador" class="input-form"></div>
             </div>
-            <button class="btn-modal btn-guardar" style="margin-top: 20px;" onclick="confirmarReservaAdmin()">Guardar Turno</button>
-            <button class="btn-modal btn-cerrar" style="margin-top: 0;" onclick="cerrarModalReservaAdmin()">Cancelar</button>
+            <button class="btn-modal btn-guardar" style="margin-top: 20px;" onclick="window.confirmarReservaAdmin()">Guardar Turno</button>
+            <button class="btn-modal btn-cerrar" style="margin-top: 0;" onclick="window.cerrarModalReservaAdmin()">Cancelar</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-        // NUEVO: Importamos el sistema de autenticación
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
+        // --- NUEVO: DETECCIÓN DEL CLUB POR URL ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const clubID = urlParams.get('club') || 'greenpoint'; 
+        document.title = `Admin - ${clubID}`;
+        document.getElementById('titulo-login').innerText = `Acceso: ${clubID}`;
+        document.getElementById('nombre-panel-club').innerText = `Panel - ${clubID}`;
+        // -----------------------------------------
+
         const firebaseConfig = {
-            apiKey: "AIzaSyAMRLDlarJiomWY4IX5c6CR3RFWHqmMu30",
-            authDomain: "greenpoint-80ba8.firebaseapp.com",
-            projectId: "greenpoint-80ba8",
-            storageBucket: "greenpoint-80ba8.firebasestorage.app",
-            messagingSenderId: "553295919513",
-            appId: "1:553295919513:web:79d5da1a535e3835e0bb08"
+            apiKey: "AIzaSyAMRLDlarJiomWY4IX5c6CR3RFWHqmMu30", authDomain: "greenpoint-80ba8.firebaseapp.com",
+            projectId: "greenpoint-80ba8", storageBucket: "greenpoint-80ba8.firebasestorage.app", messagingSenderId: "553295919513", appId: "1:553295919513:web:79d5da1a535e3835e0bb08"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app); // Iniciamos Auth
+        const auth = getAuth(app);
 
-        // --- SISTEMA DE LOGIN ---
         window.iniciarSesion = () => {
             const email = document.getElementById('email-input').value;
             const pass = document.getElementById('password-input').value;
-            signInWithEmailAndPassword(auth, email, pass).catch(error => {
-                document.getElementById('login-error').style.display = 'block';
-            });
+            signInWithEmailAndPassword(auth, email, pass).catch(e => { document.getElementById('login-error').style.display = 'block'; });
         }
         window.cerrarSesion = () => signOut(auth);
 
-        // Escucha si el usuario está logueado o no
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-screen').style.display = 'block';
-                iniciarSistemaAdmin(); // Solo cargamos datos si entró bien
+                iniciarSistemaAdmin();
             } else {
                 document.getElementById('login-screen').style.display = 'block';
                 document.getElementById('admin-screen').style.display = 'none';
             }
         });
 
-        // --- LÓGICA DEL PANEL ADMIN ---
         let fechasValidas = [], fechaSeleccionada = "";
         let primerTurno = "08:00", ultimoTurno = "21:30", precioGlobal = "15000", cantidadCanchasGlobal = 1, duracionGlobal = 90; 
         let reservasGlobales = [], reservaSeleccionadaId = null, reservaEnProcesoHora = null;
@@ -191,7 +185,8 @@
             }
             fechaSeleccionada = fechasValidas[0];
             
-            onSnapshot(doc(db, "configuracion", "club"), (docSnap) => {
+            // NUEVO: Firebase lee la config del club específico
+            onSnapshot(doc(db, "clubes", clubID, "configuracion", "ajustes"), (docSnap) => {
                 if (docSnap.exists()) {
                     let d = docSnap.data();
                     primerTurno = d.primerTurno || "08:00"; ultimoTurno = d.ultimoTurno || "21:30"; precioGlobal = d.precioTurno || "15000"; cantidadCanchasGlobal = parseInt(d.canchas) || 1; duracionGlobal = parseInt(d.duracionTurno) || 90; 
@@ -200,7 +195,8 @@
                 renderizarTodo();
             });
 
-            onSnapshot(collection(db, "reservas"), (snap) => {
+            // NUEVO: Firebase lee las reservas del club específico
+            onSnapshot(collection(db, "clubes", clubID, "reservas"), (snap) => {
                 reservasGlobales = []; snap.forEach(doc => reservasGlobales.push({ id: doc.id, ...doc.data() })); renderizarTodo();
             });
         }
@@ -208,16 +204,14 @@
         window.seleccionarFecha = (iso) => { fechaSeleccionada = iso; renderizarTodo(); }
         
         function renderizarTodo() {
-            // Dibuja Calendario
             const calClub = document.getElementById('calendario-club'); calClub.innerHTML = '';
             const diasCortos = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
             fechasValidas.forEach((iso, idx) => {
                 const f = new Date(iso.split('-')[0], iso.split('-')[1]-1, iso.split('-')[2]);
                 const activo = iso === fechaSeleccionada ? 'activo' : '';
-                calClub.innerHTML += `<div class="dia-item ${activo}" onclick="seleccionarFecha('${iso}')"><span class="dia-nombre">${idx===0?'HOY':diasCortos[f.getDay()]}</span><span class="dia-numero">${f.getDate().toString().padStart(2,'0')}</span></div>`;
+                calClub.innerHTML += `<div class="dia-item ${activo}" onclick="window.seleccionarFecha('${iso}')"><span class="dia-nombre">${idx===0?'HOY':diasCortos[f.getDay()]}</span><span class="dia-numero">${f.getDate().toString().padStart(2,'0')}</span></div>`;
             });
 
-            // Dibuja Grilla
             const contenedorClub = document.getElementById('lista-reservas-club');
             const dowNum = window.getDayOfWeek(fechaSeleccionada);
             let reservasAMostrar = reservasGlobales.filter(r => (r.fecha || fechasValidas[0]) === fechaSeleccionada || (r.fijo && window.getDayOfWeek(r.fecha) === dowNum));
@@ -241,21 +235,20 @@
 
                 for (let m = minActual; m < minFin; m += 30) {
                     let horaFmt = `${Math.floor(m/60).toString().padStart(2,'0')}:${(m%60).toString().padStart(2,'0')}`;
-                    let extra = !bloqueOcupado.has(horaFmt) ? `class="celda-vacia-hover" style="cursor:pointer;" onclick="abrirModalReservaAdmin('${horaFmt}', '${c}')"` : ``;
+                    let extra = !bloqueOcupado.has(horaFmt) ? `class="celda-vacia-hover" style="cursor:pointer;" onclick="window.abrirModalReservaAdmin('${horaFmt}', '${c}')"` : ``;
                     html += `<div ${extra} style="height: 40px; border-bottom: 1px ${m%60===0?'dashed rgba(255,255,255,0.05)':'solid #2c3540'}; box-sizing: border-box;"></div>`;
                 }
 
                 resCancha.forEach(res => {
                     let minRes = window.aMinutos(res.hora); if (minRes < minActual && minFin > 1440) minRes += 1440;
                     let top = ((minRes - minActual) / 30) * 40 + 40; let height = ((res.duracion||90) / 30) * 40; 
-                    html += `<div class="tarjeta-reserva-grilla ${res.asistencia?'asistio':''}" onclick="abrirModal('${res.id}')" style="position: absolute; top: ${top}px; left: 4px; right: 4px; height: ${height-6}px; padding: 8px; font-size: 0.85em; overflow: hidden; border-radius: 6px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.4); display: flex; flex-direction: column; z-index: 10;"><span style="font-weight: 900; font-size: 1.1em; color: ${res.asistencia?'white':'#171d24'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${res.jugador}${res.fijo?' 📌':''}</span><span style="margin-top: 4px; color: ${res.asistencia?'white':'#171d24'}; opacity: 0.8; font-weight: 700;">${res.hora} hs</span><span style="margin-top: auto; font-weight: bold; color: ${res.asistencia?'white':'#171d24'};">Pago: ${res.pagado?'✅':'Pend'}</span></div>`;
+                    html += `<div class="tarjeta-reserva-grilla ${res.asistencia?'asistio':''}" onclick="window.abrirModal('${res.id}')" style="position: absolute; top: ${top}px; left: 4px; right: 4px; height: ${height-6}px; padding: 8px; font-size: 0.85em; overflow: hidden; border-radius: 6px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.4); display: flex; flex-direction: column; z-index: 10;"><span style="font-weight: 900; font-size: 1.1em; color: ${res.asistencia?'white':'#171d24'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${res.jugador}${res.fijo?' 📌':''}</span><span style="margin-top: 4px; color: ${res.asistencia?'white':'#171d24'}; opacity: 0.8; font-weight: 700;">${res.hora} hs</span><span style="margin-top: auto; font-weight: bold; color: ${res.asistencia?'white':'#171d24'};">Pago: ${res.pagado?'✅':'Pend'}</span></div>`;
                 });
                 html += `</div>`; 
             }
             contenedorClub.innerHTML = html + `</div>`;
         }
 
-        // Funciones de Modales y Firebase
         window.abrirModalConfig = () => document.getElementById('modal-config').style.display = 'flex';
         window.cerrarModalConfig = () => document.getElementById('modal-config').style.display = 'none';
         window.abrirModalMetricas = () => { window.calcularMetricas(); document.getElementById('modal-metricas').style.display = 'flex'; }
@@ -264,7 +257,8 @@
         window.guardarConfiguracion = async () => {
             const p = document.getElementById('input-primer-turno').value, u = document.getElementById('input-ultimo-turno').value;
             const pr = document.getElementById('input-precio').value, c = document.getElementById('input-canchas').value, d = document.getElementById('input-duracion').value;
-            if(p && u && pr && c && d) { await setDoc(doc(db, "configuracion", "club"), { primerTurno: p, ultimoTurno: u, precioTurno: pr, canchas: c, duracionTurno: parseInt(d) }); cerrarModalConfig(); }
+            // NUEVO: Guarda la config en la carpeta del club
+            if(p && u && pr && c && d) { await setDoc(doc(db, "clubes", clubID, "configuracion", "ajustes"), { primerTurno: p, ultimoTurno: u, precioTurno: pr, canchas: c, duracionTurno: parseInt(d) }); window.cerrarModalConfig(); }
         }
 
         window.abrirModal = (id) => { 
@@ -273,11 +267,13 @@
             document.getElementById('modal-acciones').style.display = 'flex'; 
         }
         window.cerrarModalAcciones = () => { reservaSeleccionadaId = null; document.getElementById('modal-acciones').style.display = 'none'; }
-        window.accionAsistencia = async () => { await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { asistencia: true }); cerrarModalAcciones(); }
-        window.accionPago = async () => { await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { pagado: true }); cerrarModalAcciones(); }
-        window.accionNoPago = async () => { await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { pagado: false }); cerrarModalAcciones(); }
-        window.accionEliminar = async () => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db, "reservas", reservaSeleccionadaId)); cerrarModalAcciones(); } }
-        window.accionFijarTurno = async () => { const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId); await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fijo: !res.fijo }); cerrarModalAcciones(); }
+        
+        // NUEVO: Todas las acciones actualizan dentro de la carpeta del club
+        window.accionAsistencia = async () => { await updateDoc(doc(db, "clubes", clubID, "reservas", reservaSeleccionadaId), { asistencia: true }); window.cerrarModalAcciones(); }
+        window.accionPago = async () => { await updateDoc(doc(db, "clubes", clubID, "reservas", reservaSeleccionadaId), { pagado: true }); window.cerrarModalAcciones(); }
+        window.accionNoPago = async () => { await updateDoc(doc(db, "clubes", clubID, "reservas", reservaSeleccionadaId), { pagado: false }); window.cerrarModalAcciones(); }
+        window.accionEliminar = async () => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db, "clubes", clubID, "reservas", reservaSeleccionadaId)); window.cerrarModalAcciones(); } }
+        window.accionFijarTurno = async () => { const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId); await updateDoc(doc(db, "clubes", clubID, "reservas", reservaSeleccionadaId), { fijo: !res.fijo }); window.cerrarModalAcciones(); }
 
         window.abrirModalReservaAdmin = (hora, cancha) => {
             reservaEnProcesoHora = hora; document.getElementById('reserva-fecha-display').innerText = fechaSeleccionada; document.getElementById('reserva-hora-display').innerText = `${hora} hs`;
@@ -285,12 +281,33 @@
             document.getElementById('input-nombre-jugador').value = ""; document.getElementById('modal-reserva-admin').style.display = 'flex';
         }
         window.cerrarModalReservaAdmin = () => document.getElementById('modal-reserva-admin').style.display = 'none';
+        
         window.confirmarReservaAdmin = async () => {
             const nom = document.getElementById('input-nombre-jugador').value;
-            if (nom) { await addDoc(collection(db, "reservas"), { fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: document.getElementById('select-cancha-modal').value, jugador: nom, duracion: duracionGlobal, fechaRegistro: new Date(), asistencia: false, pagado: false, fijo: false }); cerrarModalReservaAdmin(); }
+            // NUEVO: Agrega la reserva en la carpeta del club
+            if (nom) { await addDoc(collection(db, "clubes", clubID, "reservas"), { fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: document.getElementById('select-cancha-modal').value, jugador: nom, duracion: duracionGlobal, fechaRegistro: new Date(), asistencia: false, pagado: false, fijo: false }); window.cerrarModalReservaAdmin(); }
         }
 
-        window.calcularMetricas = () => { /* Misma lógica de métricas abreviada para el admin */ }
+        window.calcularMetricas = () => { 
+            const metricas = {}; const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            reservasGlobales.forEach(r => {
+                if(!r.fecha) return; const partes = r.fecha.split('-'); const anio = partes[0]; const mesNum = parseInt(partes[1], 10); const dia = parseInt(partes[2], 10);
+                const mesTexto = `${mesesNombres[mesNum - 1]} ${anio}`; const semanaTexto = `Semana ${Math.ceil(dia / 7)}`;
+                if(!metricas[mesTexto]) { metricas[mesTexto] = { totalFijos: 0, totalCasuales: 0, semanas: {} }; }
+                if(!metricas[mesTexto].semanas[semanaTexto]) { metricas[mesTexto].semanas[semanaTexto] = { fijos: 0, casuales: 0 }; }
+                if(r.fijo) { metricas[mesTexto].totalFijos++; metricas[mesTexto].semanas[semanaTexto].fijos++; } else { metricas[mesTexto].totalCasuales++; metricas[mesTexto].semanas[semanaTexto].casuales++; }
+            });
+            const contenedor = document.getElementById('contenido-metricas'); let html = "";
+            const mesesKeys = Object.keys(metricas);
+            if(mesesKeys.length === 0) { contenedor.innerHTML = "<p style='color:#9ca3af; text-align:center;'>Aún no hay reservas.</p>"; return; }
+            mesesKeys.sort().reverse().forEach(mes => {
+                html += `<div style="background:#242c36; padding:15px; border-radius:8px; margin-bottom:15px; border: 1px solid #2c3540;"><h4 style="margin:0 0 10px 0; color:#3b82f6; border-bottom:1px solid #44505d; padding-bottom:8px;">📅 ${mes}</h4><div style="display: flex; gap: 10px; margin-bottom: 15px;"><div style="flex: 1; background: #171d24; padding: 10px; border-radius: 6px; text-align: center;"><div style="font-size: 1.5em; font-weight: bold; color: #10b981;">${metricas[mes].totalCasuales}</div><div style="font-size: 0.8em; color: #9ca3af;">Casuales</div></div><div style="flex: 1; background: #171d24; padding: 10px; border-radius: 6px; text-align: center;"><div style="font-size: 1.5em; font-weight: bold; color: #f59e0b;">${metricas[mes].totalFijos}</div><div style="font-size: 0.8em; color: #9ca3af;">Fijos 📌</div></div></div><p style="font-size: 0.85em; color: #d1d5db; margin: 0 0 8px 0; font-weight: bold;">Desglose Semanal:</p>`;
+                const semanasKeys = Object.keys(metricas[mes].semanas).sort();
+                semanasKeys.forEach(sem => { let datos = metricas[mes].semanas[sem]; html += `<div style="display:flex; justify-content:space-between; font-size:0.85em; color:#9ca3af; margin-bottom:6px; padding-left:5px; border-left: 2px solid #44505d;"><span style="padding-left: 8px;">${sem}</span><span><strong style="color: #10b981;">${datos.casuales}</strong> Cas. / <strong style="color: #f59e0b;">${datos.fijos}</strong> Fij.</span></div>`; });
+                html += `</div>`;
+            });
+            contenedor.innerHTML = html;
+        }
     </script>
 </body>
 </html>
