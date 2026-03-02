@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reserva de Canchas Greenpoint</title>
+    <title>Reserva de Canchas</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #171d24; color: #ffffff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .vista-jugador { background-color: #1e252d; width: 100%; max-width: 400px; border-radius: 12px; padding: 20px; box-sizing: border-box; margin-top: 20px; }
@@ -31,9 +31,9 @@
 <body>
 
     <div class="vista-jugador">
-        <h2 style="margin-top: 0; margin-bottom: 20px;">Reserva de canchas</h2>
+        <h2 id="titulo-club" style="margin-top: 0; margin-bottom: 20px; text-transform: capitalize;">Cargando...</h2>
         <div id="calendario-jugador" class="calendario-strip"></div>
-        <div class="sub-header"><span>Horarios Disponibles</span><span>Greenpoint</span></div>
+        <div class="sub-header"><span>Horarios Disponibles</span><span id="sub-titulo-club" style="text-transform: capitalize;"></span></div>
         <div id="lista-horarios">Cargando horarios...</div>
     </div>
 
@@ -53,6 +53,16 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // --- NUEVO: DETECCIÓN DEL CLUB POR URL ---
+        const urlParams = new URLSearchParams(window.location.search);
+        // Si entran sin poner un club, por defecto los manda a "greenpoint"
+        const clubID = urlParams.get('club') || 'greenpoint'; 
+        
+        document.getElementById('titulo-club').innerText = `Reservas ${clubID}`;
+        document.getElementById('sub-titulo-club').innerText = clubID;
+        document.title = `Reservas - ${clubID}`;
+        // ------------------------------------------
 
         const firebaseConfig = {
             apiKey: "AIzaSyAMRLDlarJiomWY4IX5c6CR3RFWHqmMu30", authDomain: "greenpoint-80ba8.firebaseapp.com",
@@ -86,12 +96,14 @@
 
         const horariosBase = []; for (let h = 0; h <= 23; h++) { let hS = h.toString().padStart(2, '0'); horariosBase.push(`${hS}:00`, `${hS}:30`); } horariosBase.reverse(); 
 
-        onSnapshot(doc(db, "configuracion", "club"), (d) => {
+        // NUEVO: La ruta a la base de datos ahora usa el clubID
+        onSnapshot(doc(db, "clubes", clubID, "configuracion", "ajustes"), (d) => {
             if (d.exists()) { primerTurno = d.data().primerTurno || "08:00"; ultimoTurno = d.data().ultimoTurno || "21:30"; cantidadCanchasGlobal = parseInt(d.data().canchas) || 1; duracionGlobal = parseInt(d.data().duracionTurno) || 90; }
             renderizarPantallas(); 
         });
 
-        onSnapshot(collection(db, "reservas"), (snap) => {
+        // NUEVO: La ruta a las reservas ahora usa el clubID
+        onSnapshot(collection(db, "clubes", clubID, "reservas"), (snap) => {
             reservasGlobales = []; snap.forEach((doc) => reservasGlobales.push({ id: doc.id, ...doc.data() })); renderizarPantallas(); 
         });
 
@@ -113,9 +125,14 @@
                 });
 
                 let libres = cantidadCanchasGlobal - cOcupadas.size;
-                if (libres > 0) {
+                let minInicio = window.aMinutos(hora);
+                let minCierre = window.aMinutos(ultimoTurno);
+                if (minCierre === 0) minCierre = 1440;
+
+                if (libres > 0 && minInicio <= minCierre) {
                     let div = document.createElement('div'); div.className = 'turno-item'; div.onclick = () => window.abrirModalReserva(hora);
-                    div.innerHTML = `<span class="punto-verde"></span><span class="hora">${hora} hs | </span><span class="texto-disponible">Turno ${duracionGlobal/60} hs</span><span class="texto-canchas-disp">${libres === 1 ? "1 libre" : libres + " libres"}</span>`;
+                    let hsTexto = duracionGlobal % 60 === 0 ? (duracionGlobal/60) : (duracionGlobal/60).toFixed(1);
+                    div.innerHTML = `<span class="punto-verde"></span><span class="hora">${hora} hs | </span><span class="texto-disponible">Turno ${hsTexto} hs</span><span class="texto-canchas-disp">${libres === 1 ? "1 libre" : libres + " libres"}</span>`;
                     contenedor.appendChild(div);
                 }
             });
@@ -124,7 +141,9 @@
         window.abrirModalReserva = (hora) => {
             if (window.aMinutos(hora) > window.aMinutos(ultimoTurno)) { alert("Horario fuera de límite."); return; }
             reservaEnProcesoHora = hora;
-            document.getElementById('reserva-fecha-display').innerText = fechaSeleccionada; document.getElementById('reserva-hora-display').innerText = `${hora} hs`;
+            document.getElementById('reserva-fecha-display').innerText = fechaSeleccionada; 
+            let hsTexto = duracionGlobal % 60 === 0 ? (duracionGlobal/60) : (duracionGlobal/60).toFixed(1);
+            document.getElementById('reserva-hora-display').innerText = `${hora} hs (${hsTexto}h)`;
             
             let bn = []; for(let b=0; b < duracionGlobal/30; b++) bn.push(window.sumarMinutos(hora, b * 30));
             let cOcupadas = new Set();
@@ -143,7 +162,11 @@
         window.confirmarReservaJugador = async () => {
             const nom = document.getElementById('input-nombre-jugador').value; const can = document.getElementById('select-cancha-modal').value;
             if (!nom) { alert("Ingresa tu Nombre y Apellido."); return; }
-            try { await addDoc(collection(db, "reservas"), { fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: can, jugador: nom, duracion: duracionGlobal, fechaRegistro: new Date(), asistencia: false, pagado: false, fijo: false }); alert("¡Reserva exitosa!"); cerrarModalReservaJugador(); } catch (e) { alert("Error de conexión."); }
+            try { 
+                // NUEVO: Guarda la reserva en la carpeta del club específico
+                await addDoc(collection(db, "clubes", clubID, "reservas"), { fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: can, jugador: nom, duracion: duracionGlobal, fechaRegistro: new Date(), asistencia: false, pagado: false, fijo: false }); 
+                alert("¡Reserva exitosa!"); cerrarModalReservaJugador(); 
+            } catch (e) { alert("Error de conexión."); }
         }
         renderizarCalendarios();
     </script>
