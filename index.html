@@ -24,7 +24,7 @@
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: #1e252d; padding: 25px; border-radius: 12px; width: 90%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; border: 1px solid #44505d; text-align: center; }
         .input-form { padding: 10px; border-radius: 6px; border: 1px solid #44505d; background-color: #171d24; color: white; font-family: inherit; width: 100%; box-sizing: border-box; }
-        .btn-modal { padding: 12px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; width: 100%; }
+        .btn-modal { padding: 12px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; width: 100%; font-size: 1em; }
         .btn-guardar { background-color: #10b981; } .btn-cerrar { background-color: #4b5563; }
     </style>
 </head>
@@ -39,8 +39,12 @@
 
     <div id="modal-reserva-jugador" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="margin: 0; margin-bottom: 5px;">Confirmar Reserva</h3>
-            <p style="margin: 0; color: #9ca3af; margin-bottom: 15px;">Fecha: <strong id="reserva-fecha-display" style="color:white;"></strong><br>Horario: <strong id="reserva-hora-display" style="color:white;"></strong></p>
+            <h3 style="margin: 0; margin-bottom: 10px;">Confirmar Reserva</h3>
+            <div style="text-align: center; color: #9ca3af; margin-bottom: 20px; font-size: 0.95em; line-height: 1.6;">
+                Fecha: <strong id="reserva-fecha-display" style="color:white;"></strong><br>
+                Horario: <strong id="reserva-hora-display" style="color:white;"></strong><br>
+                Precio: <strong id="reserva-precio-display" style="color:#10b981; font-size: 1.1em;"></strong>
+            </div>
             <div style="text-align: left; display: flex; flex-direction: column; gap: 15px;">
                 <div><label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">1. Elige tu cancha:</label><select id="select-cancha-modal" class="input-form" style="margin-top: 5px;"></select></div>
                 <div><label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">2. Nombre y Apellido:</label><input type="text" id="input-nombre-jugador" class="input-form" placeholder="Ej: Franco Aramayo" style="margin-top: 5px;"></div>
@@ -54,15 +58,11 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // --- NUEVO: DETECCIÓN DEL CLUB POR URL ---
         const urlParams = new URLSearchParams(window.location.search);
-        // Si entran sin poner un club, por defecto los manda a "greenpoint"
         const clubID = urlParams.get('club') || 'greenpoint'; 
-        
         document.getElementById('titulo-club').innerText = `Reservas ${clubID}`;
         document.getElementById('sub-titulo-club').innerText = clubID;
         document.title = `Reservas - ${clubID}`;
-        // ------------------------------------------
 
         const firebaseConfig = {
             apiKey: "AIzaSyAMRLDlarJiomWY4IX5c6CR3RFWHqmMu30", authDomain: "greenpoint-80ba8.firebaseapp.com",
@@ -71,7 +71,7 @@
         const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
         let fechasValidas = [], fechaSeleccionada = "";
-        let primerTurno = "08:00", ultimoTurno = "21:30", cantidadCanchasGlobal = 1, duracionGlobal = 90, reservasGlobales = [], reservaEnProcesoHora = null;
+        let primerTurno = "08:00", ultimoTurno = "21:30", precioGlobal = "15000", cantidadCanchasGlobal = 1, duracionGlobal = 90, reservasGlobales = [], reservaEnProcesoHora = null;
 
         window.aMinutos = (hStr) => { let [h, m] = hStr.split(':').map(Number); return (h * 60) + m; }
         window.sumarMinutos = (hStr, mAdd) => { let [h, m] = hStr.split(':').map(Number); let t = (h * 60) + m + mAdd; return `${Math.floor(t / 60).toString().padStart(2,'0')}:${(t % 60).toString().padStart(2,'0')}`; }
@@ -96,13 +96,17 @@
 
         const horariosBase = []; for (let h = 0; h <= 23; h++) { let hS = h.toString().padStart(2, '0'); horariosBase.push(`${hS}:00`, `${hS}:30`); } horariosBase.reverse(); 
 
-        // NUEVO: La ruta a la base de datos ahora usa el clubID
         onSnapshot(doc(db, "clubes", clubID, "configuracion", "ajustes"), (d) => {
-            if (d.exists()) { primerTurno = d.data().primerTurno || "08:00"; ultimoTurno = d.data().ultimoTurno || "21:30"; cantidadCanchasGlobal = parseInt(d.data().canchas) || 1; duracionGlobal = parseInt(d.data().duracionTurno) || 90; }
+            if (d.exists()) { 
+                primerTurno = d.data().primerTurno || "08:00"; 
+                ultimoTurno = d.data().ultimoTurno || "21:30"; 
+                precioGlobal = d.data().precioTurno || "15000"; 
+                cantidadCanchasGlobal = parseInt(d.data().canchas) || 1; 
+                duracionGlobal = parseInt(d.data().duracionTurno) || 90; 
+            }
             renderizarPantallas(); 
         });
 
-        // NUEVO: La ruta a las reservas ahora usa el clubID
         onSnapshot(collection(db, "clubes", clubID, "reservas"), (snap) => {
             reservasGlobales = []; snap.forEach((doc) => reservasGlobales.push({ id: doc.id, ...doc.data() })); renderizarPantallas(); 
         });
@@ -142,8 +146,12 @@
             if (window.aMinutos(hora) > window.aMinutos(ultimoTurno)) { alert("Horario fuera de límite."); return; }
             reservaEnProcesoHora = hora;
             document.getElementById('reserva-fecha-display').innerText = fechaSeleccionada; 
+            
             let hsTexto = duracionGlobal % 60 === 0 ? (duracionGlobal/60) : (duracionGlobal/60).toFixed(1);
             document.getElementById('reserva-hora-display').innerText = `${hora} hs (${hsTexto}h)`;
+            
+            // NUEVO: Agregamos el precio de forma dinámica
+            document.getElementById('reserva-precio-display').innerText = `$${precioGlobal}`;
             
             let bn = []; for(let b=0; b < duracionGlobal/30; b++) bn.push(window.sumarMinutos(hora, b * 30));
             let cOcupadas = new Set();
@@ -159,11 +167,11 @@
             document.getElementById('input-nombre-jugador').value = ""; document.getElementById('modal-reserva-jugador').style.display = 'flex';
         }
         window.cerrarModalReservaJugador = () => document.getElementById('modal-reserva-jugador').style.display = 'none';
+        
         window.confirmarReservaJugador = async () => {
             const nom = document.getElementById('input-nombre-jugador').value; const can = document.getElementById('select-cancha-modal').value;
             if (!nom) { alert("Ingresa tu Nombre y Apellido."); return; }
             try { 
-                // NUEVO: Guarda la reserva en la carpeta del club específico
                 await addDoc(collection(db, "clubes", clubID, "reservas"), { fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: can, jugador: nom, duracion: duracionGlobal, fechaRegistro: new Date(), asistencia: false, pagado: false, fijo: false }); 
                 alert("¡Reserva exitosa!"); cerrarModalReservaJugador(); 
             } catch (e) { alert("Error de conexión."); }
