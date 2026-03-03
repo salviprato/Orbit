@@ -31,6 +31,7 @@
         .tarjeta-reserva-grilla { background-color: #f6a74b; color: #171d24; border-left: 5px solid #d97706; transition: 0.1s; }
         .tarjeta-reserva-grilla:hover { filter: brightness(1.1); }
         .tarjeta-reserva-grilla.asistio { background-color: #3b82f6; color: #ffffff; border-left: 5px solid #1d4ed8; }
+        .celda-vacia-hover { transition: background-color 0.1s; }
         .celda-vacia-hover:hover { background-color: rgba(59, 130, 246, 0.15); cursor: pointer;}
         .mensaje-vacio { color: #9ca3af; text-align: center; margin-top: 20px; width: 100%; }
 
@@ -38,7 +39,14 @@
         .modal-content { background: #1e252d; padding: 25px; border-radius: 12px; width: 90%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; border: 1px solid #44505d; text-align: center; }
         .input-form { padding: 10px; border-radius: 6px; border: 1px solid #44505d; background-color: #171d24; color: white; color-scheme: dark; font-family: inherit; width: 100%; box-sizing: border-box; }
         .btn-modal { padding: 12px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; color: white; font-size: 1em; transition: 0.2s; width: 100%; box-sizing: border-box;}
-        .btn-guardar { background-color: #10b981; } .btn-asistencia { background-color: #3b82f6; } .btn-eliminar { background-color: #ef4444; } .btn-cerrar { background-color: #4b5563; }
+        
+        .btn-guardar { background-color: #10b981; } .btn-guardar:hover { background-color: #059669; }
+        .btn-asistencia { background-color: #3b82f6; } .btn-asistencia:hover { background-color: #2563eb; }
+        .btn-pago { background-color: #10b981; flex: 1;} .btn-pago:hover { background-color: #059669; }
+        .btn-nopago { background-color: #f59e0b; flex: 1;} .btn-nopago:hover { background-color: #d97706; }
+        .btn-eliminar { background-color: #ef4444; } .btn-eliminar:hover { background-color: #dc2626; }
+        .btn-cerrar { background-color: #4b5563; } .btn-cerrar:hover { background-color: #374151; }
+        
         .scroll-interno::-webkit-scrollbar { width: 6px; } .scroll-interno::-webkit-scrollbar-thumb { background: #44505d; border-radius: 4px; }
     </style>
 </head>
@@ -62,21 +70,22 @@
                 <button class="btn-logout" onclick="window.cerrarSesion()">Salir</button>
             </div>
         </div>
+
         <div id="calendario-club" class="calendario-strip"></div>
         <div id="lista-reservas-club"></div>
     </div>
 
     <div id="modal-config" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">⚙️ Configuración</h3>
+            <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">⚙️ Configuración del Club</h3>
             <div style="text-align: left; display: flex; flex-direction: column; gap: 15px;">
                 <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;"><label style="font-size: 0.9em; color: #d1d5db;">Primer Turno:</label><input type="time" id="input-primer-turno" class="input-form" style="margin-top: 4px;"></div>
-                    <div style="flex: 1;"><label style="font-size: 0.9em; color: #d1d5db;">Último Turno:</label><input type="time" id="input-ultimo-turno" class="input-form" style="margin-top: 4px;"></div>
+                    <div style="flex: 1;"><label style="font-size: 0.9em; color: #d1d5db;">Abre / Primer Turno:</label><input type="time" id="input-primer-turno" class="input-form" style="margin-top: 4px;"></div>
+                    <div style="flex: 1;"><label style="font-size: 0.9em; color: #d1d5db;">Cierra / Último Turno:</label><input type="time" id="input-ultimo-turno" class="input-form" style="margin-top: 4px;"></div>
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1;"><label style="font-size: 0.9em; color: #d1d5db;">Precio ($):</label><input type="number" id="input-precio" step="500" class="input-form" style="margin-top: 4px;"></div>
-                    <div style="flex: 1;"><label style="font-size: 0.9em; color: #d1d5db;">Canchas:</label><input type="number" id="input-canchas" min="1" max="20" class="input-form" style="margin-top: 4px;"></div>
+                    <div style="flex: 1;"><label style="font-size: 0.9em; color: #d1d5db;">N° Canchas:</label><input type="number" id="input-canchas" min="1" max="20" class="input-form" style="margin-top: 4px;"></div>
                 </div>
                 <div>
                     <label style="font-size: 0.9em; color: #d1d5db;">Duración Standard:</label>
@@ -94,7 +103,7 @@
 
     <div id="modal-metricas" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">📊 Métricas</h3>
+            <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">📊 Métricas de Reservas</h3>
             <div id="contenido-metricas" class="scroll-interno" style="text-align: left; max-height: 350px; overflow-y: auto;"></div>
             <button class="btn-modal btn-cerrar" style="margin-top: 15px;" onclick="window.cerrarModalMetricas()">Cerrar</button>
         </div>
@@ -105,10 +114,10 @@
             <h3 style="margin: 0; margin-bottom: 10px;">Gestionar Turno</h3>
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <button class="btn-modal btn-asistencia" onclick="window.accionAsistencia()">✔️ Confirmar Asistencia</button>
-                <button class="btn-modal btn-guardar" id="btn-toggle-fijo" onclick="window.accionFijarTurno()">📌 Fijar Turno</button>
+                <button class="btn-modal btn-cerrar" id="btn-toggle-fijo" onclick="window.accionFijarTurno()">📌 Fijar Turno</button>
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn-modal btn-cerrar" style="flex: 1;" onclick="window.accionPago()">✅ Pagado</button>
-                    <button class="btn-modal btn-cerrar" style="flex: 1;" onclick="window.accionNoPago()">❌ Pendiente</button>
+                    <button class="btn-modal btn-pago" onclick="window.accionPago()">✅ Pagado</button>
+                    <button class="btn-modal btn-nopago" onclick="window.accionNoPago()">❌ Pendiente</button>
                 </div>
                 <button class="btn-modal btn-eliminar" onclick="window.accionEliminar()">🗑️ Eliminar Reserva</button>
                 <button class="btn-modal btn-cerrar" onclick="window.cerrarModalAcciones()">Cancelar</button>
@@ -122,7 +131,7 @@
             <p style="margin: 0; color: #9ca3af; margin-bottom: 15px;"><strong id="reserva-fecha-display"></strong> | <strong id="reserva-hora-display"></strong></p>
             <div style="text-align: left; display: flex; flex-direction: column; gap: 15px;">
                 <div><label style="color: #d1d5db;">1. Cancha:</label><select id="select-cancha-modal" class="input-form"></select></div>
-                <div><label style="color: #d1d5db;">2. Jugador:</label><input type="text" id="input-nombre-jugador" class="input-form"></div>
+                <div><label style="color: #d1d5db;">2. Jugador:</label><input type="text" id="input-nombre-jugador" class="input-form" placeholder="Ej: Franco Aramayo"></div>
             </div>
             <button class="btn-modal btn-guardar" style="margin-top: 20px;" onclick="window.confirmarReservaAdmin()">Guardar Turno</button>
             <button class="btn-modal btn-cerrar" style="margin-top: 0;" onclick="window.cerrarModalReservaAdmin()">Cancelar</button>
@@ -134,13 +143,11 @@
         import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-        // --- NUEVO: DETECCIÓN DEL CLUB POR URL ---
         const urlParams = new URLSearchParams(window.location.search);
         const clubID = urlParams.get('club') || 'greenpoint'; 
         document.title = `Admin - ${clubID}`;
         document.getElementById('titulo-login').innerText = `Acceso: ${clubID}`;
         document.getElementById('nombre-panel-club').innerText = `Panel - ${clubID}`;
-        // -----------------------------------------
 
         const firebaseConfig = {
             apiKey: "AIzaSyAMRLDlarJiomWY4IX5c6CR3RFWHqmMu30", authDomain: "greenpoint-80ba8.firebaseapp.com",
@@ -158,31 +165,26 @@
         }
         window.cerrarSesion = () => signOut(auth);
 
-       onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, (user) => {
             if (user) {
-                // DICCIONARIO DE PERMISOS: Aquí conectas cada correo con su club
+                // AQUÍ AGREGAS LOS CORREOS Y SUS CLUBES PERMITIDOS
                 const permisos = {
                     "admin@greenpoint.com": "greenpoint",
                     "admin@padelpro.com": "padelpro",
-                    "tu_correo@gmail.com": "superadmin" // Este puede ver cualquier club
+                    "salviprato@gmail.com": "superadmin" // Reemplaza con tu correo personal real
                 };
 
                 const clubPermitido = permisos[user.email];
 
-                // Verificamos si tiene permiso para el club de la URL actual
                 if (clubPermitido === clubID || clubPermitido === "superadmin") {
-                    // Acceso concedido
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('admin-screen').style.display = 'block';
                     iniciarSistemaAdmin();
                 } else {
-                    // Acceso denegado (intentó entrar a un club que no le corresponde)
                     alert("Tu correo no tiene permisos para administrar este club.");
                     window.cerrarSesion();
                 }
-
             } else {
-                // No ha iniciado sesión
                 document.getElementById('login-screen').style.display = 'block';
                 document.getElementById('admin-screen').style.display = 'none';
             }
@@ -204,7 +206,6 @@
             }
             fechaSeleccionada = fechasValidas[0];
             
-            // NUEVO: Firebase lee la config del club específico
             onSnapshot(doc(db, "clubes", clubID, "configuracion", "ajustes"), (docSnap) => {
                 if (docSnap.exists()) {
                     let d = docSnap.data();
@@ -214,7 +215,6 @@
                 renderizarTodo();
             });
 
-            // NUEVO: Firebase lee las reservas del club específico
             onSnapshot(collection(db, "clubes", clubID, "reservas"), (snap) => {
                 reservasGlobales = []; snap.forEach(doc => reservasGlobales.push({ id: doc.id, ...doc.data() })); renderizarTodo();
             });
@@ -240,7 +240,7 @@
 
             let html = `<div class="contenedor-grilla"><div style="width: 55px; flex-shrink: 0; border-right: 1px solid #2c3540; background: #1e252d;"><div style="height: 40px; border-bottom: 1px solid #2c3540; background: #242c36;"></div>`; 
             for (let m = minActual; m < minFin; m += 30) {
-                let txt = (m % 60 === 0) ? `${Math.floor(m / 60)%24}:00` : ``;
+                let txt = (m % 60 === 0) ? `${(Math.floor(m / 60)%24).toString().padStart(2,'0')}:00` : ``;
                 html += `<div style="height: 40px; border-bottom: 1px ${m%60===0?'dashed rgba(255,255,255,0.05)':'solid #2c3540'}; text-align: center; color: #9ca3af; font-size: 0.8em; padding-top: 3px; box-sizing: border-box;">${txt}</div>`;
             }
             html += `</div>`;
@@ -253,7 +253,7 @@
                 resCancha.forEach(res => { for(let b=0; b < (res.duracion||90)/30; b++) bloqueOcupado.add(window.sumarMinutos(res.hora, b*30)); });
 
                 for (let m = minActual; m < minFin; m += 30) {
-                    let horaFmt = `${Math.floor(m/60).toString().padStart(2,'0')}:${(m%60).toString().padStart(2,'0')}`;
+                    let horaFmt = `${(Math.floor(m/60)%24).toString().padStart(2,'0')}:${(m%60).toString().padStart(2,'0')}`;
                     let extra = !bloqueOcupado.has(horaFmt) ? `class="celda-vacia-hover" style="cursor:pointer;" onclick="window.abrirModalReservaAdmin('${horaFmt}', '${c}')"` : ``;
                     html += `<div ${extra} style="height: 40px; border-bottom: 1px ${m%60===0?'dashed rgba(255,255,255,0.05)':'solid #2c3540'}; box-sizing: border-box;"></div>`;
                 }
@@ -261,7 +261,14 @@
                 resCancha.forEach(res => {
                     let minRes = window.aMinutos(res.hora); if (minRes < minActual && minFin > 1440) minRes += 1440;
                     let top = ((minRes - minActual) / 30) * 40 + 40; let height = ((res.duracion||90) / 30) * 40; 
-                    html += `<div class="tarjeta-reserva-grilla ${res.asistencia?'asistio':''}" onclick="window.abrirModal('${res.id}')" style="position: absolute; top: ${top}px; left: 4px; right: 4px; height: ${height-6}px; padding: 8px; font-size: 0.85em; overflow: hidden; border-radius: 6px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.4); display: flex; flex-direction: column; z-index: 10;"><span style="font-weight: 900; font-size: 1.1em; color: ${res.asistencia?'white':'#171d24'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${res.jugador}${res.fijo?' 📌':''}</span><span style="margin-top: 4px; color: ${res.asistencia?'white':'#171d24'}; opacity: 0.8; font-weight: 700;">${res.hora} hs</span><span style="margin-top: auto; font-weight: bold; color: ${res.asistencia?'white':'#171d24'};">Pago: ${res.pagado?'✅':'Pend'}</span></div>`;
+                    
+                    html += `
+                        <div class="tarjeta-reserva-grilla ${res.asistencia?'asistio':''}" onclick="window.abrirModal('${res.id}')" 
+                             style="position: absolute; top: ${top}px; left: 4px; right: 4px; height: ${height-6}px; padding: 8px; font-size: 0.85em; overflow: hidden; border-radius: 6px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.4); display: flex; flex-direction: column; z-index: 10;">
+                            <span style="font-weight: 900; font-size: 1.1em; color: ${res.asistencia?'white':'#171d24'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${res.jugador}${res.fijo?' 📌':''}</span>
+                            <span style="margin-top: 4px; color: ${res.asistencia?'white':'#171d24'}; opacity: 0.8; font-weight: 700;">${res.hora} hs</span>
+                            <span style="margin-top: auto; font-weight: bold; color: ${res.asistencia?'white':'#171d24'};">Pago: ${res.pagado?'✅':'Pend'}</span>
+                        </div>`;
                 });
                 html += `</div>`; 
             }
@@ -276,25 +283,24 @@
         window.guardarConfiguracion = async () => {
             const p = document.getElementById('input-primer-turno').value, u = document.getElementById('input-ultimo-turno').value;
             const pr = document.getElementById('input-precio').value, c = document.getElementById('input-canchas').value, d = document.getElementById('input-duracion').value;
-            // NUEVO: Guarda la config en la carpeta del club
             if(p && u && pr && c && d) { await setDoc(doc(db, "clubes", clubID, "configuracion", "ajustes"), { primerTurno: p, ultimoTurno: u, precioTurno: pr, canchas: c, duracionTurno: parseInt(d) }); window.cerrarModalConfig(); }
         }
 
         window.abrirModal = (id) => { 
             reservaSeleccionadaId = id; const res = reservasGlobales.find(r => r.id === id);
-            const btn = document.getElementById('btn-toggle-fijo'); btn.innerHTML = res.fijo ? "📌 Quitar Turno Fijo" : "📌 Fijar Turno"; btn.style.backgroundColor = res.fijo ? "#4b5563" : "#10b981";
+            const btn = document.getElementById('btn-toggle-fijo'); btn.innerHTML = res.fijo ? "📌 Quitar Turno Fijo" : "📌 Fijar Turno"; btn.style.backgroundColor = res.fijo ? "#4b5563" : "#4b5563";
             document.getElementById('modal-acciones').style.display = 'flex'; 
         }
         window.cerrarModalAcciones = () => { reservaSeleccionadaId = null; document.getElementById('modal-acciones').style.display = 'none'; }
         
-        // NUEVO: Todas las acciones actualizan dentro de la carpeta del club
         window.accionAsistencia = async () => { await updateDoc(doc(db, "clubes", clubID, "reservas", reservaSeleccionadaId), { asistencia: true }); window.cerrarModalAcciones(); }
         window.accionPago = async () => { await updateDoc(doc(db, "clubes", clubID, "reservas", reservaSeleccionadaId), { pagado: true }); window.cerrarModalAcciones(); }
         window.accionNoPago = async () => { await updateDoc(doc(db, "clubes", clubID, "reservas", reservaSeleccionadaId), { pagado: false }); window.cerrarModalAcciones(); }
-        window.accionEliminar = async () => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db, "clubes", clubID, "reservas", reservaSeleccionadaId)); window.cerrarModalAcciones(); } }
+        window.accionEliminar = async () => { if(confirm("¿Estás seguro de borrar este turno?")) { await deleteDoc(doc(db, "clubes", clubID, "reservas", reservaSeleccionadaId)); window.cerrarModalAcciones(); } }
         window.accionFijarTurno = async () => { const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId); await updateDoc(doc(db, "clubes", clubID, "reservas", reservaSeleccionadaId), { fijo: !res.fijo }); window.cerrarModalAcciones(); }
 
         window.abrirModalReservaAdmin = (hora, cancha) => {
+            if (window.aMinutos(hora) > window.aMinutos(ultimoTurno)) { alert("Horario fuera de límite."); return; }
             reservaEnProcesoHora = hora; document.getElementById('reserva-fecha-display').innerText = fechaSeleccionada; document.getElementById('reserva-hora-display').innerText = `${hora} hs`;
             const sel = document.getElementById('select-cancha-modal'); sel.innerHTML = `<option value="${cancha}">Cancha ${cancha}</option>`;
             document.getElementById('input-nombre-jugador').value = ""; document.getElementById('modal-reserva-admin').style.display = 'flex';
@@ -303,7 +309,6 @@
         
         window.confirmarReservaAdmin = async () => {
             const nom = document.getElementById('input-nombre-jugador').value;
-            // NUEVO: Agrega la reserva en la carpeta del club
             if (nom) { await addDoc(collection(db, "clubes", clubID, "reservas"), { fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: document.getElementById('select-cancha-modal').value, jugador: nom, duracion: duracionGlobal, fechaRegistro: new Date(), asistencia: false, pagado: false, fijo: false }); window.cerrarModalReservaAdmin(); }
         }
 
