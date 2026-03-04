@@ -124,7 +124,7 @@
         .scroll-interno::-webkit-scrollbar { width: 6px; }
         .scroll-interno::-webkit-scrollbar-thumb { background: #44505d; border-radius: 4px; }
         
-        .checkbox-dias label { cursor: pointer; color: #d1d5db; font-size: 0.9em; display: flex; align-items: center; gap: 5px;}
+        .checkbox-dias label, .checkbox-clase label { cursor: pointer; color: #d1d5db; font-size: 0.9em; display: flex; align-items: center; gap: 5px;}
         
         table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
         th { padding: 8px; text-align: left; border-bottom: 2px solid #44505d; color: #9ca3af; }
@@ -168,7 +168,6 @@
             <h2 style="margin: 0;">Panel de Control</h2>
             <div style="display: flex; gap: 15px;">
                 <button onclick="window.abrirModalFinanzas()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #9ca3af; transition: 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#9ca3af'" title="Finanzas e Inventario">💰</button>
-                <button onclick="window.abrirModalMetricas()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #9ca3af; transition: 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#9ca3af'" title="Métricas del Club">📊</button>
                 <button onclick="window.abrirModalConfig()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #9ca3af; transition: 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#9ca3af'" title="Configuración del Club">⚙️</button>
             </div>
         </div>
@@ -211,7 +210,7 @@
             <div style="text-align: left; display: flex; flex-direction: column; gap: 12px;">
                 <div style="background: #242c36; padding: 10px; border-radius: 6px; border: 1px solid #44505d;">
                     <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">1. Elegir Profe (Opcional):</label>
-                    <input type="text" id="admin-input-profe" class="input-form" placeholder="Nombre del profesor de pádel" style="margin-top: 5px;">
+                    <input type="text" id="admin-input-profe" class="input-form" placeholder="Nombre del profesor" style="margin-top: 5px;">
                     <small style="color: #9ca3af; font-size: 0.8em; display: block; margin-top: 5px;">Si escribes un nombre, este turno se guardará automáticamente como una Clase.</small>
                 </div>
                 <div>
@@ -488,7 +487,7 @@
     <div id="modal-config" class="modal-overlay">
         <div class="modal-content">
             <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">⚙️ Configuración del Club</h3>
-            <div style="text-align: left; display: flex; flex-direction: column; gap: 15px;">
+            <div class="scroll-interno" style="text-align: left; display: flex; flex-direction: column; gap: 15px; max-height: 70vh; overflow-y: auto; padding-right: 5px;">
                 <div style="display: flex; gap: 10px; justify-content: space-between;">
                     <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Primer Turno:</label><input type="time" id="input-primer-turno" class="input-form" style="margin-top: 4px;"></div>
                     <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Último Turno:</label><input type="time" id="input-ultimo-turno" class="input-form" style="margin-top: 4px;"></div>
@@ -505,14 +504,20 @@
                         <label><input type="checkbox" id="dia-0"> Do</label>
                     </div>
                 </div>
+                
                 <div style="display: flex; gap: 10px; justify-content: space-between; border-top: 1px solid #2c3540; padding-top: 10px;">
-                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Cant. Indoor:</label><input type="number" id="input-canchas-in" min="0" class="input-form" style="margin-top: 4px;"></div>
-                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Precio Indoor:</label><input type="number" id="input-precio-in" step="500" class="input-form" style="margin-top: 4px;"></div>
+                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Cant. Pádel Indoor:</label><input type="number" id="input-canchas-in" min="0" class="input-form" style="margin-top: 4px;"></div>
+                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Precio P. Indoor:</label><input type="number" id="input-precio-in" step="500" class="input-form" style="margin-top: 4px;"></div>
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: space-between;">
-                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Cant. Outdoor:</label><input type="number" id="input-canchas-out" min="0" class="input-form" style="margin-top: 4px;"></div>
-                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Precio Outdoor:</label><input type="number" id="input-precio-out" step="500" class="input-form" style="margin-top: 4px;"></div>
+                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Cant. Pádel Outdoor:</label><input type="number" id="input-canchas-out" min="0" class="input-form" style="margin-top: 4px;"></div>
+                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Precio P. Outdoor:</label><input type="number" id="input-precio-out" step="500" class="input-form" style="margin-top: 4px;"></div>
                 </div>
+                <div style="display: flex; gap: 10px; justify-content: space-between; border-top: 1px solid #2c3540; padding-top: 10px;">
+                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Cant. Tenis:</label><input type="number" id="input-canchas-tenis" min="0" class="input-form" style="margin-top: 4px;"></div>
+                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Precio Tenis:</label><input type="number" id="input-precio-tenis" step="500" class="input-form" style="margin-top: 4px;"></div>
+                </div>
+
                 <div>
                     <label style="font-size: 0.85em; color: #d1d5db;">Duración Standard:</label>
                     <select id="input-duracion" class="input-form" style="margin-top: 4px;">
@@ -524,14 +529,6 @@
             </div>
             <button class="btn-modal btn-gasto" style="margin-top: 20px;" onclick="window.guardarConfiguracion()">Guardar Todo</button>
             <button class="btn-modal btn-cerrar" style="margin-top: 0;" onclick="window.cerrarModalConfig()">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="modal-metricas" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">📊 Métricas de Reservas</h3>
-            <div id="contenido-metricas" class="scroll-interno" style="text-align: left; max-height: 350px; overflow-y: auto; padding-right: 5px;"></div>
-            <button class="btn-modal btn-cerrar" style="margin-top: 15px;" onclick="window.cerrarModalMetricas()">Cerrar</button>
         </div>
     </div>
 
@@ -603,10 +600,15 @@
         let primerTurno = "08:00"; 
         let ultimoTurno = "21:30";   
         let duracionGlobal = 90; 
+        
         let canchasIndoorGlobal = 1;
         let canchasOutdoorGlobal = 0;
+        let canchasTenisGlobal = 0;
+        
         let precioIndoorGlobal = "15000";
         let precioOutdoorGlobal = "12000";
+        let precioTenisGlobal = "10000";
+
         let diasAbiertosGlobal = [0,1,2,3,4,5,6]; 
 
         let reservasGlobales = [];
@@ -882,8 +884,17 @@
             let clasesPendientes = reservasGlobales.filter(r => {
                 if(!r.esClase) return false;
                 
-                let esIndoor = parseInt(r.cancha || "1") <= canchasIndoorGlobal;
-                let pCancha = parseInt(esIndoor ? precioIndoorGlobal : precioOutdoorGlobal) || 0;
+                // Buscar precio correspondiente a la cancha asignada a la clase
+                let pCancha = 0;
+                let numC = parseInt(r.cancha || "1");
+                if (numC <= canchasIndoorGlobal) {
+                    pCancha = parseInt(precioIndoorGlobal);
+                } else if (numC <= (canchasIndoorGlobal + canchasOutdoorGlobal)) {
+                    pCancha = parseInt(precioOutdoorGlobal);
+                } else {
+                    pCancha = parseInt(precioTenisGlobal);
+                }
+
                 let cConsumos = (r.consumos || []).reduce((acc, c) => acc + parseFloat(c.precio), 0);
                 let totalACobrar = pCancha + cConsumos;
                 
@@ -951,7 +962,6 @@
                 window.cerrarModalCobrarClase();
             } catch(e) { alert("Error al registrar el cobro de la clase."); }
         }
-
 
         // BALANCES
         window.generarBalance = async function() {
@@ -1027,9 +1037,7 @@
             balancesGlobal = []; snapshot.forEach((doc) => balancesGlobal.push({ id: doc.id, ...doc.data() })); renderizarBalances(); 
         });
 
-        // --- GESTIÓN DE TURNOS Y RESERVAS ADMIN ---
-        
-        // Abre el modal de Gestión cuando se toca un turno ya creado
+        // --- GESTIÓN DE TURNOS ---
         window.abrirModal = function(id) { 
             reservaSeleccionadaId = id; 
             const res = reservasGlobales.find(r => r.id === id);
@@ -1054,14 +1062,22 @@
             document.getElementById('btn-whatsapp').style.display = (res.telefono && res.telefono.trim() !== "") ? 'block' : 'none';
             document.getElementById('btn-excepcion').style.display = res.fijo ? 'block' : 'none';
 
-            let esIndoor = parseInt(res.cancha || "1") <= canchasIndoorGlobal;
-            let precioCanchaTurno = parseInt(esIndoor ? precioIndoorGlobal : precioOutdoorGlobal) || 0;
+            // Determinar precio según tipo de cancha
+            let pCancha = 0;
+            let numC = parseInt(res.cancha || "1");
+            if (numC <= canchasIndoorGlobal) {
+                pCancha = parseInt(precioIndoorGlobal);
+            } else if (numC <= (canchasIndoorGlobal + canchasOutdoorGlobal)) {
+                pCancha = parseInt(precioOutdoorGlobal);
+            } else {
+                pCancha = parseInt(precioTenisGlobal);
+            }
             
             let consumos = res.consumos || [];
             let totalConsumos = consumos.reduce((acc, curr) => acc + (parseFloat(curr.precio) || 0), 0);
-            let totalGeneral = precioCanchaTurno + totalConsumos;
+            let totalGeneral = pCancha + totalConsumos;
 
-            document.getElementById('res-precio-cancha').innerText = `$${precioCanchaTurno}`;
+            document.getElementById('res-precio-cancha').innerText = `$${pCancha}`;
             document.getElementById('res-precio-consumos').innerText = `$${totalConsumos}`;
             document.getElementById('res-precio-total').innerText = `$${totalGeneral}`;
 
@@ -1133,8 +1149,16 @@
             const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
             if(!res) return;
 
-            let esIndoor = parseInt(res.cancha || "1") <= canchasIndoorGlobal;
-            let pCancha = parseInt(esIndoor ? precioIndoorGlobal : precioOutdoorGlobal) || 0;
+            let pCancha = 0;
+            let numC = parseInt(res.cancha || "1");
+            if (numC <= canchasIndoorGlobal) {
+                pCancha = parseInt(precioIndoorGlobal);
+            } else if (numC <= (canchasIndoorGlobal + canchasOutdoorGlobal)) {
+                pCancha = parseInt(precioOutdoorGlobal);
+            } else {
+                pCancha = parseInt(precioTenisGlobal);
+            }
+
             let cConsumos = (res.consumos || []).reduce((acc, c) => acc + parseFloat(c.precio), 0);
             let tGen = pCancha + cConsumos;
 
@@ -1172,8 +1196,22 @@
                 const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
                 if(res && res.telefono) {
                     let numeroLimpio = res.telefono.replace(/\D/g,''); 
-                    let esIndoor = parseInt(res.cancha || "1") <= canchasIndoorGlobal;
-                    let mensaje = `te recordamos que tenes un turno a las ${res.hora} ${esIndoor ? "indoor" : "outdoor"} con un precio de $${esIndoor ? precioIndoorGlobal : precioOutdoorGlobal}, Te esperamos`;
+                    
+                    let pCancha = 0;
+                    let tipoCancha = "indoor";
+                    let numC = parseInt(res.cancha || "1");
+                    if (numC <= canchasIndoorGlobal) {
+                        pCancha = parseInt(precioIndoorGlobal);
+                        tipoCancha = "Pádel Indoor";
+                    } else if (numC <= (canchasIndoorGlobal + canchasOutdoorGlobal)) {
+                        pCancha = parseInt(precioOutdoorGlobal);
+                        tipoCancha = "Pádel Outdoor";
+                    } else {
+                        pCancha = parseInt(precioTenisGlobal);
+                        tipoCancha = "Tenis";
+                    }
+
+                    let mensaje = `te recordamos que tenes un turno a las ${res.hora} en cancha de ${tipoCancha} con un precio de $${pCancha}, Te esperamos`;
                     window.open(`https://wa.me/${numeroLimpio}?text=${encodeURIComponent(mensaje)}`, '_blank');
                 }
             }
@@ -1199,136 +1237,9 @@
             }
         }
 
-        // --- RESERVA DESDE VISTA JUGADOR (PÚBLICA) ---
-        window.abrirModalReservaJugador = function(hora) {
-            let minInicio = window.aMinutos(hora);
-            let minUltimo = window.aMinutos(ultimoTurno);
-            if (minInicio > minUltimo) { alert("Horario excede el límite del club."); return; }
-            if(esHoraPasada(hora)) { alert("No puedes reservar un horario que ya pasó."); return; }
-
-            reservaEnProcesoHora = hora;
-            const partes = fechaSeleccionada.split('-');
-            const f = new Date(partes[0], partes[1] - 1, partes[2]);
-            document.getElementById('reserva-fecha-display').innerText = `${f.getDate()}/${f.getMonth() + 1}/${f.getFullYear()}`;
-            document.getElementById('reserva-hora-display').innerText = `${hora} hs (${duracionGlobal/60}h)`;
-
-            const dowNumSelected = window.getDayOfWeekFromDate(fechaSeleccionada);
-            const numBloquesNuevo = duracionGlobal / 30;
-            let bloquesNuevos = [];
-            for(let b=0; b < numBloquesNuevo; b++) { bloquesNuevos.push(window.sumarMinutos(hora, b * 30)); }
-
-            let canchasOcupadas = new Set();
-            reservasGlobales.forEach(r => {
-                let aplica = false;
-                let canceladas = r.fechasCanceladas || [];
-                if ((r.fecha || fechasValidas[0]) === fechaSeleccionada && !canceladas.includes(fechaSeleccionada)) aplica = true;
-                if (r.fijo === true && window.getDayOfWeekFromDate(r.fecha) === dowNumSelected && !canceladas.includes(fechaSeleccionada)) aplica = true;
-
-                if (aplica) {
-                    let resDuracion = r.duracion || 90;
-                    let numBloquesRes = resDuracion / 30;
-                    let bloquesRes = [];
-                    for(let b=0; b < numBloquesRes; b++) { bloquesRes.push(window.sumarMinutos(r.hora, b * 30)); }
-                    if(bloquesNuevos.some(b => bloquesRes.includes(b))) canchasOcupadas.add(parseInt(r.cancha || "1"));
-                }
-            });
-
-            let indoorLibres = [];
-            for(let c=1; c<=canchasIndoorGlobal; c++) { if(!canchasOcupadas.has(c)) indoorLibres.push(c); }
-            let outdoorLibres = [];
-            let totalCanchas = canchasIndoorGlobal + canchasOutdoorGlobal;
-            for(let c=canchasIndoorGlobal+1; c<=totalCanchas; c++) { if(!canchasOcupadas.has(c)) outdoorLibres.push(c); }
-
-            const selectTipo = document.getElementById('select-cancha-modal');
-            selectTipo.innerHTML = '';
-            
-            if(indoorLibres.length > 0) selectTipo.innerHTML += `<option value="${indoorLibres[0]}" style="color: black;">Indoor ($${precioIndoorGlobal})</option>`;
-            if(outdoorLibres.length > 0) selectTipo.innerHTML += `<option value="${outdoorLibres[0]}" style="color: black;">Outdoor ($${precioOutdoorGlobal})</option>`;
-
-            if (indoorLibres.length === 0 && outdoorLibres.length === 0) { alert("No quedan canchas libres."); return; }
-
-            document.getElementById('input-nombre-jugador').value = ""; document.getElementById('input-telefono-jugador').value = ""; 
-            document.getElementById('modal-reserva-jugador').style.display = 'flex';
-        }
-
-        window.cerrarModalReservaJugador = function() { reservaEnProcesoHora = null; document.getElementById('modal-reserva-jugador').style.display = 'none'; }
-
-        window.confirmarReservaJugador = async function() {
-            const inputNombre = document.getElementById('input-nombre-jugador').value;
-            const inputTelefono = document.getElementById('input-telefono-jugador').value;
-            const canchaAsignada = document.getElementById('select-cancha-modal').value;
-
-            if (!inputNombre || inputNombre.trim() === "") { alert("Por favor, ingresa Nombre y Apellido."); return; }
-            if (!inputTelefono || inputTelefono.trim() === "") { alert("Por favor, ingresa tu número de Teléfono."); return; }
-
-            try {
-                await addDoc(collection(db, "reservas"), { 
-                    fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: canchaAsignada, 
-                    jugador: inputNombre, telefono: inputTelefono, duracion: duracionGlobal, 
-                    fechaRegistro: serverTimestamp(), asistencia: false, fijo: false, fechasCanceladas: [],
-                    pagoEfectivo: 0, pagoTransferencia: 0, consumos: [],
-                    esClase: false, profe: null
-                });
-                alert("¡Reserva guardada con éxito!");
-                window.cerrarModalReservaJugador();
-            } catch (error) { alert("Hubo un error de conexión."); }
-        }
-
-        // --- RESERVA DESDE VISTA ADMIN (GRILLA) ---
-        window.abrirModalReservaAdmin = function(hora, cancha) {
-            let minInicio = window.aMinutos(hora);
-            let minUltimo = window.aMinutos(ultimoTurno);
-            if (minInicio > minUltimo) { alert("Horario excede el límite del club."); return; }
-            if(esHoraPasada(hora)) { alert("No puedes reservar un horario que ya pasó."); return; }
-
-            reservaEnProcesoHora = hora;
-            document.getElementById('admin-cancha-id').value = cancha;
-
-            const partes = fechaSeleccionada.split('-');
-            const f = new Date(partes[0], partes[1] - 1, partes[2]);
-            document.getElementById('admin-fecha-display').innerText = `${f.getDate()}/${f.getMonth() + 1}/${f.getFullYear()}`;
-            document.getElementById('admin-hora-display').innerText = `${hora} hs (${duracionGlobal/60}h)`;
-            
-            let esIndoor = parseInt(cancha) <= canchasIndoorGlobal;
-            document.getElementById('admin-cancha-display').innerText = `Cancha ${cancha} (${esIndoor ? 'Indoor' : 'Outdoor'})`;
-
-            document.getElementById('admin-input-profe').value = ""; 
-            document.getElementById('admin-input-jugador').value = ""; 
-            document.getElementById('admin-input-telefono').value = ""; 
-            
-            document.getElementById('modal-reserva-admin').style.display = 'flex';
-        }
-
-        window.cerrarModalReservaAdmin = function() { reservaEnProcesoHora = null; document.getElementById('modal-reserva-admin').style.display = 'none'; }
-
-        window.confirmarReservaAdmin = async function() {
-            const inputProfe = document.getElementById('admin-input-profe').value.trim();
-            const inputNombre = document.getElementById('admin-input-jugador').value;
-            const inputTelefono = document.getElementById('admin-input-telefono').value;
-            const canchaAsignada = document.getElementById('admin-cancha-id').value;
-
-            if (!inputNombre || inputNombre.trim() === "") { alert("Por favor, ingresa Nombre y Apellido del alumno/cliente."); return; }
-            
-            const esClase = inputProfe !== "";
-
-            try {
-                await addDoc(collection(db, "reservas"), { 
-                    fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: canchaAsignada, 
-                    jugador: inputNombre, telefono: inputTelefono, duracion: duracionGlobal, 
-                    fechaRegistro: serverTimestamp(), asistencia: false, fijo: false, fechasCanceladas: [],
-                    pagoEfectivo: 0, pagoTransferencia: 0, consumos: [],
-                    esClase: esClase, profe: esClase ? inputProfe : null
-                });
-                window.cerrarModalReservaAdmin();
-            } catch (error) { alert("Hubo un error de conexión."); }
-        }
-
-
-        // --- CONFIGURACIÓN Y MÉTRICAS ---
+        // --- CONFIGURACIÓN ---
         window.abrirModalConfig = function() { document.getElementById('modal-config').style.display = 'flex'; }
         window.cerrarModalConfig = function() { document.getElementById('modal-config').style.display = 'none'; }
-        window.abrirModalMetricas = function() { document.getElementById('modal-metricas').style.display = 'flex'; }
-        window.cerrarModalMetricas = function() { document.getElementById('modal-metricas').style.display = 'none'; }
 
         window.guardarConfiguracion = async function() {
             let diasCheck = [];
@@ -1338,6 +1249,7 @@
                     primerTurno: document.getElementById('input-primer-turno').value, ultimoTurno: document.getElementById('input-ultimo-turno').value, 
                     canchasIndoor: parseInt(document.getElementById('input-canchas-in').value) || 0, precioIndoor: document.getElementById('input-precio-in').value || "0",
                     canchasOutdoor: parseInt(document.getElementById('input-canchas-out').value) || 0, precioOutdoor: document.getElementById('input-precio-out').value || "0",
+                    canchasTenis: parseInt(document.getElementById('input-canchas-tenis').value) || 0, precioTenis: document.getElementById('input-precio-tenis').value || "0",
                     duracionTurno: parseInt(document.getElementById('input-duracion').value) || 90, diasAbiertos: diasCheck
                 }); 
                 window.cerrarModalConfig();
@@ -1351,13 +1263,16 @@
                 duracionGlobal = parseInt(data.duracionTurno) || 90; 
                 canchasIndoorGlobal = isNaN(parseInt(data.canchasIndoor)) ? 1 : parseInt(data.canchasIndoor); 
                 canchasOutdoorGlobal = parseInt(data.canchasOutdoor) || 0;
+                canchasTenisGlobal = parseInt(data.canchasTenis) || 0;
                 precioIndoorGlobal = data.precioIndoor || "15000"; precioOutdoorGlobal = data.precioOutdoor || "12000";
+                precioTenisGlobal = data.precioTenis || "10000";
                 diasAbiertosGlobal = data.diasAbiertos || [0,1,2,3,4,5,6]; 
                 
                 document.getElementById('input-primer-turno').value = primerTurno; document.getElementById('input-ultimo-turno').value = ultimoTurno;
                 document.getElementById('input-duracion').value = duracionGlobal;
                 document.getElementById('input-canchas-in').value = canchasIndoorGlobal; document.getElementById('input-precio-in').value = precioIndoorGlobal;
                 document.getElementById('input-canchas-out').value = canchasOutdoorGlobal; document.getElementById('input-precio-out').value = precioOutdoorGlobal;
+                document.getElementById('input-canchas-tenis').value = canchasTenisGlobal; document.getElementById('input-precio-tenis').value = precioTenisGlobal;
 
                 [0,1,2,3,4,5,6].forEach(d => {
                     const cb = document.getElementById('dia-'+d);
@@ -1367,8 +1282,17 @@
             renderizarPantallas(); 
         });
 
+        onSnapshot(collection(db, "reservas"), (snapshot) => {
+            reservasGlobales = [];
+            snapshot.forEach((doc) => reservasGlobales.push({ id: doc.id, ...doc.data() }));
+            renderizarPantallas(); 
+            renderizarIngresos(); 
+            renderizarClasesPendientes(); 
+            if(reservaSeleccionadaId) renderizarModalTurnoAcciones(); 
+        });
+
         window.renderizarPantallas = function() {
-            const totalCanchas = canchasIndoorGlobal + canchasOutdoorGlobal;
+            const totalCanchas = canchasIndoorGlobal + canchasOutdoorGlobal + canchasTenisGlobal;
             const dowNumSelected = window.getDayOfWeekFromDate(fechaSeleccionada);
 
             // 1. VISTA JUGADOR
@@ -1403,14 +1327,29 @@
                         }
                     });
 
-                    let canchasLibres = totalCanchas - canchasOcupadas.size;
+                    let indoorLibres = [];
+                    for(let c=1; c<=canchasIndoorGlobal; c++) { if(!canchasOcupadas.has(c)) indoorLibres.push(c); }
+                    let outdoorLibres = [];
+                    let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+                    for(let c=canchasIndoorGlobal+1; c<=maxPadel; c++) { if(!canchasOcupadas.has(c)) outdoorLibres.push(c); }
+                    let tenisLibres = [];
+                    for(let c=maxPadel+1; c<=totalCanchas; c++) { if(!canchasOcupadas.has(c)) tenisLibres.push(c); }
+
+                    let canchasLibresTotal = totalCanchas - canchasOcupadas.size;
                     let hsTexto = duracionGlobal % 60 === 0 ? (duracionGlobal/60) : (duracionGlobal/60).toFixed(1);
 
-                    if (canchasLibres > 0) {
+                    if (canchasLibresTotal > 0) {
                         const div = document.createElement('div'); div.className = 'turno-item';
                         div.onclick = () => window.abrirModalReservaJugador(hora);
-                        let textoCanchas = canchasLibres === 1 ? "1 libre" : `${canchasLibres} libres`;
-                        div.innerHTML = `<span class="punto-verde"></span><span class="hora">${hora} hs | </span><span class="texto-disponible">Turno ${hsTexto} hs</span><span class="texto-canchas-disp">${textoCanchas}</span>`;
+                        
+                        let textoDisp = [];
+                        if(indoorLibres.length > 0) textoDisp.push(`${indoorLibres.length} In`);
+                        if(outdoorLibres.length > 0) textoDisp.push(`${outdoorLibres.length} Out`);
+                        if(tenisLibres.length > 0) textoDisp.push(`${tenisLibres.length} Tenis`);
+                        
+                        let textoCanchas = textoDisp.join(' / ');
+                        
+                        div.innerHTML = `<span class="punto-verde"></span><span class="hora">${hora} hs | </span><span class="texto-disponible">Turno ${hsTexto} hs</span><span class="texto-canchas-disp">${textoCanchas} libres</span>`;
                         contenedorHorarios.appendChild(div);
                     }
                 });
@@ -1447,12 +1386,20 @@
             }
             htmlGrilla += `</div>`;
 
+            let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+
             for(let c = 1; c <= totalCanchas; c++) {
                 htmlGrilla += `<div style="flex: 1; min-width: 140px; border-right: 1px solid #2c3540; position: relative;">`;
                 
-                let esIndoor = c <= canchasIndoorGlobal;
-                let tipoLabel = esIndoor ? "Indoor" : "Outdoor";
-                let colorTipo = esIndoor ? "#d1d5db" : "#9ca3af"; 
+                let tipoLabel = "";
+                let colorTipo = "";
+                if(c <= canchasIndoorGlobal) {
+                    tipoLabel = "Pádel Indoor"; colorTipo = "#d1d5db";
+                } else if(c <= maxPadel) {
+                    tipoLabel = "Pádel Outdoor"; colorTipo = "#9ca3af";
+                } else {
+                    tipoLabel = "Tenis"; colorTipo = "#f59e0b"; // Naranja sutil para tenis
+                }
                 
                 htmlGrilla += `<div style="height: 50px; border-bottom: 1px solid #2c3540; text-align: center; background: #242c36; font-size: 0.9em; display:flex; flex-direction:column; justify-content:center;">
                                 <span style="font-weight: bold;" class="text-neutral-main">Cancha ${c}</span>
@@ -1478,7 +1425,6 @@
                     
                     let htmlExtra = "";
                     if (!bloquesOcupadosCancha.has(horaFormateada)) {
-                        // AQUÍ SE ABRE EL MODAL DEL ADMIN AL TOCAR LA GRILLA
                         htmlExtra = `class="celda-vacia-hover" style="height: 40px; ${borderStyle} box-sizing: border-box; cursor: pointer;" onclick="window.abrirModalReservaAdmin('${horaFormateada}', '${c}')"`;
                     } else {
                         htmlExtra = `style="height: 40px; ${borderStyle} box-sizing: border-box;"`;
@@ -1498,7 +1444,16 @@
                     let textoFijo = res.fijo === true ? ' 📌' : '';
                     let textoProfe = res.esClase ? `<br><span style="font-size:0.85em; color:#d1d5db;">🧑‍🏫 ${res.profe}</span>` : '';
 
-                    let pCancha = parseInt(esIndoor ? precioIndoorGlobal : precioOutdoorGlobal) || 0;
+                    let pCancha = 0;
+                    let numC = parseInt(res.cancha || "1");
+                    if (numC <= canchasIndoorGlobal) {
+                        pCancha = parseInt(precioIndoorGlobal);
+                    } else if (numC <= maxPadel) {
+                        pCancha = parseInt(precioOutdoorGlobal);
+                    } else {
+                        pCancha = parseInt(precioTenisGlobal);
+                    }
+
                     let cConsumos = (res.consumos || []).reduce((acc, curr) => acc + parseFloat(curr.precio), 0);
                     let tGen = pCancha + cConsumos;
                     let tAbonado = (parseFloat(res.pagoEfectivo) || 0) + (parseFloat(res.pagoTransferencia) || 0);
