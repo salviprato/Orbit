@@ -456,12 +456,12 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // CONEXIÓN ORBIT (PADEL)
+        // CONEXIÓN GREENPOINT (PADEL)
         const firebaseConfig = {
             apiKey: "AIzaSyAMRLDlarJiomWY4IX5c6CR3RFWHqmMu30",
-            authDomain: "orbit-80ba8.firebaseapp.com",
-            projectId: "orbit-80ba8",
-            storageBucket: "orbit-80ba8.firebasestorage.app",
+            authDomain: "greenpoint-80ba8.firebaseapp.com",
+            projectId: "greenpoint-80ba8",
+            storageBucket: "greenpoint-80ba8.firebasestorage.app",
             messagingSenderId: "553295919513",
             appId: "1:553295919513:web:79d5da1a535e3835e0bb08"
         };
@@ -909,6 +909,12 @@
             document.getElementById('res-precio-cancha').innerText = `$${precioCanchaTurno}`;
             document.getElementById('res-precio-consumos').innerText = `$${totalConsumos}`;
             document.getElementById('res-precio-total').innerText = `$${totalGeneral}`;
+
+            let sel = document.getElementById('select-consumo-turno');
+            sel.innerHTML = '<option value="" disabled selected>Elegir producto...</option>';
+            inventarioGlobal.sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(p => {
+                sel.innerHTML += `<option value="${p.id}">${p.nombre} - $${p.precio}</option>`;
+            });
 
             let ul = document.getElementById('lista-consumos-turno');
             ul.innerHTML = '';
