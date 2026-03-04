@@ -124,7 +124,7 @@
         .scroll-interno::-webkit-scrollbar { width: 6px; }
         .scroll-interno::-webkit-scrollbar-thumb { background: #44505d; border-radius: 4px; }
         
-        .checkbox-dias label, .checkbox-clase label { cursor: pointer; color: #d1d5db; font-size: 0.9em; display: flex; align-items: center; gap: 5px;}
+        .checkbox-dias label { cursor: pointer; color: #d1d5db; font-size: 0.9em; display: flex; align-items: center; gap: 5px;}
         
         table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
         th { padding: 8px; text-align: left; border-bottom: 2px solid #44505d; color: #9ca3af; }
@@ -887,9 +887,11 @@
                 // Buscar precio correspondiente a la cancha asignada a la clase
                 let pCancha = 0;
                 let numC = parseInt(r.cancha || "1");
+                let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+                
                 if (numC <= canchasIndoorGlobal) {
                     pCancha = parseInt(precioIndoorGlobal);
-                } else if (numC <= (canchasIndoorGlobal + canchasOutdoorGlobal)) {
+                } else if (numC <= maxPadel) {
                     pCancha = parseInt(precioOutdoorGlobal);
                 } else {
                     pCancha = parseInt(precioTenisGlobal);
@@ -1062,12 +1064,13 @@
             document.getElementById('btn-whatsapp').style.display = (res.telefono && res.telefono.trim() !== "") ? 'block' : 'none';
             document.getElementById('btn-excepcion').style.display = res.fijo ? 'block' : 'none';
 
-            // Determinar precio según tipo de cancha
             let pCancha = 0;
             let numC = parseInt(res.cancha || "1");
+            let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+            
             if (numC <= canchasIndoorGlobal) {
                 pCancha = parseInt(precioIndoorGlobal);
-            } else if (numC <= (canchasIndoorGlobal + canchasOutdoorGlobal)) {
+            } else if (numC <= maxPadel) {
                 pCancha = parseInt(precioOutdoorGlobal);
             } else {
                 pCancha = parseInt(precioTenisGlobal);
@@ -1151,9 +1154,11 @@
 
             let pCancha = 0;
             let numC = parseInt(res.cancha || "1");
+            let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+            
             if (numC <= canchasIndoorGlobal) {
                 pCancha = parseInt(precioIndoorGlobal);
-            } else if (numC <= (canchasIndoorGlobal + canchasOutdoorGlobal)) {
+            } else if (numC <= maxPadel) {
                 pCancha = parseInt(precioOutdoorGlobal);
             } else {
                 pCancha = parseInt(precioTenisGlobal);
@@ -1200,10 +1205,12 @@
                     let pCancha = 0;
                     let tipoCancha = "indoor";
                     let numC = parseInt(res.cancha || "1");
+                    let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+                    
                     if (numC <= canchasIndoorGlobal) {
                         pCancha = parseInt(precioIndoorGlobal);
                         tipoCancha = "Pádel Indoor";
-                    } else if (numC <= (canchasIndoorGlobal + canchasOutdoorGlobal)) {
+                    } else if (numC <= maxPadel) {
                         pCancha = parseInt(precioOutdoorGlobal);
                         tipoCancha = "Pádel Outdoor";
                     } else {
@@ -1237,25 +1244,144 @@
             }
         }
 
-        // --- CONFIGURACIÓN ---
-        window.abrirModalConfig = function() { document.getElementById('modal-config').style.display = 'flex'; }
-        window.cerrarModalConfig = function() { document.getElementById('modal-config').style.display = 'none'; }
+        // --- RESERVA DESDE VISTA JUGADOR (PÚBLICA) ---
+        window.abrirModalReservaJugador = function(hora) {
+            let minInicio = window.aMinutos(hora);
+            let minUltimo = window.aMinutos(ultimoTurno);
+            if (minInicio > minUltimo) { alert("Horario excede el límite del club."); return; }
+            if(esHoraPasada(hora)) { alert("No puedes reservar un horario que ya pasó."); return; }
 
-        window.guardarConfiguracion = async function() {
-            let diasCheck = [];
-            [0,1,2,3,4,5,6].forEach(d => { if(document.getElementById('dia-'+d).checked) diasCheck.push(d); });
-            try { 
-                await setDoc(doc(db, "configuracion", "club"), { 
-                    primerTurno: document.getElementById('input-primer-turno').value, ultimoTurno: document.getElementById('input-ultimo-turno').value, 
-                    canchasIndoor: parseInt(document.getElementById('input-canchas-in').value) || 0, precioIndoor: document.getElementById('input-precio-in').value || "0",
-                    canchasOutdoor: parseInt(document.getElementById('input-canchas-out').value) || 0, precioOutdoor: document.getElementById('input-precio-out').value || "0",
-                    canchasTenis: parseInt(document.getElementById('input-canchas-tenis').value) || 0, precioTenis: document.getElementById('input-precio-tenis').value || "0",
-                    duracionTurno: parseInt(document.getElementById('input-duracion').value) || 90, diasAbiertos: diasCheck
-                }); 
-                window.cerrarModalConfig();
-            } catch (error) { alert("Error al guardar."); }
+            reservaEnProcesoHora = hora;
+            const partes = fechaSeleccionada.split('-');
+            const f = new Date(partes[0], partes[1] - 1, partes[2]);
+            document.getElementById('reserva-fecha-display').innerText = `${f.getDate()}/${f.getMonth() + 1}/${f.getFullYear()}`;
+            document.getElementById('reserva-hora-display').innerText = `${hora} hs (${duracionGlobal/60}h)`;
+
+            const dowNumSelected = window.getDayOfWeekFromDate(fechaSeleccionada);
+            const numBloquesNuevo = duracionGlobal / 30;
+            let bloquesNuevos = [];
+            for(let b=0; b < numBloquesNuevo; b++) { bloquesNuevos.push(window.sumarMinutos(hora, b * 30)); }
+
+            let canchasOcupadas = new Set();
+            reservasGlobales.forEach(r => {
+                let aplica = false;
+                let canceladas = r.fechasCanceladas || [];
+                if ((r.fecha || fechasValidas[0]) === fechaSeleccionada && !canceladas.includes(fechaSeleccionada)) aplica = true;
+                if (r.fijo === true && window.getDayOfWeekFromDate(r.fecha) === dowNumSelected && !canceladas.includes(fechaSeleccionada)) aplica = true;
+
+                if (aplica) {
+                    let resDuracion = r.duracion || 90;
+                    let numBloquesRes = resDuracion / 30;
+                    let bloquesRes = [];
+                    for(let b=0; b < numBloquesRes; b++) { bloquesRes.push(window.sumarMinutos(r.hora, b * 30)); }
+                    if(bloquesNuevos.some(b => bloquesRes.includes(b))) canchasOcupadas.add(parseInt(r.cancha || "1"));
+                }
+            });
+
+            let totalCanchas = canchasIndoorGlobal + canchasOutdoorGlobal + canchasTenisGlobal;
+            let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+
+            let indoorLibres = [];
+            for(let c=1; c<=canchasIndoorGlobal; c++) { if(!canchasOcupadas.has(c)) indoorLibres.push(c); }
+            
+            let outdoorLibres = [];
+            for(let c=canchasIndoorGlobal+1; c<=maxPadel; c++) { if(!canchasOcupadas.has(c)) outdoorLibres.push(c); }
+            
+            let tenisLibres = [];
+            for(let c=maxPadel+1; c<=totalCanchas; c++) { if(!canchasOcupadas.has(c)) tenisLibres.push(c); }
+
+            const selectTipo = document.getElementById('select-cancha-modal');
+            selectTipo.innerHTML = '';
+            
+            if(indoorLibres.length > 0) selectTipo.innerHTML += `<option value="${indoorLibres[0]}" style="color: black;">Indoor ($${precioIndoorGlobal})</option>`;
+            if(outdoorLibres.length > 0) selectTipo.innerHTML += `<option value="${outdoorLibres[0]}" style="color: black;">Outdoor ($${precioOutdoorGlobal})</option>`;
+            if(tenisLibres.length > 0) selectTipo.innerHTML += `<option value="${tenisLibres[0]}" style="color: black;">Tenis ($${precioTenisGlobal})</option>`;
+
+            if (indoorLibres.length === 0 && outdoorLibres.length === 0 && tenisLibres.length === 0) { alert("No quedan canchas libres."); return; }
+
+            document.getElementById('input-nombre-jugador').value = ""; document.getElementById('input-telefono-jugador').value = ""; 
+            document.getElementById('modal-reserva-jugador').style.display = 'flex';
         }
 
+        window.cerrarModalReservaJugador = function() { reservaEnProcesoHora = null; document.getElementById('modal-reserva-jugador').style.display = 'none'; }
+
+        window.confirmarReservaJugador = async function() {
+            const inputNombre = document.getElementById('input-nombre-jugador').value;
+            const inputTelefono = document.getElementById('input-telefono-jugador').value;
+            const canchaAsignada = document.getElementById('select-cancha-modal').value;
+
+            if (!inputNombre || inputNombre.trim() === "") { alert("Por favor, ingresa Nombre y Apellido."); return; }
+            if (!inputTelefono || inputTelefono.trim() === "") { alert("Por favor, ingresa tu número de Teléfono."); return; }
+
+            try {
+                await addDoc(collection(db, "reservas"), { 
+                    fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: canchaAsignada, 
+                    jugador: inputNombre, telefono: inputTelefono, duracion: duracionGlobal, 
+                    fechaRegistro: serverTimestamp(), asistencia: false, fijo: false, fechasCanceladas: [],
+                    pagoEfectivo: 0, pagoTransferencia: 0, consumos: [],
+                    esClase: false, profe: null
+                });
+                alert("¡Reserva guardada con éxito!");
+                window.cerrarModalReservaJugador();
+            } catch (error) { alert("Hubo un error de conexión."); }
+        }
+
+        // --- RESERVA DESDE VISTA ADMIN (GRILLA) ---
+        window.abrirModalReservaAdmin = function(hora, cancha) {
+            let minInicio = window.aMinutos(hora);
+            let minUltimo = window.aMinutos(ultimoTurno);
+            if (minInicio > minUltimo) { alert("Horario excede el límite del club."); return; }
+            if(esHoraPasada(hora)) { alert("No puedes reservar un horario que ya pasó."); return; }
+
+            reservaEnProcesoHora = hora;
+            document.getElementById('admin-cancha-id').value = cancha;
+
+            const partes = fechaSeleccionada.split('-');
+            const f = new Date(partes[0], partes[1] - 1, partes[2]);
+            document.getElementById('admin-fecha-display').innerText = `${f.getDate()}/${f.getMonth() + 1}/${f.getFullYear()}`;
+            document.getElementById('admin-hora-display').innerText = `${hora} hs (${duracionGlobal/60}h)`;
+            
+            let numC = parseInt(cancha);
+            let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+            let tipoC = "";
+            if (numC <= canchasIndoorGlobal) tipoC = "Indoor";
+            else if (numC <= maxPadel) tipoC = "Outdoor";
+            else tipoC = "Tenis";
+
+            document.getElementById('admin-cancha-display').innerText = `Cancha ${cancha} (${tipoC})`;
+
+            document.getElementById('admin-input-profe').value = ""; 
+            document.getElementById('admin-input-jugador').value = ""; 
+            document.getElementById('admin-input-telefono').value = ""; 
+            
+            document.getElementById('modal-reserva-admin').style.display = 'flex';
+        }
+
+        window.cerrarModalReservaAdmin = function() { reservaEnProcesoHora = null; document.getElementById('modal-reserva-admin').style.display = 'none'; }
+
+        window.confirmarReservaAdmin = async function() {
+            const inputProfe = document.getElementById('admin-input-profe').value.trim();
+            const inputNombre = document.getElementById('admin-input-jugador').value;
+            const inputTelefono = document.getElementById('admin-input-telefono').value;
+            const canchaAsignada = document.getElementById('admin-cancha-id').value;
+
+            if (!inputNombre || inputNombre.trim() === "") { alert("Por favor, ingresa Nombre y Apellido del alumno/cliente."); return; }
+            
+            const esClase = inputProfe !== "";
+
+            try {
+                await addDoc(collection(db, "reservas"), { 
+                    fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: canchaAsignada, 
+                    jugador: inputNombre, telefono: inputTelefono, duracion: duracionGlobal, 
+                    fechaRegistro: serverTimestamp(), asistencia: false, fijo: false, fechasCanceladas: [],
+                    pagoEfectivo: 0, pagoTransferencia: 0, consumos: [],
+                    esClase: esClase, profe: esClase ? inputProfe : null
+                });
+                window.cerrarModalReservaAdmin();
+            } catch (error) { alert("Hubo un error de conexión."); }
+        }
+
+        // --- CONFIGURACIÓN INICIAL ---
         onSnapshot(doc(db, "configuracion", "club"), (documento) => {
             if (documento.exists()) {
                 let data = documento.data();
@@ -1282,17 +1408,10 @@
             renderizarPantallas(); 
         });
 
-        onSnapshot(collection(db, "reservas"), (snapshot) => {
-            reservasGlobales = [];
-            snapshot.forEach((doc) => reservasGlobales.push({ id: doc.id, ...doc.data() }));
-            renderizarPantallas(); 
-            renderizarIngresos(); 
-            renderizarClasesPendientes(); 
-            if(reservaSeleccionadaId) renderizarModalTurnoAcciones(); 
-        });
-
         window.renderizarPantallas = function() {
             const totalCanchas = canchasIndoorGlobal + canchasOutdoorGlobal + canchasTenisGlobal;
+            if (totalCanchas <= 0) return; // Evitar renderizar si no hay canchas configuradas
+
             const dowNumSelected = window.getDayOfWeekFromDate(fechaSeleccionada);
 
             // 1. VISTA JUGADOR
@@ -1329,9 +1448,11 @@
 
                     let indoorLibres = [];
                     for(let c=1; c<=canchasIndoorGlobal; c++) { if(!canchasOcupadas.has(c)) indoorLibres.push(c); }
+                    
                     let outdoorLibres = [];
                     let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
                     for(let c=canchasIndoorGlobal+1; c<=maxPadel; c++) { if(!canchasOcupadas.has(c)) outdoorLibres.push(c); }
+                    
                     let tenisLibres = [];
                     for(let c=maxPadel+1; c<=totalCanchas; c++) { if(!canchasOcupadas.has(c)) tenisLibres.push(c); }
 
@@ -1398,7 +1519,7 @@
                 } else if(c <= maxPadel) {
                     tipoLabel = "Pádel Outdoor"; colorTipo = "#9ca3af";
                 } else {
-                    tipoLabel = "Tenis"; colorTipo = "#f59e0b"; // Naranja sutil para tenis
+                    tipoLabel = "Tenis"; colorTipo = "#f59e0b";
                 }
                 
                 htmlGrilla += `<div style="height: 50px; border-bottom: 1px solid #2c3540; text-align: center; background: #242c36; font-size: 0.9em; display:flex; flex-direction:column; justify-content:center;">
