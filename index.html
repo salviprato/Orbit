@@ -89,11 +89,9 @@
             display: flex; flex-direction: column; gap: 12px; border: 1px solid #44505d; text-align: center;
         }
         
-        /* Modal Finanzas específico (más espacio y scroll) */
-        #modal-finanzas .modal-content {
-            max-width: 550px;
-            max-height: 90vh;
-            overflow-y: auto;
+        /* Modal Finanzas y Acciones */
+        #modal-finanzas .modal-content, #modal-acciones .modal-content {
+            max-width: 550px; max-height: 90vh; overflow-y: auto;
         }
 
         .input-form {
@@ -181,19 +179,16 @@
             <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">💰 Finanzas e Inventario</h3>
             
             <div style="text-align: left;">
-                
                 <h4 style="margin: 0 0 10px 0; color: #3b82f6;">📦 Establecer Inventario</h4>
                 
                 <div style="display: flex; gap: 8px; margin-bottom: 15px;">
                     <input type="text" id="inv-nombre" class="input-form" placeholder="Producto" style="flex: 2;">
-                    
                     <select id="inv-categoria" class="input-form" style="flex: 2;">
                         <option value="" disabled selected>Categoría...</option>
                         <option value="Bebidas">Bebidas</option>
                         <option value="Comida">Comida</option>
                         <option value="Padel/Tenis">Padel/Tenis</option>
                     </select>
-
                     <input type="number" id="inv-precio" class="input-form" placeholder="Precio $" style="flex: 1;">
                 </div>
                 <button class="btn-modal btn-guardar" onclick="window.agregarInventario()" style="margin-bottom: 20px;">Añadir al Inventario</button>
@@ -237,10 +232,60 @@
                         <tbody id="tabla-gastos"></tbody>
                     </table>
                 </div>
+            </div>
+            <button class="btn-modal btn-cerrar" style="margin-top: 20px;" onclick="window.cerrarModalFinanzas()">Cerrar</button>
+        </div>
+    </div>
 
+    <div id="modal-acciones" class="modal-overlay">
+        <div class="modal-content scroll-interno" style="max-width: 480px;">
+            <h3 style="margin: 0; border-bottom: 1px solid #44505d; padding-bottom: 10px; color: #3b82f6;" id="titulo-modal-acciones">Gestión de Turno</h3>
+            
+            <div style="text-align: left; margin-top: 10px;">
+                <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">🛒 Añadir Consumo (Inventario):</label>
+                <div style="display: flex; gap: 8px; margin-top: 5px;">
+                    <select id="select-consumo-turno" class="input-form" style="flex: 1;"></select>
+                    <button class="btn-modal btn-guardar" style="width: auto; padding: 10px 15px;" onclick="window.agregarConsumoTurno()">Añadir</button>
+                </div>
+                <ul id="lista-consumos-turno" class="scroll-interno" style="list-style: none; padding: 0; margin: 10px 0; max-height: 120px; overflow-y: auto; font-size: 0.9em;">
+                    </ul>
             </div>
 
-            <button class="btn-modal btn-cerrar" style="margin-top: 20px;" onclick="window.cerrarModalFinanzas()">Cerrar</button>
+            <div style="background: #242c36; padding: 15px; border-radius: 8px; border: 1px solid #2c3540; text-align: left; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em; color: #9ca3af;">
+                    <span>Precio Cancha:</span> <span id="res-precio-cancha">$0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em; color: #9ca3af;">
+                    <span>Total Consumos:</span> <span id="res-precio-consumos">$0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2em; color: #10b981; margin-bottom: 15px; border-top: 1px solid #44505d; padding-top: 10px;">
+                    <span>A COBRAR:</span> <span id="res-precio-total">$0</span>
+                </div>
+
+                <label style="font-size: 0.85em; color: #d1d5db;">Monto abonado por el cliente:</label>
+                <div style="display: flex; gap: 10px; margin-top: 5px;">
+                    <div style="flex: 1;">
+                        <small style="color: #9ca3af;">En Efectivo ($)</small>
+                        <input type="number" id="pago-efectivo" class="input-form" placeholder="0" oninput="window.calcularFaltante()">
+                    </div>
+                    <div style="flex: 1;">
+                        <small style="color: #9ca3af;">En Transferencia ($)</small>
+                        <input type="number" id="pago-transferencia" class="input-form" placeholder="0" oninput="window.calcularFaltante()">
+                    </div>
+                </div>
+                <div style="text-align: right; margin-top: 8px; font-size: 0.9em; font-weight: bold;" id="txt-faltante">Falta cobrar: $0</div>
+
+                <button class="btn-modal btn-guardar" style="margin-top: 15px;" onclick="window.cobrarTurno()">✅ Guardar Pagos</button>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; border-top: 1px solid #44505d; padding-top: 15px;">
+                <button class="btn-modal btn-whatsapp" id="btn-whatsapp" onclick="window.accionWhatsApp()" style="flex: 1; min-width: 45%; font-size: 0.85em;">💬 WhatsApp</button>
+                <button class="btn-modal btn-fijar" id="btn-toggle-fijo" onclick="window.accionFijarTurno()" style="flex: 1; min-width: 45%; font-size: 0.85em;">📌 Fijar Turno</button>
+                <button class="btn-modal btn-excepcion" id="btn-excepcion" onclick="window.accionCancelarExcepcion()" style="flex: 1; min-width: 45%; font-size: 0.85em; display:none;">🚫 Cancelar Hoy</button>
+                <button class="btn-modal btn-eliminar" onclick="window.accionEliminar()" style="flex: 1; min-width: 45%; font-size: 0.85em;">🗑️ Borrar Turno</button>
+            </div>
+            
+            <button class="btn-modal btn-cerrar" onclick="window.cerrarModalAcciones()">Cerrar Gestión</button>
         </div>
     </div>
 
@@ -248,12 +293,10 @@
         <div class="modal-content">
             <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">⚙️ Configuración del Club</h3>
             <div style="text-align: left; display: flex; flex-direction: column; gap: 15px;">
-                
                 <div style="display: flex; gap: 10px; justify-content: space-between;">
                     <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Primer Turno:</label><input type="time" id="input-primer-turno" class="input-form" style="margin-top: 4px;"></div>
                     <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Último Turno:</label><input type="time" id="input-ultimo-turno" class="input-form" style="margin-top: 4px;"></div>
                 </div>
-
                 <div style="border-top: 1px solid #2c3540; padding-top: 10px;">
                     <label style="font-size: 0.85em; color: #d1d5db;">Días que abre el club:</label>
                     <div class="checkbox-dias" style="display: flex; gap: 8px; margin-top: 5px; flex-wrap: wrap; color: #d1d5db; font-size: 0.9em;">
@@ -266,17 +309,14 @@
                         <label><input type="checkbox" id="dia-0"> Do</label>
                     </div>
                 </div>
-
                 <div style="display: flex; gap: 10px; justify-content: space-between; border-top: 1px solid #2c3540; padding-top: 10px;">
                     <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Cant. Indoor:</label><input type="number" id="input-canchas-in" min="0" class="input-form" style="margin-top: 4px;"></div>
                     <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Precio Indoor:</label><input type="number" id="input-precio-in" step="500" class="input-form" style="margin-top: 4px;"></div>
                 </div>
-
                 <div style="display: flex; gap: 10px; justify-content: space-between;">
                     <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Cant. Outdoor:</label><input type="number" id="input-canchas-out" min="0" class="input-form" style="margin-top: 4px;"></div>
                     <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Precio Outdoor:</label><input type="number" id="input-precio-out" step="500" class="input-form" style="margin-top: 4px;"></div>
                 </div>
-
                 <div>
                     <label style="font-size: 0.85em; color: #d1d5db;">Duración Standard:</label>
                     <select id="input-duracion" class="input-form" style="margin-top: 4px;">
@@ -296,19 +336,6 @@
             <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">📊 Métricas de Reservas</h3>
             <div id="contenido-metricas" class="scroll-interno" style="text-align: left; max-height: 350px; overflow-y: auto; padding-right: 5px;"></div>
             <button class="btn-modal btn-cerrar" style="margin-top: 15px;" onclick="window.cerrarModalMetricas()">Cerrar</button>
-        </div>
-    </div>
-
-    <div id="modal-acciones" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="margin: 0; margin-bottom: 10px;">Gestionar Turno</h3>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <button class="btn-modal btn-whatsapp" id="btn-whatsapp" onclick="window.accionWhatsApp()" style="display:none;">💬 Enviar WhatsApp</button>
-                <button class="btn-modal btn-fijar" id="btn-toggle-fijo" onclick="window.accionFijarTurno()">📌 Fijar Turno</button>
-                <button class="btn-modal btn-excepcion" id="btn-excepcion" onclick="window.accionCancelarExcepcion()" style="display:none;">🚫 Cancelar solo por hoy</button>
-                <button class="btn-modal btn-eliminar" onclick="window.accionEliminar()">🗑️ Eliminar Reserva (Completa)</button>
-                <button class="btn-modal btn-cerrar" onclick="window.cerrarModalAcciones()">Cancelar</button>
-            </div>
         </div>
     </div>
 
@@ -371,7 +398,6 @@
         }
         horariosBase.reverse(); 
 
-        // Variables Globales
         let primerTurno = "08:00"; 
         let ultimoTurno = "21:30";   
         let duracionGlobal = 90; 
@@ -383,7 +409,7 @@
 
         let reservasGlobales = [];
         let inventarioGlobal = []; 
-        let gastosGlobal = []; // Array para los gastos externos
+        let gastosGlobal = []; 
         let reservaSeleccionadaId = null; 
         let reservaEnProcesoHora = null;
 
@@ -406,169 +432,205 @@
             document.getElementById('btn-club').classList.toggle('activo', vista === 'club');
         }
 
-        // --- FUNCIONES DEL MODAL FINANZAS E INVENTARIO ---
+        // --- INVENTARIO Y FINANZAS ---
         window.abrirModalFinanzas = function() { document.getElementById('modal-finanzas').style.display = 'flex'; }
         window.cerrarModalFinanzas = function() { document.getElementById('modal-finanzas').style.display = 'none'; }
 
-        // 1. Funciones de Inventario
         window.agregarInventario = async function() {
             const nombre = document.getElementById('inv-nombre').value.trim();
             const categoria = document.getElementById('inv-categoria').value;
             const precio = document.getElementById('inv-precio').value;
-
-            if(!nombre || !categoria || !precio) {
-                alert("Por favor, completa Nombre, Categoría y Precio.");
-                return;
-            }
-
+            if(!nombre || !categoria || !precio) { alert("Por favor, completa Nombre, Categoría y Precio."); return; }
             try {
-                await addDoc(collection(db, "inventario"), {
-                    nombre: nombre,
-                    categoria: categoria,
-                    precio: parseFloat(precio)
-                });
-                document.getElementById('inv-nombre').value = '';
-                document.getElementById('inv-categoria').value = '';
-                document.getElementById('inv-precio').value = '';
+                await addDoc(collection(db, "inventario"), { nombre: nombre, categoria: categoria, precio: parseFloat(precio) });
+                document.getElementById('inv-nombre').value = ''; document.getElementById('inv-categoria').value = ''; document.getElementById('inv-precio').value = '';
             } catch (error) { alert("Error al guardar el producto."); }
         }
 
-        window.eliminarInventario = async function(id) {
-            if(confirm("¿Seguro que quieres borrar este producto del inventario?")) {
-                await deleteDoc(doc(db, "inventario", id));
-            }
-        }
+        window.eliminarInventario = async function(id) { if(confirm("¿Borrar este producto?")) await deleteDoc(doc(db, "inventario", id)); }
 
         function renderizarInventario() {
             const tbody = document.getElementById('tabla-inventario');
             if(!tbody) return;
             tbody.innerHTML = '';
-            
-            if(inventarioGlobal.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #9ca3af; padding: 15px;">No hay productos registrados</td></tr>';
-                return;
-            }
+            if(inventarioGlobal.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #9ca3af; padding: 15px;">No hay productos</td></tr>'; return; }
 
             inventarioGlobal.sort((a, b) => a.nombre.localeCompare(b.nombre)).forEach(prod => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${prod.nombre}</strong></td>
-                        <td style="color: #9ca3af;">${prod.categoria}</td>
-                        <td style="text-align: right; color: #10b981;">$${prod.precio}</td>
-                        <td style="text-align: center;">
-                            <button onclick="window.eliminarInventario('${prod.id}')" style="background: none; border: none; cursor: pointer; font-size: 1.1em;" title="Borrar">🗑️</button>
-                        </td>
-                    </tr>
-                `;
+                tbody.innerHTML += `<tr><td><strong>${prod.nombre}</strong></td><td style="color: #9ca3af;">${prod.categoria}</td>
+                    <td style="text-align: right; color: #10b981;">$${prod.precio}</td>
+                    <td style="text-align: center;"><button onclick="window.eliminarInventario('${prod.id}')" style="background:none;border:none;cursor:pointer;font-size:1.1em;">🗑️</button></td></tr>`;
             });
         }
 
-        onSnapshot(collection(db, "inventario"), (snapshot) => {
-            inventarioGlobal = [];
-            snapshot.forEach((doc) => inventarioGlobal.push({ id: doc.id, ...doc.data() }));
-            renderizarInventario(); 
-        });
-
-        // 2. Funciones de Gastos Externos
         window.agregarGasto = async function() {
             const titulo = document.getElementById('gasto-titulo').value.trim();
             const desc = document.getElementById('gasto-desc').value.trim();
             const importe = document.getElementById('gasto-importe').value;
-
-            if(!titulo || !importe) {
-                alert("Por favor, completa el Título y el Importe del gasto.");
-                return;
-            }
-
+            if(!titulo || !importe) { alert("Completa Título e Importe."); return; }
             try {
-                await addDoc(collection(db, "gastos"), {
-                    titulo: titulo,
-                    descripcion: desc,
-                    importe: parseFloat(importe),
-                    fechaRegistro: serverTimestamp() // Usa la hora del servidor para ordenarlos
-                });
-                document.getElementById('gasto-titulo').value = '';
-                document.getElementById('gasto-desc').value = '';
-                document.getElementById('gasto-importe').value = '';
+                await addDoc(collection(db, "gastos"), { titulo: titulo, descripcion: desc, importe: parseFloat(importe), fechaRegistro: serverTimestamp() });
+                document.getElementById('gasto-titulo').value = ''; document.getElementById('gasto-desc').value = ''; document.getElementById('gasto-importe').value = '';
             } catch (error) { alert("Error al registrar el gasto."); }
         }
 
-        window.eliminarGasto = async function(id) {
-            if(confirm("¿Seguro que quieres eliminar este gasto?")) {
-                await deleteDoc(doc(db, "gastos", id));
-            }
-        }
+        window.eliminarGasto = async function(id) { if(confirm("¿Eliminar este gasto?")) await deleteDoc(doc(db, "gastos", id)); }
 
         function renderizarGastos() {
             const tbody = document.getElementById('tabla-gastos');
             if(!tbody) return;
             tbody.innerHTML = '';
-            
-            if(gastosGlobal.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #9ca3af; padding: 15px;">No hay gastos registrados</td></tr>';
-                return;
-            }
+            if(gastosGlobal.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #9ca3af; padding: 15px;">No hay gastos</td></tr>'; return; }
 
-            // Ordenar por los más recientes primero
-            gastosGlobal.sort((a, b) => {
-                let timeA = a.fechaRegistro ? a.fechaRegistro.seconds : 0;
-                let timeB = b.fechaRegistro ? b.fechaRegistro.seconds : 0;
-                return timeB - timeA; 
-            }).forEach(gasto => {
+            gastosGlobal.sort((a, b) => (b.fechaRegistro?.seconds || 0) - (a.fechaRegistro?.seconds || 0)).forEach(gasto => {
                 let descHtml = gasto.descripcion ? `<br><small style="color:#9ca3af; font-size:0.85em;">${gasto.descripcion}</small>` : '';
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${gasto.titulo}</strong>${descHtml}</td>
-                        <td style="text-align: right; color: #ef4444; font-weight: bold;">$${gasto.importe}</td>
-                        <td style="text-align: center;">
-                            <button onclick="window.eliminarGasto('${gasto.id}')" style="background: none; border: none; cursor: pointer; font-size: 1.1em;" title="Borrar">🗑️</button>
-                        </td>
-                    </tr>
-                `;
+                tbody.innerHTML += `<tr><td><strong>${gasto.titulo}</strong>${descHtml}</td>
+                    <td style="text-align: right; color: #ef4444; font-weight: bold;">$${gasto.importe}</td>
+                    <td style="text-align: center;"><button onclick="window.eliminarGasto('${gasto.id}')" style="background:none;border:none;cursor:pointer;font-size:1.1em;">🗑️</button></td></tr>`;
             });
         }
 
+        onSnapshot(collection(db, "inventario"), (snapshot) => {
+            inventarioGlobal = []; snapshot.forEach((doc) => inventarioGlobal.push({ id: doc.id, ...doc.data() }));
+            renderizarInventario(); 
+            if(reservaSeleccionadaId) renderizarModalTurnoAcciones(); // Actualiza dropdown si está abierto
+        });
         onSnapshot(collection(db, "gastos"), (snapshot) => {
-            gastosGlobal = [];
-            snapshot.forEach((doc) => gastosGlobal.push({ id: doc.id, ...doc.data() }));
+            gastosGlobal = []; snapshot.forEach((doc) => gastosGlobal.push({ id: doc.id, ...doc.data() }));
             renderizarGastos(); 
         });
-        // ---------------------------------------------------
 
-        window.abrirModalConfig = function() { document.getElementById('modal-config').style.display = 'flex'; }
-        window.cerrarModalConfig = function() { document.getElementById('modal-config').style.display = 'none'; }
-        
+        // --- GESTIÓN DE TURNOS (PUNTO DE VENTA) ---
         window.abrirModal = function(id) { 
             reservaSeleccionadaId = id; 
             const res = reservasGlobales.find(r => r.id === id);
-            
-            const btnFijar = document.getElementById('btn-toggle-fijo');
-            if(res && res.fijo) {
-                btnFijar.innerHTML = "📌 Quitar Turno Fijo (Borrar recurrencia)";
-                btnFijar.style.backgroundColor = "#4b5563"; 
-            } else {
-                btnFijar.innerHTML = "📌 Convertir a Turno Fijo";
-                btnFijar.style.backgroundColor = "#10b981"; 
-            }
+            if(!res) return;
 
-            const btnWpp = document.getElementById('btn-whatsapp');
-            if (res && res.telefono && res.telefono.trim() !== "") {
-                btnWpp.style.display = 'block';
-            } else {
-                btnWpp.style.display = 'none';
-            }
+            // Inicializar inputs de pago solo al abrir
+            document.getElementById('pago-efectivo').value = res.pagoEfectivo || "";
+            document.getElementById('pago-transferencia').value = res.pagoTransferencia || "";
 
-            const btnExc = document.getElementById('btn-excepcion');
-            if (res && res.fijo) {
-                btnExc.style.display = 'block';
-            } else {
-                btnExc.style.display = 'none';
-            }
-
+            renderizarModalTurnoAcciones();
             document.getElementById('modal-acciones').style.display = 'flex'; 
         }
+
+        window.renderizarModalTurnoAcciones = function() {
+            if(!reservaSeleccionadaId) return;
+            const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
+            if(!res) { window.cerrarModalAcciones(); return; }
+
+            document.getElementById('titulo-modal-acciones').innerText = `Gestión: ${res.jugador} (${res.hora}hs)`;
+
+            // Lógica de botones inferiores
+            const btnFijar = document.getElementById('btn-toggle-fijo');
+            if(res.fijo) { btnFijar.innerHTML = "📌 Quitar Turno Fijo"; btnFijar.style.backgroundColor = "#4b5563"; } 
+            else { btnFijar.innerHTML = "📌 Fijar Turno"; btnFijar.style.backgroundColor = "#10b981"; }
+
+            document.getElementById('btn-whatsapp').style.display = (res.telefono && res.telefono.trim() !== "") ? 'block' : 'none';
+            document.getElementById('btn-excepcion').style.display = res.fijo ? 'block' : 'none';
+
+            // Cálculos del POS
+            let esIndoor = parseInt(res.cancha || "1") <= canchasIndoorGlobal;
+            let precioCanchaTurno = parseInt(esIndoor ? precioIndoorGlobal : precioOutdoorGlobal) || 0;
+            
+            let consumos = res.consumos || [];
+            let totalConsumos = consumos.reduce((acc, curr) => acc + (parseFloat(curr.precio) || 0), 0);
+            let totalGeneral = precioCanchaTurno + totalConsumos;
+
+            document.getElementById('res-precio-cancha').innerText = `$${precioCanchaTurno}`;
+            document.getElementById('res-precio-consumos').innerText = `$${totalConsumos}`;
+            document.getElementById('res-precio-total').innerText = `$${totalGeneral}`;
+
+            // Cargar selector de inventario
+            let sel = document.getElementById('select-consumo-turno');
+            sel.innerHTML = '<option value="" disabled selected>Elegir producto...</option>';
+            inventarioGlobal.sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(p => {
+                sel.innerHTML += `<option value="${p.id}">${p.nombre} - $${p.precio}</option>`;
+            });
+
+            // Listar consumos añadidos
+            let ul = document.getElementById('lista-consumos-turno');
+            ul.innerHTML = '';
+            if(consumos.length === 0) {
+                ul.innerHTML = '<li style="color: #9ca3af; font-style: italic;">Sin consumos adicionales.</li>';
+            } else {
+                consumos.forEach((c, index) => {
+                    ul.innerHTML += `
+                        <li style="display: flex; justify-content: space-between; border-bottom: 1px solid #2c3540; padding: 5px 0;">
+                            <span>${c.nombre}</span>
+                            <span>
+                                <span style="color: #10b981; margin-right: 10px;">$${c.precio}</span>
+                                <button onclick="window.eliminarConsumoTurno(${index})" style="background: none; border: none; cursor: pointer; font-size: 1.1em;" title="Quitar">❌</button>
+                            </span>
+                        </li>
+                    `;
+                });
+            }
+
+            window.calcularFaltante(); // Refresca el texto rojo/verde
+        }
+
         window.cerrarModalAcciones = function() { reservaSeleccionadaId = null; document.getElementById('modal-acciones').style.display = 'none'; }
 
+        window.agregarConsumoTurno = async function() {
+            if(!reservaSeleccionadaId) return;
+            const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
+            const select = document.getElementById('select-consumo-turno');
+            const prodId = select.value;
+            if(!prodId) return;
+
+            const producto = inventarioGlobal.find(p => p.id === prodId);
+            if(producto) {
+                let consumosActuales = res.consumos || [];
+                consumosActuales.push({ nombre: producto.nombre, precio: producto.precio });
+                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { consumos: consumosActuales });
+            }
+        }
+
+        window.eliminarConsumoTurno = async function(index) {
+            if(!reservaSeleccionadaId) return;
+            const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
+            let consumosActuales = res.consumos || [];
+            consumosActuales.splice(index, 1);
+            await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { consumos: consumosActuales });
+        }
+
+        window.calcularFaltante = function() {
+            if(!reservaSeleccionadaId) return;
+            const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
+            if(!res) return;
+
+            let esIndoor = parseInt(res.cancha || "1") <= canchasIndoorGlobal;
+            let pCancha = parseInt(esIndoor ? precioIndoorGlobal : precioOutdoorGlobal) || 0;
+            let cConsumos = (res.consumos || []).reduce((acc, c) => acc + parseFloat(c.precio), 0);
+            let tGen = pCancha + cConsumos;
+
+            let efe = parseFloat(document.getElementById('pago-efectivo').value) || 0;
+            let trans = parseFloat(document.getElementById('pago-transferencia').value) || 0;
+
+            let faltante = tGen - (efe + trans);
+            let txt = document.getElementById('txt-faltante');
+            if(faltante <= 0 && tGen > 0) {
+                txt.innerText = `Pagado por completo ✅`;
+                txt.style.color = "#10b981";
+            } else {
+                txt.innerText = `Falta cobrar: $${faltante}`;
+                txt.style.color = "#ef4444";
+            }
+        }
+
+        window.cobrarTurno = async function() {
+            if(!reservaSeleccionadaId) return;
+            let efe = parseFloat(document.getElementById('pago-efectivo').value) || 0;
+            let trans = parseFloat(document.getElementById('pago-transferencia').value) || 0;
+            try {
+                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { pagoEfectivo: efe, pagoTransferencia: trans });
+                window.cerrarModalAcciones();
+            } catch(e) { alert("Error al registrar pago."); }
+        }
+
+        // --- RESTO DEL CÓDIGO INTACTO (Reservas, Configuración, Renderizado) ---
+        window.abrirModalConfig = function() { document.getElementById('modal-config').style.display = 'flex'; }
+        window.cerrarModalConfig = function() { document.getElementById('modal-config').style.display = 'none'; }
         window.abrirModalMetricas = function() { document.getElementById('modal-metricas').style.display = 'flex'; }
         window.cerrarModalMetricas = function() { document.getElementById('modal-metricas').style.display = 'none'; }
 
@@ -601,41 +663,25 @@
                     let numBloquesRes = resDuracion / 30;
                     let bloquesRes = [];
                     for(let b=0; b < numBloquesRes; b++) { bloquesRes.push(window.sumarMinutos(r.hora, b * 30)); }
-                    
-                    if(bloquesNuevos.some(b => bloquesRes.includes(b))) {
-                        canchasOcupadas.add(parseInt(r.cancha || "1"));
-                    }
+                    if(bloquesNuevos.some(b => bloquesRes.includes(b))) canchasOcupadas.add(parseInt(r.cancha || "1"));
                 }
             });
 
             let indoorLibres = [];
-            for(let c=1; c<=canchasIndoorGlobal; c++) {
-                if(!canchasOcupadas.has(c)) indoorLibres.push(c);
-            }
-            
+            for(let c=1; c<=canchasIndoorGlobal; c++) { if(!canchasOcupadas.has(c)) indoorLibres.push(c); }
             let outdoorLibres = [];
             let totalCanchas = canchasIndoorGlobal + canchasOutdoorGlobal;
-            for(let c=canchasIndoorGlobal+1; c<=totalCanchas; c++) {
-                if(!canchasOcupadas.has(c)) outdoorLibres.push(c);
-            }
+            for(let c=canchasIndoorGlobal+1; c<=totalCanchas; c++) { if(!canchasOcupadas.has(c)) outdoorLibres.push(c); }
 
             const selectTipo = document.getElementById('select-cancha-modal');
             selectTipo.innerHTML = '';
             
-            if(indoorLibres.length > 0) {
-                selectTipo.innerHTML += `<option value="${indoorLibres[0]}" style="color: black;">Indoor ($${precioIndoorGlobal})</option>`;
-            }
-            if(outdoorLibres.length > 0) {
-                selectTipo.innerHTML += `<option value="${outdoorLibres[0]}" style="color: black;">Outdoor ($${precioOutdoorGlobal})</option>`;
-            }
+            if(indoorLibres.length > 0) selectTipo.innerHTML += `<option value="${indoorLibres[0]}" style="color: black;">Indoor ($${precioIndoorGlobal})</option>`;
+            if(outdoorLibres.length > 0) selectTipo.innerHTML += `<option value="${outdoorLibres[0]}" style="color: black;">Outdoor ($${precioOutdoorGlobal})</option>`;
 
-            if (indoorLibres.length === 0 && outdoorLibres.length === 0) { 
-                alert("No quedan canchas libres de ningún tipo a esa hora."); 
-                return; 
-            }
+            if (indoorLibres.length === 0 && outdoorLibres.length === 0) { alert("No quedan canchas libres."); return; }
 
-            document.getElementById('input-nombre-jugador').value = ""; 
-            document.getElementById('input-telefono-jugador').value = ""; 
+            document.getElementById('input-nombre-jugador').value = ""; document.getElementById('input-telefono-jugador').value = ""; 
             document.getElementById('modal-reserva-jugador').style.display = 'flex';
         }
 
@@ -652,10 +698,9 @@
             try {
                 await addDoc(collection(db, "reservas"), { 
                     fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: canchaAsignada, 
-                    jugador: inputNombre, telefono: inputTelefono,
-                    duracion: duracionGlobal, 
-                    fechaRegistro: new Date(), asistencia: false, pagado: false, fijo: false,
-                    fechasCanceladas: [] 
+                    jugador: inputNombre, telefono: inputTelefono, duracion: duracionGlobal, 
+                    fechaRegistro: new Date(), asistencia: false, fijo: false, fechasCanceladas: [],
+                    pagoEfectivo: 0, pagoTransferencia: 0, consumos: []
                 });
                 alert("¡Reserva guardada con éxito!");
                 window.cerrarModalReservaJugador();
@@ -664,28 +709,20 @@
 
         window.guardarConfiguracion = async function() {
             let diasCheck = [];
-            [0,1,2,3,4,5,6].forEach(d => { 
-                if(document.getElementById('dia-'+d).checked) diasCheck.push(d); 
-            });
-
+            [0,1,2,3,4,5,6].forEach(d => { if(document.getElementById('dia-'+d).checked) diasCheck.push(d); });
             try { 
                 await setDoc(doc(db, "configuracion", "club"), { 
-                    primerTurno: document.getElementById('input-primer-turno').value, 
-                    ultimoTurno: document.getElementById('input-ultimo-turno').value, 
-                    canchasIndoor: parseInt(document.getElementById('input-canchas-in').value) || 0,
-                    precioIndoor: document.getElementById('input-precio-in').value || "0",
-                    canchasOutdoor: parseInt(document.getElementById('input-canchas-out').value) || 0,
-                    precioOutdoor: document.getElementById('input-precio-out').value || "0",
-                    duracionTurno: parseInt(document.getElementById('input-duracion').value) || 90,
-                    diasAbiertos: diasCheck
+                    primerTurno: document.getElementById('input-primer-turno').value, ultimoTurno: document.getElementById('input-ultimo-turno').value, 
+                    canchasIndoor: parseInt(document.getElementById('input-canchas-in').value) || 0, precioIndoor: document.getElementById('input-precio-in').value || "0",
+                    canchasOutdoor: parseInt(document.getElementById('input-canchas-out').value) || 0, precioOutdoor: document.getElementById('input-precio-out').value || "0",
+                    duracionTurno: parseInt(document.getElementById('input-duracion').value) || 90, diasAbiertos: diasCheck
                 }); 
                 window.cerrarModalConfig();
-                alert("¡Configuración guardada!"); 
             } catch (error) { alert("Error al guardar."); }
         }
 
         window.accionEliminar = async function() { 
-            if(reservaSeleccionadaId && confirm("¿Estás seguro de borrar COMPLETAMENTE esta reserva?")) { 
+            if(reservaSeleccionadaId && confirm("¿Borrar COMPLETAMENTE esta reserva?")) { 
                 await deleteDoc(doc(db, "reservas", reservaSeleccionadaId)); 
                 window.cerrarModalAcciones(); 
             } 
@@ -697,11 +734,7 @@
                 if(res && res.telefono) {
                     let numeroLimpio = res.telefono.replace(/\D/g,''); 
                     let esIndoor = parseInt(res.cancha || "1") <= canchasIndoorGlobal;
-                    let tipoTurno = esIndoor ? "indoor" : "outdoor";
-                    let precioWsp = esIndoor ? precioIndoorGlobal : precioOutdoorGlobal;
-                    
-                    let mensaje = `te recordamos que tenes un turno a las ${res.hora} ${tipoTurno} con un precio de $${precioWsp}, Te esperamos`;
-                    
+                    let mensaje = `te recordamos que tenes un turno a las ${res.hora} ${esIndoor ? "indoor" : "outdoor"} con un precio de $${esIndoor ? precioIndoorGlobal : precioOutdoorGlobal}, Te esperamos`;
                     window.open(`https://wa.me/${numeroLimpio}?text=${encodeURIComponent(mensaje)}`, '_blank');
                 }
             }
@@ -722,8 +755,7 @@
         window.accionFijarTurno = async function() { 
             if(reservaSeleccionadaId) {
                 const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
-                const nuevoEstado = !(res.fijo === true); 
-                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fijo: nuevoEstado });
+                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fijo: !(res.fijo === true) });
                 window.cerrarModalAcciones();
             }
         }
@@ -731,26 +763,17 @@
         onSnapshot(doc(db, "configuracion", "club"), (documento) => {
             if (documento.exists()) {
                 let data = documento.data();
-                primerTurno = data.primerTurno || "08:00";
-                ultimoTurno = data.ultimoTurno || "21:30";
+                primerTurno = data.primerTurno || "08:00"; ultimoTurno = data.ultimoTurno || "21:30";
                 duracionGlobal = parseInt(data.duracionTurno) || 90; 
-                
-                canchasIndoorGlobal = parseInt(data.canchasIndoor);
-                if(isNaN(canchasIndoorGlobal)) canchasIndoorGlobal = 1; 
-                
+                canchasIndoorGlobal = isNaN(parseInt(data.canchasIndoor)) ? 1 : parseInt(data.canchasIndoor); 
                 canchasOutdoorGlobal = parseInt(data.canchasOutdoor) || 0;
-                precioIndoorGlobal = data.precioIndoor || "15000";
-                precioOutdoorGlobal = data.precioOutdoor || "12000";
-                
+                precioIndoorGlobal = data.precioIndoor || "15000"; precioOutdoorGlobal = data.precioOutdoor || "12000";
                 diasAbiertosGlobal = data.diasAbiertos || [0,1,2,3,4,5,6]; 
                 
-                document.getElementById('input-primer-turno').value = primerTurno;
-                document.getElementById('input-ultimo-turno').value = ultimoTurno;
+                document.getElementById('input-primer-turno').value = primerTurno; document.getElementById('input-ultimo-turno').value = ultimoTurno;
                 document.getElementById('input-duracion').value = duracionGlobal;
-                document.getElementById('input-canchas-in').value = canchasIndoorGlobal;
-                document.getElementById('input-precio-in').value = precioIndoorGlobal;
-                document.getElementById('input-canchas-out').value = canchasOutdoorGlobal;
-                document.getElementById('input-precio-out').value = precioOutdoorGlobal;
+                document.getElementById('input-canchas-in').value = canchasIndoorGlobal; document.getElementById('input-precio-in').value = precioIndoorGlobal;
+                document.getElementById('input-canchas-out').value = canchasOutdoorGlobal; document.getElementById('input-precio-out').value = precioOutdoorGlobal;
 
                 [0,1,2,3,4,5,6].forEach(d => {
                     const cb = document.getElementById('dia-'+d);
@@ -764,6 +787,7 @@
             reservasGlobales = [];
             snapshot.forEach((doc) => reservasGlobales.push({ id: doc.id, ...doc.data() }));
             renderizarPantallas(); 
+            if(reservaSeleccionadaId) renderizarModalTurnoAcciones(); // Actualizar si el modal está abierto
         });
 
         window.renderizarPantallas = function() {
@@ -797,10 +821,7 @@
                             let numBloquesRes = resDuracion / 30;
                             let bloquesRes = [];
                             for(let b=0; b < numBloquesRes; b++) { bloquesRes.push(window.sumarMinutos(r.hora, b * 30)); }
-                            
-                            if(bloquesNuevos.some(b => bloquesRes.includes(b))) {
-                                canchasOcupadas.add(parseInt(r.cancha || "1"));
-                            }
+                            if(bloquesNuevos.some(b => bloquesRes.includes(b))) canchasOcupadas.add(parseInt(r.cancha || "1"));
                         }
                     });
 
@@ -864,9 +885,7 @@
                 reservasCancha.forEach(res => {
                     let resDur = res.duracion || 90;
                     let numBloques = resDur / 30;
-                    for(let b=0; b < numBloques; b++) {
-                        bloquesOcupadosCancha.add(window.sumarMinutos(res.hora, b * 30));
-                    }
+                    for(let b=0; b < numBloques; b++) { bloquesOcupadosCancha.add(window.sumarMinutos(res.hora, b * 30)); }
                 });
 
                 for (let m = minActual; m < minFin; m += 30) {
@@ -896,6 +915,13 @@
                     let height = (resDur / 30) * 40; 
 
                     let textoFijo = res.fijo === true ? ' 📌' : '';
+
+                    // LÓGICA DEL TEXTO ✅ PENDIENTE PARA LA GRILLA
+                    let pCancha = parseInt(esIndoor ? precioIndoorGlobal : precioOutdoorGlobal) || 0;
+                    let cConsumos = (res.consumos || []).reduce((acc, curr) => acc + parseFloat(curr.precio), 0);
+                    let tGen = pCancha + cConsumos;
+                    let tAbonado = (parseFloat(res.pagoEfectivo) || 0) + (parseFloat(res.pagoTransferencia) || 0);
+                    let textoSaldo = (tAbonado >= tGen && tGen > 0) ? "✅" : "Pend";
                     
                     htmlGrilla += `
                         <div class="tarjeta-reserva-grilla" onclick="window.abrirModal('${res.id}')" 
@@ -904,6 +930,7 @@
                                     box-shadow: 0 4px 6px rgba(0,0,0,0.4); display: flex; flex-direction: column; z-index: 10;">
                             <span style="font-weight: 900; font-size: 1.1em; color: #171d24; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${res.jugador}${textoFijo}</span>
                             <span style="margin-top: 4px; color: #171d24; opacity: 0.8; font-weight: 700;">${res.hora} hs</span>
+                            <span style="margin-top: auto; font-weight: bold; color: #171d24;">Pago: ${textoSaldo}</span>
                         </div>
                     `;
                 });
