@@ -79,8 +79,6 @@
         .celda-vacia-hover { transition: background-color 0.1s; }
         .celda-vacia-hover:hover { background-color: rgba(59, 130, 246, 0.15); }
 
-        .mensaje-vacio { color: #9ca3af; text-align: center; margin-top: 20px; width: 100%; }
-
         /* Modales */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -105,6 +103,8 @@
 
         .scroll-interno::-webkit-scrollbar { width: 6px; }
         .scroll-interno::-webkit-scrollbar-thumb { background: #44505d; border-radius: 4px; }
+        
+        .checkbox-dias label { cursor: pointer; }
     </style>
 </head>
 <body>
@@ -143,7 +143,7 @@
             
             <div style="text-align: left; display: flex; flex-direction: column; gap: 12px;">
                 <div>
-                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">1. Elige tu cancha (Tipo y Precio):</label>
+                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">1. Tipo de Cancha:</label>
                     <select id="select-cancha-modal" class="input-form" style="margin-top: 5px;"></select>
                 </div>
                 <div>
@@ -169,6 +169,19 @@
                 <div style="display: flex; gap: 10px; justify-content: space-between;">
                     <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Primer Turno:</label><input type="time" id="input-primer-turno" class="input-form" style="margin-top: 4px;"></div>
                     <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Último Turno:</label><input type="time" id="input-ultimo-turno" class="input-form" style="margin-top: 4px;"></div>
+                </div>
+
+                <div style="border-top: 1px solid #2c3540; padding-top: 10px;">
+                    <label style="font-size: 0.85em; color: #d1d5db;">Días que abre el club:</label>
+                    <div class="checkbox-dias" style="display: flex; gap: 8px; margin-top: 5px; flex-wrap: wrap; color: #d1d5db; font-size: 0.9em;">
+                        <label><input type="checkbox" id="dia-1"> Lu</label>
+                        <label><input type="checkbox" id="dia-2"> Ma</label>
+                        <label><input type="checkbox" id="dia-3"> Mi</label>
+                        <label><input type="checkbox" id="dia-4"> Ju</label>
+                        <label><input type="checkbox" id="dia-5"> Vi</label>
+                        <label><input type="checkbox" id="dia-6"> Sá</label>
+                        <label><input type="checkbox" id="dia-0"> Do</label>
+                    </div>
                 </div>
 
                 <div style="display: flex; gap: 10px; justify-content: space-between; border-top: 1px solid #2c3540; padding-top: 10px;">
@@ -220,7 +233,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Recuerda que aquí debe ir el nombre de tu base de datos correcta (orbit o greenpoint)
         const firebaseConfig = {
             apiKey: "AIzaSyAMRLDlarJiomWY4IX5c6CR3RFWHqmMu30",
             authDomain: "orbit-80ba8.firebaseapp.com",
@@ -276,7 +288,7 @@
         }
         horariosBase.reverse(); 
 
-        // Variables Globales de Configuración (Ahora con Indoor/Outdoor)
+        // Variables Globales de Configuración
         let primerTurno = "08:00"; 
         let ultimoTurno = "21:30";   
         let duracionGlobal = 90; 
@@ -284,6 +296,7 @@
         let canchasOutdoorGlobal = 0;
         let precioIndoorGlobal = "15000";
         let precioOutdoorGlobal = "12000";
+        let diasAbiertosGlobal = [0,1,2,3,4,5,6]; // Por defecto todos abiertos
 
         let reservasGlobales = [];
         let reservaSeleccionadaId = null; 
@@ -315,7 +328,6 @@
             reservaSeleccionadaId = id; 
             const res = reservasGlobales.find(r => r.id === id);
             
-            // Botón Fijar Turno
             const btnFijar = document.getElementById('btn-toggle-fijo');
             if(res && res.fijo) {
                 btnFijar.innerHTML = "📌 Quitar Turno Fijo (Borrar recurrencia)";
@@ -325,7 +337,6 @@
                 btnFijar.style.backgroundColor = "#10b981"; 
             }
 
-            // Mostrar/Ocultar botón de WhatsApp
             const btnWpp = document.getElementById('btn-whatsapp');
             if (res && res.telefono && res.telefono.trim() !== "") {
                 btnWpp.style.display = 'block';
@@ -333,7 +344,6 @@
                 btnWpp.style.display = 'none';
             }
 
-            // Mostrar/Ocultar botón Cancelar Excepción (Solo si es fijo)
             const btnExc = document.getElementById('btn-excepcion');
             if (res && res.fijo) {
                 btnExc.style.display = 'block';
@@ -345,11 +355,10 @@
         }
         window.cerrarModalAcciones = function() { reservaSeleccionadaId = null; document.getElementById('modal-acciones').style.display = 'none'; }
 
-        // Métrica (Oculto código largo de métricas para ahorrar espacio, se mantiene igual)
         window.abrirModalMetricas = function() { document.getElementById('modal-metricas').style.display = 'flex'; }
         window.cerrarModalMetricas = function() { document.getElementById('modal-metricas').style.display = 'none'; }
 
-        window.abrirModalReservaJugador = function(hora, canchaPredeterminada = null) {
+        window.abrirModalReservaJugador = function(hora) {
             let minInicio = window.aMinutos(hora);
             let minUltimo = window.aMinutos(ultimoTurno);
             if (minInicio > minUltimo) { alert("Horario excede el límite del club."); return; }
@@ -370,7 +379,6 @@
             reservasGlobales.forEach(r => {
                 let aplica = false;
                 let canceladas = r.fechasCanceladas || [];
-                // Aplica si es la fecha original o si es fijo en este día y no está cancelado como excepción
                 if ((r.fecha || fechasValidas[0]) === fechaSeleccionada && !canceladas.includes(fechaSeleccionada)) aplica = true;
                 if (r.fijo === true && window.getDayOfWeekFromDate(r.fecha) === dowNumSelected && !canceladas.includes(fechaSeleccionada)) aplica = true;
 
@@ -386,27 +394,32 @@
                 }
             });
 
-            const selectCancha = document.getElementById('select-cancha-modal');
-            selectCancha.innerHTML = '';
-            let canchasLibresCount = 0;
+            // Lógica para asignar silenciosamente la primera cancha libre del tipo seleccionado
+            let indoorLibres = [];
+            for(let c=1; c<=canchasIndoorGlobal; c++) {
+                if(!canchasOcupadas.has(c)) indoorLibres.push(c);
+            }
+            
+            let outdoorLibres = [];
             let totalCanchas = canchasIndoorGlobal + canchasOutdoorGlobal;
-
-            for(let c = 1; c <= totalCanchas; c++) {
-                if(!canchasOcupadas.has(c)) { 
-                    // Determinar si es Indoor o Outdoor según el número de cancha
-                    let esIndoor = c <= canchasIndoorGlobal;
-                    let tipoTexto = esIndoor ? "Indoor" : "Outdoor";
-                    let precioCancha = esIndoor ? precioIndoorGlobal : precioOutdoorGlobal;
-
-                    selectCancha.innerHTML += `<option value="${c}" style="color: black;">Cancha ${c} (${tipoTexto}) - $${precioCancha}</option>`; 
-                    canchasLibresCount++;
-                }
+            for(let c=canchasIndoorGlobal+1; c<=totalCanchas; c++) {
+                if(!canchasOcupadas.has(c)) outdoorLibres.push(c);
             }
 
-            if (canchasLibresCount === 0) { alert("No hay canchas libres a esa hora."); return; }
+            const selectTipo = document.getElementById('select-cancha-modal');
+            selectTipo.innerHTML = '';
+            
+            if(indoorLibres.length > 0) {
+                // El valor oculto es el número de la cancha, pero el usuario solo lee "Indoor"
+                selectTipo.innerHTML += `<option value="${indoorLibres[0]}" style="color: black;">Indoor ($${precioIndoorGlobal})</option>`;
+            }
+            if(outdoorLibres.length > 0) {
+                selectTipo.innerHTML += `<option value="${outdoorLibres[0]}" style="color: black;">Outdoor ($${precioOutdoorGlobal})</option>`;
+            }
 
-            if (canchaPredeterminada && !canchasOcupadas.has(parseInt(canchaPredeterminada))) {
-                selectCancha.value = canchaPredeterminada;
+            if (indoorLibres.length === 0 && outdoorLibres.length === 0) { 
+                alert("No quedan canchas libres de ningún tipo a esa hora."); 
+                return; 
             }
 
             document.getElementById('input-nombre-jugador').value = ""; 
@@ -419,18 +432,19 @@
         window.confirmarReservaJugador = async function() {
             const inputNombre = document.getElementById('input-nombre-jugador').value;
             const inputTelefono = document.getElementById('input-telefono-jugador').value;
-            const selectCanchaModal = document.getElementById('select-cancha-modal').value;
+            // Al hacer value, capturamos automáticamente el número de cancha libre que escondimos en el option
+            const canchaAsignada = document.getElementById('select-cancha-modal').value;
 
             if (!inputNombre || inputNombre.trim() === "") { alert("Por favor, ingresa Nombre y Apellido."); return; }
             if (!inputTelefono || inputTelefono.trim() === "") { alert("Por favor, ingresa tu número de Teléfono."); return; }
 
             try {
                 await addDoc(collection(db, "reservas"), { 
-                    fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: selectCanchaModal, 
+                    fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: canchaAsignada, 
                     jugador: inputNombre, telefono: inputTelefono,
                     duracion: duracionGlobal, 
                     fechaRegistro: new Date(), asistencia: false, pagado: false, fijo: false,
-                    fechasCanceladas: [] // Array para las excepciones
+                    fechasCanceladas: [] 
                 });
                 alert("¡Reserva guardada con éxito!");
                 window.cerrarModalReservaJugador();
@@ -438,6 +452,11 @@
         }
 
         window.guardarConfiguracion = async function() {
+            let diasCheck = [];
+            [0,1,2,3,4,5,6].forEach(d => { 
+                if(document.getElementById('dia-'+d).checked) diasCheck.push(d); 
+            });
+
             try { 
                 await setDoc(doc(db, "configuracion", "club"), { 
                     primerTurno: document.getElementById('input-primer-turno').value, 
@@ -446,7 +465,8 @@
                     precioIndoor: document.getElementById('input-precio-in').value || "0",
                     canchasOutdoor: parseInt(document.getElementById('input-canchas-out').value) || 0,
                     precioOutdoor: document.getElementById('input-precio-out').value || "0",
-                    duracionTurno: parseInt(document.getElementById('input-duracion').value) || 90 
+                    duracionTurno: parseInt(document.getElementById('input-duracion').value) || 90,
+                    diasAbiertos: diasCheck
                 }); 
                 window.cerrarModalConfig();
                 alert("¡Configuración guardada!"); 
@@ -460,21 +480,25 @@
             } 
         }
         
-        // Nueva acción: Enviar WhatsApp
+        // ACCIÓN WHATSAPP CON MENSAJE PERSONALIZADO
         window.accionWhatsApp = function() {
             if(reservaSeleccionadaId) {
                 const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
                 if(res && res.telefono) {
-                    // Limpiamos el número para que solo queden dígitos
-                    let numeroLimpio = res.telefono.replace(/\D/g,'');
-                    window.open(`https://wa.me/${numeroLimpio}`, '_blank');
+                    let numeroLimpio = res.telefono.replace(/\D/g,''); // Solo deja los números
+                    let esIndoor = parseInt(res.cancha || "1") <= canchasIndoorGlobal;
+                    let tipoTurno = esIndoor ? "indoor" : "outdoor";
+                    let precioWsp = esIndoor ? precioIndoorGlobal : precioOutdoorGlobal;
+                    
+                    let mensaje = `te recordamos que tenes un turno a las ${res.hora} ${tipoTurno} con un precio de $${precioWsp}, Te esperamos`;
+                    
+                    window.open(`https://wa.me/${numeroLimpio}?text=${encodeURIComponent(mensaje)}`, '_blank');
                 }
             }
         }
 
-        // Nueva acción: Cancelar turno fijo solo para esa fecha
         window.accionCancelarExcepcion = async function() {
-            if(reservaSeleccionadaId && confirm(`¿Quieres cancelar este turno fijo SOLO para la fecha ${fechaSeleccionada}? Seguirá existiendo las próximas semanas.`)) {
+            if(reservaSeleccionadaId && confirm(`¿Quieres cancelar este turno fijo SOLO para la fecha ${fechaSeleccionada}?`)) {
                 const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
                 let canceladas = res.fechasCanceladas || [];
                 if (!canceladas.includes(fechaSeleccionada)) {
@@ -502,11 +526,13 @@
                 duracionGlobal = parseInt(data.duracionTurno) || 90; 
                 
                 canchasIndoorGlobal = parseInt(data.canchasIndoor);
-                if(isNaN(canchasIndoorGlobal)) canchasIndoorGlobal = 1; // Default
+                if(isNaN(canchasIndoorGlobal)) canchasIndoorGlobal = 1; 
                 
                 canchasOutdoorGlobal = parseInt(data.canchasOutdoor) || 0;
                 precioIndoorGlobal = data.precioIndoor || "15000";
                 precioOutdoorGlobal = data.precioOutdoor || "12000";
+                
+                diasAbiertosGlobal = data.diasAbiertos || [0,1,2,3,4,5,6]; // Lee los días abiertos de la base de datos
                 
                 document.getElementById('input-primer-turno').value = primerTurno;
                 document.getElementById('input-ultimo-turno').value = ultimoTurno;
@@ -515,6 +541,12 @@
                 document.getElementById('input-precio-in').value = precioIndoorGlobal;
                 document.getElementById('input-canchas-out').value = canchasOutdoorGlobal;
                 document.getElementById('input-precio-out').value = precioOutdoorGlobal;
+
+                // Tilda las casillas correctas en la configuración visual
+                [0,1,2,3,4,5,6].forEach(d => {
+                    const cb = document.getElementById('dia-'+d);
+                    if(cb) cb.checked = diasAbiertosGlobal.includes(d);
+                });
             }
             renderizarPantallas(); 
         });
@@ -527,52 +559,57 @@
 
         window.renderizarPantallas = function() {
             const totalCanchas = canchasIndoorGlobal + canchasOutdoorGlobal;
+            const dowNumSelected = window.getDayOfWeekFromDate(fechaSeleccionada);
 
             // 1. VISTA JUGADOR
             const contenedorHorarios = document.getElementById('lista-horarios');
             contenedorHorarios.innerHTML = '';
             
-            const dowNumSelected = window.getDayOfWeekFromDate(fechaSeleccionada);
-            const horariosFiltrados = horariosBase.filter(h => h >= primerTurno && h <= ultimoTurno);
-            const numBloquesNuevo = duracionGlobal / 30;
+            // VERIFICAMOS SI EL DÍA ESTÁ ABIERTO
+            if (!diasAbiertosGlobal.includes(dowNumSelected)) {
+                contenedorHorarios.innerHTML = '<div style="text-align:center; padding: 30px; color:#9ca3af; font-size: 1.1em; background: #242c36; border-radius: 8px;">El club se encuentra cerrado este día.</div>';
+            } else {
+                const horariosFiltrados = horariosBase.filter(h => h >= primerTurno && h <= ultimoTurno);
+                const numBloquesNuevo = duracionGlobal / 30;
 
-            horariosFiltrados.forEach(hora => {
-                let bloquesNuevos = [];
-                for(let b=0; b < numBloquesNuevo; b++) { bloquesNuevos.push(window.sumarMinutos(hora, b * 30)); }
-                
-                let canchasOcupadas = new Set();
-                
-                reservasGlobales.forEach(r => {
-                    let aplica = false;
-                    let canceladas = r.fechasCanceladas || [];
-                    if ((r.fecha || fechasValidas[0]) === fechaSeleccionada && !canceladas.includes(fechaSeleccionada)) aplica = true;
-                    if (r.fijo === true && window.getDayOfWeekFromDate(r.fecha) === dowNumSelected && !canceladas.includes(fechaSeleccionada)) aplica = true;
+                horariosFiltrados.forEach(hora => {
+                    let bloquesNuevos = [];
+                    for(let b=0; b < numBloquesNuevo; b++) { bloquesNuevos.push(window.sumarMinutos(hora, b * 30)); }
+                    
+                    let canchasOcupadas = new Set();
+                    
+                    reservasGlobales.forEach(r => {
+                        let aplica = false;
+                        let canceladas = r.fechasCanceladas || [];
+                        if ((r.fecha || fechasValidas[0]) === fechaSeleccionada && !canceladas.includes(fechaSeleccionada)) aplica = true;
+                        if (r.fijo === true && window.getDayOfWeekFromDate(r.fecha) === dowNumSelected && !canceladas.includes(fechaSeleccionada)) aplica = true;
 
-                    if(aplica) {
-                        let resDuracion = r.duracion || 90;
-                        let numBloquesRes = resDuracion / 30;
-                        let bloquesRes = [];
-                        for(let b=0; b < numBloquesRes; b++) { bloquesRes.push(window.sumarMinutos(r.hora, b * 30)); }
-                        
-                        if(bloquesNuevos.some(b => bloquesRes.includes(b))) {
-                            canchasOcupadas.add(parseInt(r.cancha || "1"));
+                        if(aplica) {
+                            let resDuracion = r.duracion || 90;
+                            let numBloquesRes = resDuracion / 30;
+                            let bloquesRes = [];
+                            for(let b=0; b < numBloquesRes; b++) { bloquesRes.push(window.sumarMinutos(r.hora, b * 30)); }
+                            
+                            if(bloquesNuevos.some(b => bloquesRes.includes(b))) {
+                                canchasOcupadas.add(parseInt(r.cancha || "1"));
+                            }
                         }
+                    });
+
+                    let canchasLibres = totalCanchas - canchasOcupadas.size;
+                    let hsTexto = duracionGlobal % 60 === 0 ? (duracionGlobal/60) : (duracionGlobal/60).toFixed(1);
+
+                    if (canchasLibres > 0) {
+                        const div = document.createElement('div'); div.className = 'turno-item';
+                        div.onclick = () => window.abrirModalReservaJugador(hora);
+                        let textoCanchas = canchasLibres === 1 ? "1 libre" : `${canchasLibres} libres`;
+                        div.innerHTML = `<span class="punto-verde"></span><span class="hora">${hora} hs | </span><span class="texto-disponible">Turno ${hsTexto} hs</span><span class="texto-canchas-disp">${textoCanchas}</span>`;
+                        contenedorHorarios.appendChild(div);
                     }
                 });
+            }
 
-                let canchasLibres = totalCanchas - canchasOcupadas.size;
-                let hsTexto = duracionGlobal % 60 === 0 ? (duracionGlobal/60) : (duracionGlobal/60).toFixed(1);
-
-                if (canchasLibres > 0) {
-                    const div = document.createElement('div'); div.className = 'turno-item';
-                    div.onclick = () => window.abrirModalReservaJugador(hora);
-                    let textoCanchas = canchasLibres === 1 ? "1 libre" : `${canchasLibres} libres`;
-                    div.innerHTML = `<span class="punto-verde"></span><span class="hora">${hora} hs | </span><span class="texto-disponible">Turno ${hsTexto} hs</span><span class="texto-canchas-disp">${textoCanchas}</span>`;
-                    contenedorHorarios.appendChild(div);
-                }
-            });
-
-            // 2. VISTA CLUB
+            // 2. VISTA CLUB (Esta se renderiza igual para que el admin vea la grilla vacía)
             const contenedorClub = document.getElementById('lista-reservas-club');
             contenedorClub.innerHTML = '';
 
@@ -608,7 +645,7 @@
                 
                 let esIndoor = c <= canchasIndoorGlobal;
                 let tipoLabel = esIndoor ? "Indoor" : "Outdoor";
-                let colorTipo = esIndoor ? "#3b82f6" : "#10b981"; // Azul indoor, verde outdoor
+                let colorTipo = esIndoor ? "#3b82f6" : "#10b981"; 
                 
                 htmlGrilla += `<div style="height: 50px; border-bottom: 1px solid #2c3540; text-align: center; background: #242c36; font-size: 0.9em; display:flex; flex-direction:column; justify-content:center;">
                                 <span style="font-weight: bold;">Cancha ${c}</span>
@@ -636,7 +673,7 @@
                     
                     let htmlExtra = "";
                     if (!bloquesOcupadosCancha.has(horaFormateada)) {
-                        htmlExtra = `class="celda-vacia-hover" style="height: 40px; ${borderStyle} box-sizing: border-box; cursor: pointer;" onclick="window.abrirModalReservaJugador('${horaFormateada}', '${c}')"`;
+                        htmlExtra = `class="celda-vacia-hover" style="height: 40px; ${borderStyle} box-sizing: border-box; cursor: pointer;" onclick="window.abrirModalReservaJugador('${horaFormateada}')"`;
                     } else {
                         htmlExtra = `style="height: 40px; ${borderStyle} box-sizing: border-box;"`;
                     }
@@ -648,7 +685,7 @@
                     let minRes = window.aMinutos(res.hora);
                     if (minRes < minActual && minFin > 1440) minRes += 1440;
                     
-                    let offsetTop = ((minRes - minActual) / 30) * 40 + 50; // +50 por el nuevo header de cancha
+                    let offsetTop = ((minRes - minActual) / 30) * 40 + 50; 
                     let resDur = res.duracion || 90;
                     let height = (resDur / 30) * 40; 
 
