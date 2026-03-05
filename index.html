@@ -240,11 +240,21 @@
                 <div style="flex: 1; text-align: left;">
                     <label style="font-size: 0.85em; color: #d1d5db;">Categoría a Analizar:</label>
                     <select id="select-categoria-metricas" class="input-form" style="margin-top: 4px;" onchange="window.actualizarGraficos()">
-                        <option value="indoor">Turnos P. Indoor</option>
-                        <option value="outdoor">Turnos P. Outdoor</option>
-                        <option value="tenis">Turnos Tenis</option>
-                        <option value="profes">Clases de Profesores</option>
-                    </select>
+    <optgroup label="Canchas y Turnos">
+        <option value="indoor">Turnos P. Indoor</option>
+        <option value="outdoor">Turnos P. Outdoor</option>
+        <option value="tenis">Turnos Tenis</option>
+        <option value="profes">Clases de Profesores</option>
+        <option value="turnos_fijos">📌 Turnos Fijos</option>
+        <option value="turnos_basicos">⚽ Turnos Básicos</option>
+    </optgroup>
+    <optgroup label="Finanzas e Inventario">
+        <option value="ganancias_brutas">💰 Ganancias Brutas</option>
+        <option value="gastos">💸 Gastos Generales</option>
+        <option value="ganancias_netas">📈 Ganancias Netas</option>
+        <option value="ventas_productos">🥤 Ventas de Productos</option>
+    </optgroup>
+</select>
                 </div>
             </div>
 
@@ -1358,17 +1368,31 @@
             const categoria = document.getElementById('select-categoria-metricas').value;
             
             let cestas = obtenerCestasPeriodo(periodo);
-            let datosCantidad = cestas.map(() => 0);
-            let datosHoras = cestas.map(() => 0);
+            let datosBarras = cestas.map(() => 0);
+            let datosLinea = cestas.map(() => 0);
 
-            // Filtrar y procesar reservas
+            // Determinar si la categoría elegida es de dinero o de cantidad
+            const esDinero = ['ganancias_brutas', 'gastos', 'ganancias_netas', 'ventas_productos'].includes(categoria);
+            const labelBarras = esDinero ? 'Monto Total ($)' : 'Cantidad de Turnos';
+            const labelLinea = esDinero ? 'Cant. Transacciones' : 'Horas Reservadas';
+
+            // Función auxiliar para obtener fecha en milisegundos
+            const getTime = (fechaStr, firebaseTimestamp) => {
+                if (firebaseTimestamp) return getDateFromFirebase(firebaseTimestamp).getTime();
+                if (fechaStr) {
+                    let [y, m, d] = fechaStr.split('-');
+                    return new Date(y, m-1, d).getTime();
+                }
+                return 0;
+            };
+
+            // --- 1. PROCESAR RESERVAS ---
             reservasGlobales.forEach(res => {
                 if(!res.fecha) return;
-                // Si la fecha fue cancelada en un fijo, ignorar
                 if(res.fechasCanceladas && res.fechasCanceladas.includes(res.fecha)) return;
                 
-                let [y, m, d] = res.fecha.split('-');
-                let time = new Date(y, m-1, d).getTime();
+                let timeTurno = getTime(res.fecha, null);
+                let timePago = res.fechaRegistro ? getTime(null, res.fechaRegistro) : timeTurno;
 
                 let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
                 let numC = parseInt(res.cancha) || 1;
@@ -1377,52 +1401,116 @@
                 let isOutdoor = numC > canchasIndoorGlobal && numC <= maxPadel;
                 let isTenis = numC > maxPadel;
                 let isProfe = res.esClase === true;
+                let isFijo = res.fijo === true;
+                
+                let duracion = (res.duracion || duracionGlobal) / 60;
+                let pagoTotal = (parseFloat(res.pagoEfectivo) || 0) + (parseFloat(res.pagoTransferencia) || 0);
 
-                let match = false;
-                if(categoria === 'indoor' && isIndoor && !isProfe) match = true;
-                if(categoria === 'outdoor' && isOutdoor && !isProfe) match = true;
-                if(categoria === 'tenis' && isTenis && !isProfe) match = true;
-                if(categoria === 'profes' && isProfe) match = true;
+                // Lógica para Turnos (Canchas)
+                let matchTurno = false;
+                if(categoria === 'indoor' && isIndoor && !isProfe) matchTurno = true;
+                if(categoria === 'outdoor' && isOutdoor && !isProfe) matchTurno = true;
+                if(categoria === 'tenis' && isTenis && !isProfe) matchTurno = true;
+                if(categoria === 'profes' && isProfe) matchTurno = true;
+                if(categoria === 'turnos_fijos' && isFijo) matchTurno = true;
+                if(categoria === 'turnos_basicos' && !isFijo) matchTurno = true;
 
-                if(!match) return;
+                if(matchTurno) {
+                    for(let i=0; i<cestas.length; i++) {
+                        if(timeTurno >= cestas[i].start && timeTurno < cestas[i].end) {
+                            datosBarras[i]++;
+                            datosLinea[i] += duracion;
+                            break;
+                        }
+                    }
+                }
 
-                // Sumar al periodo correspondiente
-                for(let i=0; i<cestas.length; i++) {
-                    if(time >= cestas[i].start && time < cestas[i].end) {
-                        datosCantidad[i]++;
-                        datosHoras[i] += (res.duracion || duracionGlobal) / 60;
-                        break;
+                // Lógica para Finanzas (Ingresos de Canchas)
+                if (pagoTotal > 0 && (categoria === 'ganancias_brutas' || categoria === 'ganancias_netas')) {
+                    for(let i=0; i<cestas.length; i++) {
+                        if(timePago >= cestas[i].start && timePago < cestas[i].end) {
+                            datosBarras[i] += pagoTotal;
+                            datosLinea[i]++; // Contamos como 1 transacción
+                            break;
+                        }
+                    }
+                }
+
+                // Lógica para Ventas de Productos (dentro de un turno)
+                if (categoria === 'ventas_productos' && res.consumos && res.consumos.length > 0) {
+                    let totalConsumos = res.consumos.reduce((acc, c) => acc + parseFloat(c.precio), 0);
+                    for(let i=0; i<cestas.length; i++) {
+                        if(timePago >= cestas[i].start && timePago < cestas[i].end) {
+                            datosBarras[i] += totalConsumos;
+                            datosLinea[i] += res.consumos.length;
+                            break;
+                        }
                     }
                 }
             });
 
-            const etiquetas = cestas.map(c => c.label);
+            // --- 2. PROCESAR INGRESOS Y VENTAS RAPIDAS ---
+            if (['ganancias_brutas', 'ganancias_netas', 'ventas_productos'].includes(categoria)) {
+                ingresosGlobal.forEach(ing => {
+                    let time = getTime(null, ing.fechaRegistro);
+                    let total = (parseFloat(ing.efectivo) || 0) + (parseFloat(ing.transferencia) || 0);
+                    let isVentaProducto = ing.titulo && ing.titulo.startsWith("Venta:");
 
-            const ctx = document.getElementById('graficoMetricas').getContext('2d');
-            
-            // Destruir gráfico anterior para evitar sobreposición
-            if (metricasChart) {
-                metricasChart.destroy();
+                    // Si buscamos productos y esto no es producto, saltar
+                    if (categoria === 'ventas_productos' && !isVentaProducto) return; 
+
+                    for(let i=0; i<cestas.length; i++) {
+                        if(time >= cestas[i].start && time < cestas[i].end) {
+                            datosBarras[i] += total;
+                            datosLinea[i]++;
+                            break;
+                        }
+                    }
+                });
             }
 
-            // Crear nuevo gráfico con estilo oscuro profesional
+            // --- 3. PROCESAR GASTOS ---
+            if (['gastos', 'ganancias_netas'].includes(categoria)) {
+                gastosGlobal.forEach(gas => {
+                    let time = getTime(null, gas.fechaRegistro);
+                    let total = parseFloat(gas.importe) || 0;
+                    
+                    for(let i=0; i<cestas.length; i++) {
+                        if(time >= cestas[i].start && time < cestas[i].end) {
+                            if (categoria === 'gastos') {
+                                datosBarras[i] += total;
+                                datosLinea[i]++;
+                            } else if (categoria === 'ganancias_netas') {
+                                datosBarras[i] -= total; // Restamos el gasto de la ganancia neta
+                            }
+                            break;
+                        }
+                    }
+                });
+            }
+
+            const etiquetas = cestas.map(c => c.label);
+            const ctx = document.getElementById('graficoMetricas').getContext('2d');
+            
+            if (metricasChart) { metricasChart.destroy(); }
+
             metricasChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: etiquetas,
                     datasets: [
                         {
-                            label: 'Cantidad de Turnos',
-                            data: datosCantidad,
-                            backgroundColor: '#3b82f6', // Azul principal
+                            label: labelBarras,
+                            data: datosBarras,
+                            backgroundColor: categoria === 'gastos' ? '#ef4444' : '#3b82f6', // Rojo para gastos, azul para lo demás
                             borderRadius: 4,
                             order: 2
                         },
                         {
-                            label: 'Horas Reservadas',
-                            data: datosHoras,
-                            type: 'line', // Mezcla línea y barra para mejor lectura
-                            borderColor: '#10b981', // Verde esmeralda
+                            label: labelLinea,
+                            data: datosLinea,
+                            type: 'line',
+                            borderColor: '#10b981',
                             backgroundColor: 'rgba(16, 185, 129, 0.1)',
                             borderWidth: 3,
                             fill: true,
@@ -1437,13 +1525,35 @@
                     color: '#d1d5db',
                     plugins: {
                         legend: { labels: { color: '#d1d5db', font: { family: "'Segoe UI', sans-serif" } } },
-                        tooltip: { mode: 'index', intersect: false }
+                        tooltip: { 
+                            mode: 'index', 
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    let value = context.parsed.y;
+                                    if (label) { label += ': '; }
+                                    // Formatear como dinero si corresponde al dataset de barras en categorías financieras
+                                    if (esDinero && context.datasetIndex === 0) {
+                                        label += '$' + value.toLocaleString('es-AR');
+                                    } else {
+                                        label += value;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
                             grid: { color: '#2c3540' },
-                            ticks: { color: '#9ca3af' }
+                            ticks: { 
+                                color: '#9ca3af',
+                                callback: function(value) {
+                                    return esDinero ? '$' + value.toLocaleString('es-AR') : value;
+                                }
+                            }
                         },
                         x: {
                             grid: { display: false },
@@ -1453,8 +1563,6 @@
                 }
             });
         }
-
-
         // --- RESERVA DESDE VISTA JUGADOR (PÚBLICA) ---
         window.abrirModalReservaJugador = function(hora) {
             let minI = window.aMinutos(hora); let minU = window.aMinutos(ultimoTurno);
