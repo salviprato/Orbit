@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reserva de Canchas Orbit - Modular</title>
+    <title>Reserva de Canchas Orbit</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -60,7 +60,7 @@
 
         /* Vista Club */
         .vista-club {
-            display: none; background-color: #1e252d; width: 100%; max-width: 1100px;
+            display: none; background-color: #1e252d; width: 100%; max-width: 900px;
             border-radius: 12px; padding: 20px; box-sizing: border-box;
         }
 
@@ -110,7 +110,7 @@
         }
         .btn-modal { padding: 12px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; color: white; font-size: 1em; transition: 0.2s; width: 100%; box-sizing: border-box;}
         
-        /* Colores botones */
+        /* Colores botones neutros */
         .btn-fijar { background-color: #10b981; } .btn-fijar:hover { background-color: #059669; }
         .btn-guardar { background-color: #10b981; } .btn-guardar:hover { background-color: #059669; }
         .btn-gasto { background-color: #4b5563; } .btn-gasto:hover { background-color: #374151; }
@@ -159,18 +159,17 @@
         <div id="calendario-jugador" class="calendario-strip"></div>
         <div class="sub-header">
             <span>Horarios Disponibles</span>
-            <span>Complejo</span>
+            <span>Orbit</span>
         </div>
         <div id="lista-horarios">Cargando horarios...</div>
     </div>
 
     <div id="pantalla-club" class="vista-club">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="margin: 0;">Panel de Control Modular</h2>
+            <h2 style="margin: 0;">Panel de Control</h2>
             <div style="display: flex; gap: 15px;">
                 <button onclick="window.abrirModalProfesores()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #9ca3af; transition: 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#9ca3af'" title="Gestión de Profesores">🧑‍🏫</button>
                 <button onclick="window.abrirModalFinanzas()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #9ca3af; transition: 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#9ca3af'" title="Finanzas e Inventario">💰</button>
-                <button onclick="window.abrirModalMetricas()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #9ca3af; transition: 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#9ca3af'" title="Métricas">📊</button>
                 <button onclick="window.abrirModalConfig()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #9ca3af; transition: 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#9ca3af'" title="Configuración del Club">⚙️</button>
             </div>
         </div>
@@ -196,22 +195,16 @@
 
     <div id="modal-reserva-jugador" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="margin: 0; margin-bottom: 5px;">Agendar Partido</h3>
+            <h3 style="margin: 0; margin-bottom: 5px;">Confirmar Reserva</h3>
             <p style="margin: 0; color: #9ca3af; margin-bottom: 15px;">Fecha: <strong id="reserva-fecha-display" style="color:white;"></strong><br>Horario: <strong id="reserva-hora-display" style="color:white;"></strong></p>
             
             <div style="text-align: left; display: flex; flex-direction: column; gap: 12px;">
                 <div>
-                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">1. Modalidad del Partido:</label>
-                    <select id="select-modalidad" class="input-form" style="margin-top: 5px;" onchange="window.actualizarOpcionesCanchas()"></select>
-                    <p id="mensaje-disponibilidad" style="color: #ef4444; font-size: 0.85em; font-weight: bold; margin: 5px 0 0 0; display: none;">No hay canchas disponibles para esta modalidad.</p>
+                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">1. Tipo de Cancha:</label>
+                    <select id="select-cancha-modal" class="input-form" style="margin-top: 5px;"></select>
                 </div>
-                
-                <div style="display: none;">
-                    <select id="select-cancha-modal" class="input-form"></select>
-                </div>
-
                 <div>
-                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">2. Nombre del Equipo / Jugador:</label>
+                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">2. Nombre y Apellido:</label>
                     <input type="text" id="input-nombre-jugador" class="input-form" placeholder="Ej: Franco Aramayo" style="margin-top: 5px;">
                 </div>
                 <div>
@@ -220,7 +213,7 @@
                 </div>
             </div>
 
-            <button id="btn-guardar-reserva" class="btn-modal btn-guardar" style="margin-top: 20px;" onclick="window.confirmarReservaJugador()">Confirmar Reserva</button>
+            <button class="btn-modal btn-guardar" style="margin-top: 20px;" onclick="window.confirmarReservaJugador()">Confirmar Reserva</button>
             <button class="btn-modal btn-cerrar" style="margin-top: 0;" onclick="window.cerrarModalReservaJugador()">Cancelar</button>
         </div>
     </div>
@@ -228,7 +221,7 @@
     <div id="modal-reserva-admin" class="modal-overlay" style="z-index: 1050;">
         <div class="modal-content">
             <h3 style="margin: 0; margin-bottom: 5px;">Agendar Evento (Admin)</h3>
-            <p style="margin: 0; color: #9ca3af; margin-bottom: 15px;">Fecha: <strong id="admin-fecha-display" style="color:white;"></strong><br>Horario: <strong id="admin-hora-display" style="color:white;"></strong></p>
+            <p style="margin: 0; color: #9ca3af; margin-bottom: 15px;">Fecha: <strong id="admin-fecha-display" style="color:white;"></strong><br>Horario: <strong id="admin-hora-display" style="color:white;"></strong><br>Cancha: <strong id="admin-cancha-display" style="color:white;"></strong></p>
             
             <input type="hidden" id="admin-cancha-id">
 
@@ -245,8 +238,8 @@
                     </div>
                     <div style="flex: 1;">
                         <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">Duración:</label>
-                        <select id="admin-duracion" class="input-form" style="margin-top: 5px;" onchange="window.actualizarOpcionesCanchasAdmin()">
-                            <option value="30">30 Min</option>
+                        <select id="admin-duracion" class="input-form" style="margin-top: 5px;">
+                            <option value="30">30 Minutos</option>
                             <option value="60">60 Min (1h)</option>
                             <option value="90">90 Min (1.5h)</option>
                             <option value="120">120 Min (2h)</option>
@@ -256,16 +249,6 @@
                     </div>
                 </div>
 
-                <div>
-                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">Modalidad Requerida:</label>
-                    <select id="select-modalidad-admin" class="input-form" style="margin-top: 5px;" onchange="window.actualizarOpcionesCanchasAdmin()"></select>
-                    <p id="mensaje-disponibilidad-admin" style="color: #ef4444; font-size: 0.85em; font-weight: bold; margin: 5px 0 0 0; display: none;">Cancha ocupada para la duración o modalidad requerida.</p>
-                </div>
-                
-                <div style="display: none;">
-                    <select id="select-cancha-admin" class="input-form"></select>
-                </div>
-
                 <div id="admin-div-profe" style="display:none; background: #242c36; padding: 10px; border-radius: 6px; border: 1px solid #44505d;">
                     <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">Elegir Profesor:</label>
                     <select id="admin-select-profe" class="input-form" style="margin-top: 5px;"></select>
@@ -273,7 +256,7 @@
 
                 <div>
                     <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">Nombre del Cliente / Título:</label>
-                    <input type="text" id="admin-input-jugador" class="input-form" placeholder="Ej: Franco Aramayo o 'Torneo Verano'" style="margin-top: 5px;">
+                    <input type="text" id="admin-input-jugador" class="input-form" placeholder="Ej: Franco o 'Torneo de Verano'" style="margin-top: 5px;">
                 </div>
                 <div>
                     <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">Teléfono (Opcional):</label>
@@ -304,7 +287,7 @@
                                 <option value="" disabled selected>Categoría...</option>
                                 <option value="Bebidas">Bebidas</option>
                                 <option value="Comida">Comida</option>
-                                <option value="Accesorios">Accesorios</option>
+                                <option value="Padel/Tenis">Padel/Tenis</option>
                             </select>
                         </div>
                         <div style="display: flex; gap: 8px; margin-bottom: 15px;">
@@ -566,10 +549,10 @@
             </div>
 
             <div style="display: flex; flex-wrap: wrap; gap: 8px; border-top: 1px solid #44505d; padding-top: 15px;">
-                <button class="btn-modal btn-whatsapp" id="btn-whatsapp" onclick="window.enviarWhatsApp()" style="flex: 1; min-width: 45%; font-size: 0.85em;">💬 WhatsApp</button>
+                <button class="btn-modal btn-whatsapp" id="btn-whatsapp" onclick="window.enviarWhatsApp()" style="flex: 1; min-width: 45%; font-size: 0.85em; color:#171d24;">💬 WhatsApp</button>
                 <button class="btn-modal btn-fijo" id="btn-toggle-fijo" onclick="window.hacerTurnoFijo()" style="flex: 1; min-width: 45%; font-size: 0.85em;">📌 Fijar Turno</button>
                 <button class="btn-modal btn-gasto" id="btn-excepcion" onclick="window.accionCancelarExcepcion()" style="flex: 1; min-width: 45%; font-size: 0.85em; display:none;">🚫 Cancelar Hoy</button>
-                <button class="btn-modal btn-cerrar" onclick="window.accionEliminar()" style="flex: 1; min-width: 45%; font-size: 0.85em; margin-top: 0;">🗑️ Borrar Turno</button>
+                <button class="btn-modal btn-cerrar" onclick="window.accionEliminar()" style="flex: 1; min-width: 45%; font-size: 0.85em; margin-top: 0;">🗑️ Borrar Evento</button>
             </div>
             <button class="btn-modal btn-cerrar" onclick="window.cerrarModalAcciones()">Cerrar Gestión</button>
         </div>
@@ -596,38 +579,17 @@
                     </div>
                 </div>
                 
-                <div style="border-top: 1px solid #44505d; padding-top: 10px; margin-top: 5px;">
-                    <label style="font-size: 0.9em; color: #3b82f6; font-weight: bold;">Precios por Modalidad ($)</label>
-                    <div style="display: flex; gap: 10px; margin-top: 8px;">
-                        <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">F7:</label><input type="number" id="input-precio-f7" step="500" class="input-form" style="margin-top: 4px;"></div>
-                        <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">F9:</label><input type="number" id="input-precio-f9" step="500" class="input-form" style="margin-top: 4px;"></div>
-                        <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">F11:</label><input type="number" id="input-precio-f11" step="500" class="input-form" style="margin-top: 4px;"></div>
-                    </div>
+                <div style="display: flex; gap: 10px; justify-content: space-between; border-top: 1px solid #2c3540; padding-top: 10px;">
+                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Cant. Pádel Indoor:</label><input type="number" id="input-canchas-in" min="0" class="input-form" style="margin-top: 4px;"></div>
+                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Precio P. Indoor:</label><input type="number" id="input-precio-in" step="500" class="input-form" style="margin-top: 4px;"></div>
                 </div>
-                
-                <div style="border-top: 1px solid #44505d; padding-top: 10px;">
-                    <label style="font-size: 0.9em; color: #3b82f6; font-weight: bold;">Inventario de Canchas Físicas</label>
-                    
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
-                        <label style="font-size: 0.85em; color: #d1d5db;">Canchas F7 (Puras):</label>
-                        <input type="number" id="input-canchas-f7" min="0" max="15" class="input-form" style="width: 60px;">
-                    </div>
-                    
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 6px;">
-                        <div>
-                            <label style="font-size: 0.85em; color: #d1d5db; display: block;">Canchas F9:</label>
-                            <span style="font-size: 0.7em; color: #9ca3af;">Equivale a <input type="number" id="input-equiv-f9" min="1" max="5" value="2" style="width: 30px; background: transparent; border: 1px solid #44505d; color: white; border-radius: 4px;"> F7s</span>
-                        </div>
-                        <input type="number" id="input-canchas-f9" min="0" max="10" class="input-form" style="width: 60px;">
-                    </div>
-
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 6px;">
-                        <div>
-                            <label style="font-size: 0.85em; color: #d1d5db; display: block;">Canchas F11:</label>
-                            <span style="font-size: 0.7em; color: #9ca3af;">Equivale a <input type="number" id="input-equiv-f11" min="1" max="5" value="3" style="width: 30px; background: transparent; border: 1px solid #44505d; color: white; border-radius: 4px;"> F7s</span>
-                        </div>
-                        <input type="number" id="input-canchas-f11" min="0" max="10" class="input-form" style="width: 60px;">
-                    </div>
+                <div style="display: flex; gap: 10px; justify-content: space-between;">
+                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Cant. Pádel Outdoor:</label><input type="number" id="input-canchas-out" min="0" class="input-form" style="margin-top: 4px;"></div>
+                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Precio P. Outdoor:</label><input type="number" id="input-precio-out" step="500" class="input-form" style="margin-top: 4px;"></div>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: space-between; border-top: 1px solid #2c3540; padding-top: 10px;">
+                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Cant. Tenis:</label><input type="number" id="input-canchas-tenis" min="0" class="input-form" style="margin-top: 4px;"></div>
+                    <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Precio Tenis:</label><input type="number" id="input-precio-tenis" step="500" class="input-form" style="margin-top: 4px;"></div>
                 </div>
 
                 <div>
@@ -644,26 +606,18 @@
         </div>
     </div>
 
-    <div id="modal-metricas" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">📊 Partidos Jugados</h3>
-            <div id="contenido-metricas" class="scroll-interno" style="text-align: left; max-height: 350px; overflow-y: auto; padding-right: 5px;"></div>
-            <button class="btn-modal btn-cerrar" style="margin-top: 15px;" onclick="window.cerrarModalMetricas()">Cerrar</button>
-        </div>
-    </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // CONEXIÓN CLUB (Reservas MODULAR)
+        // CONEXIÓN GREENPOINT (ORBIT)
         const firebaseConfig = {
-            apiKey: "AIzaSyAXRXx4WvjBvBWUXV-0LgOB1gOWmrVD7s4",
-            authDomain: "reservas-5ec9d.firebaseapp.com",
-            projectId: "reservas-5ec9d",
-            storageBucket: "reservas-5ec9d.firebasestorage.app",
-            messagingSenderId: "687599648901",
-            appId: "1:687599648901:web:4254769ea30997745c29ec"
+            apiKey: "AIzaSyAMRLDlarJiomWY4IX5c6CR3RFWHqmMu30",
+            authDomain: "greenpoint-80ba8.firebaseapp.com",
+            projectId: "greenpoint-80ba8",
+            storageBucket: "greenpoint-80ba8.firebasestorage.app",
+            messagingSenderId: "553295919513",
+            appId: "1:553295919513:web:79d5da1a535e3835e0bb08"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -723,15 +677,16 @@
         horariosBase.reverse(); 
 
         let primerTurno = "08:00"; 
-        let ultimoTurno = "23:00";   
-        let duracionGlobal = 60; 
+        let ultimoTurno = "21:30";   
+        let duracionGlobal = 90; 
         
-        let precioF7 = "15000";
-        let precioF9 = "20000";
-        let precioF11 = "25000";
+        let canchasIndoorGlobal = 1;
+        let canchasOutdoorGlobal = 0;
+        let canchasTenisGlobal = 0;
         
-        let cantF7 = 3; let cantF9 = 1; let cantF11 = 1;
-        let equivF9 = 2; let equivF11 = 3;
+        let precioIndoorGlobal = "15000";
+        let precioOutdoorGlobal = "12000";
+        let precioTenisGlobal = "10000";
 
         let diasAbiertosGlobal = [0,1,2,3,4,5,6]; 
 
@@ -744,24 +699,6 @@
         
         let reservaSeleccionadaId = null; 
         let reservaEnProcesoHora = null;
-        let columnasGrid = [];
-
-        function construirColumnas() {
-            columnasGrid = [];
-            for(let i=1; i<=cantF7; i++) {
-                columnasGrid.push({ id: `F7-${i}`, name: `F7-${i} (Pura)`, type: 'F7', parent: `F7-${i}`, index: 0 });
-            }
-            for(let i=1; i<=cantF9; i++) {
-                for(let j=1; j<=equivF9; j++) {
-                    columnasGrid.push({ id: `F9-${i}-S${j}`, name: `F9-${i} (Mitad ${j})`, type: 'F9-Sub', parent: `F9-${i}`, index: j-1 });
-                }
-            }
-            for(let i=1; i<=cantF11; i++) {
-                for(let j=1; j<=equivF11; j++) {
-                    columnasGrid.push({ id: `F11-${i}-S${j}`, name: `F11-${i} (Sec ${j})`, type: 'F11-Sub', parent: `F11-${i}`, index: j-1 });
-                }
-            }
-        }
 
         // --- FUNCIONES BLINDADAS ---
         window.aMinutos = function(horaStr) { 
@@ -794,6 +731,26 @@
             return new Date(field); 
         }
 
+        window.cambiarVista = function(vista) {
+            document.getElementById('pantalla-jugador').style.display = vista === 'jugador' ? 'block' : 'none';
+            document.getElementById('pantalla-club').style.display = vista === 'club' ? 'block' : 'none';
+            document.getElementById('btn-jugador').classList.toggle('activo', vista === 'jugador');
+            document.getElementById('btn-club').classList.toggle('activo', vista === 'club');
+            if(vista === 'club') actualizarLineaDeTiempo();
+        }
+
+        window.toggleAcordeon = function(id) {
+            const contenido = document.getElementById(id);
+            const flecha = document.getElementById('flecha-' + id);
+            if (contenido.classList.contains('abierto')) {
+                contenido.classList.remove('abierto');
+                flecha.innerText = '🔽';
+            } else {
+                contenido.classList.add('abierto');
+                flecha.innerText = '🔼';
+            }
+        }
+
         // --- LÍNEA DE TIEMPO EN VIVO ---
         function actualizarLineaDeTiempo() {
             const linea = document.getElementById('linea-tiempo-actual');
@@ -806,8 +763,7 @@
             if (minFinGrilla <= minInicioGrilla) minFinGrilla += 1440;
             if (mActuales < minInicioGrilla || mActuales > minFinGrilla) { linea.style.display = 'none'; return; }
             
-            const celdaH = 30;
-            let pixelesDesdeArriba = ((mActuales - minInicioGrilla) / 30) * celdaH + celdaH; 
+            let pixelesDesdeArriba = ((mActuales - minInicioGrilla) / 30) * 40 + 50;
             linea.style.top = `${pixelesDesdeArriba}px`;
             linea.style.display = 'block';
         }
@@ -865,529 +821,1178 @@
             });
         }
 
-        function getOcupadas(resDelDia, horaStr, duracionMin) {
-            let numBloques = duracionMin / 30;
-            let bloquesReq = [];
-            for(let b=0; b<numBloques; b++) bloquesReq.push(window.sumarMinutos(horaStr, b * 30));
-            
-            let ocupadasIds = new Set();
-            
-            resDelDia.forEach(r => {
-                let rBloques = [];
-                let rDur = r.duracion || duracionGlobal;
-                for(let b=0; b<rDur/30; b++) rBloques.push(window.sumarMinutos(r.hora, b * 30));
-                
-                let hayCruce = bloquesReq.some(b => rBloques.includes(b));
-                if (hayCruce) {
-                    if (r.modalidad === 'F7') {
-                        ocupadasIds.add(r.cancha);
-                    } else if (r.modalidad === 'F9') {
-                        if (r.cancha.includes('-S')) {
-                            let partes = r.cancha.split('-S'); let p = partes[0]; let s = parseInt(partes[1]);
-                            for(let j=0; j<equivF9; j++) ocupadasIds.add(`${p}-S${s + j}`);
-                        } else {
-                            for(let j=1; j<=equivF9; j++) ocupadasIds.add(`${r.cancha}-S${j}`);
-                        }
-                    } else if (r.modalidad === 'F11') {
-                        if (r.cancha.includes('-S')) {
-                            let partes = r.cancha.split('-S'); let p = partes[0]; let s = parseInt(partes[1]);
-                            for(let j=0; j<equivF11; j++) ocupadasIds.add(`${p}-S${s + j}`);
-                        } else {
-                            for(let j=1; j<=equivF11; j++) ocupadasIds.add(`${r.cancha}-S${j}`);
-                        }
+        // --- FINANZAS E INVENTARIO ---
+        window.abrirModalFinanzas = function() { document.getElementById('modal-finanzas').style.display = 'flex'; }
+        window.cerrarModalFinanzas = function() { document.getElementById('modal-finanzas').style.display = 'none'; }
+
+        // INVENTARIO
+        window.agregarInventario = async function() {
+            const nombre = document.getElementById('inv-nombre').value.trim();
+            const categoria = document.getElementById('inv-categoria').value;
+            const precio = document.getElementById('inv-precio').value;
+            const stock = document.getElementById('inv-stock').value;
+            const costo = document.getElementById('inv-costo').value;
+
+            if(!nombre || !categoria || !precio || stock === "" || costo === "") { alert("Completa todos los campos del producto."); return; }
+            try {
+                await addDoc(collection(db, "inventario"), { 
+                    nombre: nombre, categoria: categoria, 
+                    precio: parseFloat(precio), stock: parseInt(stock), costo: parseFloat(costo) 
+                });
+                document.getElementById('inv-nombre').value = ''; document.getElementById('inv-categoria').value = ''; 
+                document.getElementById('inv-precio').value = ''; document.getElementById('inv-stock').value = ''; document.getElementById('inv-costo').value = '';
+            } catch (error) { alert("Error al guardar."); }
+        }
+        window.eliminarInventario = async function(id) { if(confirm("¿Borrar este producto?")) await deleteDoc(doc(db, "inventario", id)); }
+        
+        window.abrirModalReposicion = function(id, nombre, costoAnterior) {
+            document.getElementById('reponer-id-prod').value = id;
+            document.getElementById('lbl-reponer-prod').innerText = `Reponiendo: ${nombre}`;
+            document.getElementById('reponer-cantidad').value = '';
+            document.getElementById('reponer-costo').value = costoAnterior || '';
+            document.getElementById('modal-reponer-stock').style.display = 'flex';
+        }
+        window.cerrarModalReposicion = function() { document.getElementById('modal-reponer-stock').style.display = 'none'; }
+
+        window.confirmarReposicionStock = async function() {
+            const id = document.getElementById('reponer-id-prod').value;
+            const cant = parseInt(document.getElementById('reponer-cantidad').value);
+            const costoUnitario = parseFloat(document.getElementById('reponer-costo').value);
+            const nombreProd = document.getElementById('lbl-reponer-prod').innerText.split(': ')[1];
+
+            if(isNaN(cant) || cant <= 0 || isNaN(costoUnitario) || costoUnitario < 0) { alert("Ingresa cantidad y costo válidos."); return; }
+
+            const prod = inventarioGlobal.find(p => p.id === id);
+            if(prod) {
+                let nuevoStock = (parseInt(prod.stock) || 0) + cant;
+                let gastoTotal = cant * costoUnitario;
+                try {
+                    await updateDoc(doc(db, "inventario", id), { stock: nuevoStock, costo: costoUnitario });
+                    if(gastoTotal > 0) {
+                        await addDoc(collection(db, "gastos"), { 
+                            titulo: `Reposición Stock: ${nombreProd}`, descripcion: `${cant} unidades a $${window.formatearDinero(costoUnitario)} c/u`, 
+                            importe: gastoTotal, fechaRegistro: serverTimestamp() 
+                        });
                     }
+                    window.cerrarModalReposicion();
+                } catch(e) { alert("Error al reponer stock."); }
+            }
+        }
+
+        // EDITAR PRECIO DE PRODUCTO
+        window.abrirModalEditarPrecio = function(id, nombre, precioActual) {
+            document.getElementById('editar-id-prod').value = id;
+            document.getElementById('lbl-editar-prod').innerText = `Producto: ${nombre}`;
+            document.getElementById('editar-precio-nuevo').value = precioActual || '';
+            document.getElementById('modal-editar-precio').style.display = 'flex';
+        }
+        window.cerrarModalEditarPrecio = function() { document.getElementById('modal-editar-precio').style.display = 'none'; }
+
+        window.confirmarEditarPrecio = async function() {
+            const id = document.getElementById('editar-id-prod').value;
+            const nuevoPrecio = parseFloat(document.getElementById('editar-precio-nuevo').value);
+            
+            if(isNaN(nuevoPrecio) || nuevoPrecio < 0) { alert("Ingresa un precio válido."); return; }
+
+            try {
+                await updateDoc(doc(db, "inventario", id), { precio: nuevoPrecio });
+                window.cerrarModalEditarPrecio();
+            } catch(e) { alert("Error al actualizar precio."); }
+        }
+
+        function renderizarInventario() {
+            const tbody = document.getElementById('tabla-inventario');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            if(inventarioGlobal.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #9ca3af; padding: 15px;">No hay productos</td></tr>'; return; }
+            
+            inventarioGlobal.sort((a, b) => a.nombre.localeCompare(b.nombre)).forEach(prod => {
+                let stockVal = parseInt(prod.stock) || 0;
+                tbody.innerHTML += `<tr>
+                    <td><strong class="text-neutral-main">${prod.nombre}</strong><br><small class="text-neutral-sub">${prod.categoria}</small></td>
+                    <td style="text-align: center; color: ${stockVal <= 0 ? '#ef4444' : '#d1d5db'}; font-weight: bold;">${stockVal}</td>
+                    <td style="text-align: right;" class="text-neutral-bold">$${window.formatearDinero(prod.precio)}</td>
+                    <td style="text-align: center;">
+                        <button class="btn-modal btn-stock" onclick="window.abrirModalReposicion('${prod.id}', '${prod.nombre}', ${prod.costo || 0})" title="Reponer Stock">➕</button>
+                        <button class="btn-modal btn-stock" onclick="window.abrirModalEditarPrecio('${prod.id}', '${prod.nombre}', ${prod.precio || 0})" title="Editar Precio" style="margin-left: 5px; background-color: #3b82f6;">✏️</button>
+                        <button onclick="window.eliminarInventario('${prod.id}')" style="background:none;border:none;cursor:pointer;font-size:1.1em; margin-left: 5px;" title="Borrar Producto">🗑️</button>
+                    </td></tr>`;
+            });
+            llenarSelectoresInventario();
+        }
+
+        function llenarSelectoresInventario() {
+            const selTurno = document.getElementById('select-consumo-turno');
+            if(selTurno) {
+                selTurno.innerHTML = '<option value="" disabled selected>Elegir producto...</option>';
+                inventarioGlobal.sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(p => {
+                    let stock = parseInt(p.stock) || 0;
+                    if(stock > 0) selTurno.innerHTML += `<option value="${p.id}">${p.nombre} ($${window.formatearDinero(p.precio)}) - Disp: ${stock}</option>`;
+                });
+            }
+
+            const selVR = document.getElementById('ingreso-select-prod');
+            if(selVR) {
+                selVR.innerHTML = '<option value="" disabled selected>Selecciona producto para vender...</option>';
+                inventarioGlobal.sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(p => {
+                    let stock = parseInt(p.stock) || 0;
+                    if(stock > 0) selVR.innerHTML += `<option value="${p.id}">${p.nombre} ($${window.formatearDinero(p.precio)}) - Disp: ${stock}</option>`;
+                });
+            }
+        }
+
+        // GASTOS
+        window.agregarGasto = async function() {
+            const titulo = document.getElementById('gasto-titulo').value.trim();
+            const desc = document.getElementById('gasto-desc').value.trim();
+            const importe = document.getElementById('gasto-importe').value;
+            if(!titulo || !importe) { alert("Completa Título e Importe."); return; }
+            try {
+                await addDoc(collection(db, "gastos"), { titulo: titulo, descripcion: desc, importe: parseFloat(importe), fechaRegistro: serverTimestamp() });
+                document.getElementById('gasto-titulo').value = ''; document.getElementById('gasto-desc').value = ''; document.getElementById('gasto-importe').value = '';
+            } catch (error) { alert("Error al registrar."); }
+        }
+        window.eliminarGasto = async function(id) { if(confirm("¿Eliminar este gasto?")) await deleteDoc(doc(db, "gastos", id)); }
+        function renderizarGastos() {
+            const tbody = document.getElementById('tabla-gastos');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            if(gastosGlobal.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #9ca3af; padding: 15px;">No hay gastos</td></tr>'; return; }
+            gastosGlobal.sort((a, b) => (b.fechaRegistro?.seconds || 0) - (a.fechaRegistro?.seconds || 0)).forEach(gasto => {
+                let descHtml = gasto.descripcion ? `<br><small class="text-neutral-sub" style="font-size:0.85em;">${gasto.descripcion}</small>` : '';
+                tbody.innerHTML += `<tr><td><strong class="text-neutral-main">${gasto.titulo}</strong>${descHtml}</td>
+                    <td style="text-align: right; font-weight: bold;" class="text-neutral-bold">$${window.formatearDinero(gasto.importe)}</td>
+                    <td style="text-align: center;"><button onclick="window.eliminarGasto('${gasto.id}')" style="background:none;border:none;cursor:pointer;font-size:1.1em;">🗑️</button></td></tr>`;
+            });
+        }
+
+        // INGRESOS
+        window.venderProductoMostrador = async function() {
+            const prodId = document.getElementById('ingreso-select-prod').value;
+            const efe = parseFloat(document.getElementById('ingreso-efectivo-prod').value) || 0;
+            const trans = parseFloat(document.getElementById('ingreso-transferencia-prod').value) || 0;
+            
+            if(!prodId) { alert("Selecciona un producto."); return; }
+            const prod = inventarioGlobal.find(p => p.id === prodId);
+            if(!prod) return;
+
+            let stockActual = parseInt(prod.stock) || 0;
+            if(stockActual <= 0) { alert("No hay stock suficiente."); return; }
+            if(efe === 0 && trans === 0) { alert("Ingresa el monto cobrado."); return; }
+
+            try {
+                await addDoc(collection(db, "ingresos"), { 
+                    titulo: `Venta: ${prod.nombre}`, efectivo: efe, transferencia: trans, fechaRegistro: serverTimestamp() 
+                });
+                await updateDoc(doc(db, "inventario", prodId), { stock: stockActual - 1 });
+                document.getElementById('ingreso-efectivo-prod').value = ''; document.getElementById('ingreso-transferencia-prod').value = '';
+                alert("Venta registrada y stock descontado.");
+            } catch(e) { alert("Error en la venta."); }
+        }
+
+        window.agregarIngresoLibre = async function() {
+            const titulo = document.getElementById('ingreso-titulo').value.trim();
+            const efe = parseFloat(document.getElementById('ingreso-efectivo').value) || 0;
+            const trans = parseFloat(document.getElementById('ingreso-transferencia').value) || 0;
+            if(!titulo || (efe === 0 && trans === 0)) { alert("Completa el detalle y al menos un monto."); return; }
+            try {
+                await addDoc(collection(db, "ingresos"), { titulo: titulo, efectivo: efe, transferencia: trans, fechaRegistro: serverTimestamp() });
+                document.getElementById('ingreso-titulo').value = ''; document.getElementById('ingreso-efectivo').value = ''; document.getElementById('ingreso-transferencia').value = '';
+            } catch (error) { alert("Error al registrar."); }
+        }
+        window.eliminarIngreso = async function(id) { if(confirm("¿Borrar este ingreso manual?")) await deleteDoc(doc(db, "ingresos", id)); }
+        
+        function renderizarIngresos() {
+            const tbody = document.getElementById('tabla-ingresos');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            let listaCombinada = [];
+            reservasGlobales.forEach(res => {
+                let efe = parseFloat(res.pagoEfectivo) || 0;
+                let trans = parseFloat(res.pagoTransferencia) || 0;
+                if(efe > 0 || trans > 0) {
+                    let tipoE = res.tipoEvento && res.tipoEvento !== 'Normal' ? ` [${res.tipoEvento}]` : '';
+                    listaCombinada.push({
+                        id: res.id, tipo: 'reserva', titulo: `Turno: ${res.jugador}${tipoE} (${res.fecha})`,
+                        efectivo: efe, transferencia: trans, fechaObj: getDateFromFirebase(res.fechaRegistro).getTime()
+                    });
                 }
             });
-            return ocupadasIds;
-        }
+            ingresosGlobal.forEach(ing => {
+                listaCombinada.push({
+                    id: ing.id, tipo: 'manual', titulo: ing.titulo,
+                    efectivo: parseFloat(ing.efectivo) || 0, transferencia: parseFloat(ing.transferencia) || 0,
+                    fechaObj: getDateFromFirebase(ing.fechaRegistro).getTime()
+                });
+            });
 
-        function calcularOpcionesCanchas(mod, ocupadas) {
-            let opciones = [];
-            if (mod === 'F7') {
-                let f7PurasLibres = columnasGrid.filter(c => c.type === 'F7' && !ocupadas.has(c.id));
-                let subsF9Libres = columnasGrid.filter(c => c.type === 'F9-Sub' && !ocupadas.has(c.id));
-                let subsF11Libres = columnasGrid.filter(c => c.type === 'F11-Sub' && !ocupadas.has(c.id));
+            if(listaCombinada.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #9ca3af; padding: 15px;">No hay ingresos registrados</td></tr>'; return; }
+
+            listaCombinada.sort((a, b) => b.fechaObj - a.fechaObj);
+
+            listaCombinada.forEach(item => {
+                let btnHtml = item.tipo === 'manual' 
+                    ? `<button onclick="window.eliminarIngreso('${item.id}')" style="background:none;border:none;cursor:pointer;font-size:1.1em;" title="Borrar">🗑️</button>`
+                    : `<span style="color:#9ca3af; font-size:0.8em; border: 1px solid #44505d; padding: 2px 5px; border-radius: 4px;">Turno</span>`;
                 
-                if (f7PurasLibres.length > 0) {
-                    opciones = f7PurasLibres.map(c => ({ id: c.id, label: `${c.name}` }));
-                } else if (subsF9Libres.length > 0) {
-                    let cuentaPadres = {};
-                    subsF9Libres.forEach(c => cuentaPadres[c.parent] = (cuentaPadres[c.parent] || 0) + 1);
-                    subsF9Libres.sort((a, b) => cuentaPadres[a.parent] - cuentaPadres[b.parent]);
-                    opciones = subsF9Libres.map(c => ({ id: c.id, label: `${c.name}` }));
-                } else if (subsF11Libres.length > 0) {
-                    let cuentaPadres = {};
-                    subsF11Libres.forEach(c => cuentaPadres[c.parent] = (cuentaPadres[c.parent] || 0) + 1);
-                    subsF11Libres.sort((a, b) => cuentaPadres[a.parent] - cuentaPadres[b.parent]);
-                    opciones = subsF11Libres.map(c => ({ id: c.id, label: `${c.name}` }));
-                }
-
-            } else if (mod === 'F9') {
-                let f9Completas = [];
-                for(let i=1; i<=cantF9; i++) {
-                    let libre = true;
-                    for(let j=1; j<=equivF9; j++) { if(ocupadas.has(`F9-${i}-S${j}`)) libre = false; }
-                    if(libre) f9Completas.push({ id: `F9-${i}`, label: `Cancha F9-${i}` });
-                }
-
-                let f9Adaptadas = [];
-                for(let i=1; i<=cantF11; i++) {
-                    let parent = `F11-${i}`;
-                    let startIdx = -1;
-                    for (let s=1; s <= equivF11 - equivF9 + 1; s++) {
-                        let libre = true;
-                        for (let j=0; j < equivF9; j++) { if (ocupadas.has(`${parent}-S${s + j}`)) libre = false; }
-                        if (libre) { startIdx = s; break; } 
-                    }
-                    if (startIdx !== -1) {
-                        let libresPadre = 0;
-                        for (let s=1; s<=equivF11; s++) { if(!ocupadas.has(`${parent}-S${s}`)) libresPadre++; }
-                        f9Adaptadas.push({ id: `${parent}-S${startIdx}`, label: `Cancha F11-${i}`, libres: libresPadre });
-                    }
-                }
-                f9Adaptadas.sort((a,b) => a.libres - b.libres);
-
-                if (f9Completas.length > 0) { opciones = f9Completas; } 
-                else { opciones = f9Adaptadas.map(a => ({ id: a.id, label: a.label })); }
-
-            } else if (mod === 'F11') {
-                for(let i=1; i<=cantF11; i++) {
-                    let canchaEnteraLibre = true;
-                    for(let j=1; j<=equivF11; j++) { if(ocupadas.has(`F11-${i}-S${j}`)) canchaEnteraLibre = false; }
-                    if (canchaEnteraLibre) opciones.push({ id: `F11-${i}`, label: `Cancha F11-${i}` });
-                }
-            }
-            return opciones;
+                tbody.innerHTML += `<tr><td><strong class="text-neutral-main">${item.titulo}</strong></td>
+                    <td style="text-align: right;" class="text-neutral-bold">$${window.formatearDinero(item.efectivo)}</td>
+                    <td style="text-align: right;" class="text-neutral-sub">$${window.formatearDinero(item.transferencia)}</td>
+                    <td style="text-align: center;">${btnHtml}</td></tr>`;
+            });
         }
 
-        // VISTA CLIENTES: Actualizar y abrir modal
-        window.actualizarOpcionesCanchas = function() {
-            if (!reservaEnProcesoHora) return;
-            let mod = document.getElementById('select-modalidad').value;
-            let resDelDia = reservasGlobales.filter(r => r.fecha === fechaSeleccionada);
-            let ocupadas = getOcupadas(resDelDia, reservaEnProcesoHora, duracionGlobal); 
+        // HISTORIAL DE TRANSACCIONES (COMPLETO)
+        function renderizarHistorial() {
+            const tbody = document.getElementById('tabla-historial');
+            if(!tbody) return;
+            tbody.innerHTML = '';
             
-            let opciones = calcularOpcionesCanchas(mod, ocupadas);
-            
-            const selectCancha = document.getElementById('select-cancha-modal');
-            const btnGuardar = document.getElementById('btn-guardar-reserva');
-            const msjDisp = document.getElementById('mensaje-disponibilidad');
+            let historial = [];
 
-            selectCancha.innerHTML = '';
-            if (opciones.length === 0) {
-                btnGuardar.disabled = true; btnGuardar.style.opacity = '0.5';
-                msjDisp.style.display = 'block';
-            } else {
-                opciones.forEach(o => selectCancha.innerHTML += `<option value="${o.id}" style="color:black;">${o.label}</option>`);
-                btnGuardar.disabled = false; btnGuardar.style.opacity = '1';
-                msjDisp.style.display = 'none';
+            // Añadir Gastos
+            gastosGlobal.forEach(g => {
+                let fr = getDateFromFirebase(g.fechaRegistro);
+                historial.push({
+                    fechaObj: fr,
+                    fechaStr: `${fr.getDate().toString().padStart(2,'0')}/${(fr.getMonth()+1).toString().padStart(2,'0')} ${fr.getHours().toString().padStart(2,'0')}:${fr.getMinutes().toString().padStart(2,'0')}`,
+                    detalle: g.titulo,
+                    monto: parseFloat(g.importe) || 0,
+                    tipo: 'gasto'
+                });
+            });
+
+            // Añadir Ingresos y Ventas manuales
+            ingresosGlobal.forEach(i => {
+                let fr = getDateFromFirebase(i.fechaRegistro);
+                let tot = (parseFloat(i.efectivo) || 0) + (parseFloat(i.transferencia) || 0);
+                historial.push({
+                    fechaObj: fr,
+                    fechaStr: `${fr.getDate().toString().padStart(2,'0')}/${(fr.getMonth()+1).toString().padStart(2,'0')} ${fr.getHours().toString().padStart(2,'0')}:${fr.getMinutes().toString().padStart(2,'0')}`,
+                    detalle: i.titulo,
+                    monto: tot,
+                    tipo: 'ingreso'
+                });
+            });
+
+            // Añadir Reservas Cobradas
+            reservasGlobales.forEach(r => {
+                let tot = (parseFloat(r.pagoEfectivo) || 0) + (parseFloat(r.pagoTransferencia) || 0);
+                if(tot > 0) {
+                    let fr = getDateFromFirebase(r.fechaRegistro); 
+                    let tipoE = r.tipoEvento && r.tipoEvento !== 'Normal' ? ` [${r.tipoEvento}]` : '';
+                    historial.push({
+                        fechaObj: fr,
+                        fechaStr: `${fr.getDate().toString().padStart(2,'0')}/${(fr.getMonth()+1).toString().padStart(2,'0')}`, 
+                        detalle: `Turno: ${r.jugador}${tipoE} (${r.fecha})`,
+                        monto: tot,
+                        tipo: 'ingreso'
+                    });
+                }
+            });
+
+            if(historial.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #9ca3af; padding: 15px;">No hay transacciones aún</td></tr>';
+                return;
             }
+
+            // Ordenar por fecha descendente
+            historial.sort((a,b) => b.fechaObj.getTime() - a.fechaObj.getTime());
+
+            historial.forEach(item => {
+                let colorMonto = item.tipo === 'ingreso' ? '#10b981' : '#ef4444';
+                let signo = item.tipo === 'ingreso' ? '+' : '-';
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="color: #9ca3af; font-size: 0.85em;">${item.fechaStr}</td>
+                        <td class="text-neutral-main">${item.detalle}</td>
+                        <td style="text-align: right; color: ${colorMonto}; font-weight: bold;">${signo} $${window.formatearDinero(item.monto)}</td>
+                    </tr>
+                `;
+            });
         }
 
-        window.abrirModalReservaCliente = function(hora) {
+        // COBRO DE CLASES
+        function renderizarClasesPendientes() {
+            const tbody = document.getElementById('tabla-clases-pendientes');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            let clasesPendientes = reservasGlobales.filter(r => {
+                if(!r.esClase) return false;
+                
+                let pCancha = 0;
+                let numC = parseInt(r.cancha || "1");
+                let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+                
+                if (numC <= canchasIndoorGlobal) { pCancha = parseInt(precioIndoorGlobal); } 
+                else if (numC <= maxPadel) { pCancha = parseInt(precioOutdoorGlobal); } 
+                else { pCancha = parseInt(precioTenisGlobal); }
+
+                let factorPrecio = (r.duracion || duracionGlobal) / duracionGlobal;
+                pCancha = pCancha * factorPrecio;
+
+                let cConsumos = (r.consumos || []).reduce((acc, c) => acc + parseFloat(c.precio), 0);
+                let desc = parseFloat(r.descuento) || 0;
+                let totalACobrar = pCancha + cConsumos - desc;
+                if(totalACobrar < 0) totalACobrar = 0;
+                
+                let abonado = (parseFloat(r.pagoEfectivo) || 0) + (parseFloat(r.pagoTransferencia) || 0);
+                
+                if(totalACobrar > 0 && abonado < totalACobrar) {
+                    r.faltante = totalACobrar - abonado;
+                    return true;
+                }
+                return false;
+            });
+
+            if(clasesPendientes.length === 0) { 
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #9ca3af; padding: 15px;">No hay clases pendientes de cobro</td></tr>'; 
+                return; 
+            }
+
+            clasesPendientes.sort((a,b) => {
+                if(a.fecha === b.fecha) return window.aMinutos(a.hora) - window.aMinutos(b.hora);
+                return new Date(a.fecha) - new Date(b.fecha);
+            }).forEach(clase => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <strong class="text-neutral-main">Profe: ${clase.profe}</strong><br>
+                            <small class="text-neutral-sub">Alum: ${clase.jugador} (${clase.fecha} ${clase.hora}hs)</small>
+                        </td>
+                        <td style="text-align: right; color: #ef4444; font-weight: bold;">$${window.formatearDinero(clase.faltante)}</td>
+                        <td style="text-align: center;">
+                            <button class="btn-modal btn-cobrar-clase" onclick="window.abrirModalCobrarClase('${clase.id}', '${clase.profe}', '${clase.jugador}', ${clase.faltante})">Cobrar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.abrirModalCobrarClase = function(id, profe, alumno, faltante) {
+            document.getElementById('cobrar-clase-id').value = id;
+            document.getElementById('lbl-cobrar-clase').innerText = `Prof: ${profe} | Alum: ${alumno}`;
+            document.getElementById('cobrar-clase-total').innerText = `$${window.formatearDinero(faltante)}`;
+            document.getElementById('clase-pago-efectivo').value = '';
+            document.getElementById('clase-pago-transferencia').value = '';
+            document.getElementById('modal-cobrar-clase').style.display = 'flex';
+        }
+        
+        window.cerrarModalCobrarClase = function() {
+            document.getElementById('modal-cobrar-clase').style.display = 'none';
+        }
+
+        window.confirmarCobroClase = async function() {
+            const id = document.getElementById('cobrar-clase-id').value;
+            const res = reservasGlobales.find(r => r.id === id);
+            if(!res) return;
+
+            let efeNuevo = parseFloat(document.getElementById('clase-pago-efectivo').value) || 0;
+            let transNuevo = parseFloat(document.getElementById('clase-pago-transferencia').value) || 0;
+
+            if(efeNuevo === 0 && transNuevo === 0) { alert("Ingresa un monto para cobrar."); return; }
+
+            let efeTotal = (parseFloat(res.pagoEfectivo) || 0) + efeNuevo;
+            let transTotal = (parseFloat(res.pagoTransferencia) || 0) + transNuevo;
+
+            try {
+                await updateDoc(doc(db, "reservas", id), { pagoEfectivo: efeTotal, pagoTransferencia: transTotal });
+                window.cerrarModalCobrarClase();
+            } catch(e) { alert("Error al registrar el cobro de la clase."); }
+        }
+
+        // BALANCES
+        window.generarBalance = async function() {
+            const titulo = document.getElementById('balance-titulo').value.trim();
+            const periodoDias = document.getElementById('balance-periodo').value;
+            if(!titulo || !periodoDias) { alert("Completa Nombre del Balance y Período."); return; }
+
+            let fechaLimite = new Date();
+            if (periodoDias !== "todo") {
+                fechaLimite.setDate(fechaLimite.getDate() - parseInt(periodoDias));
+            } else { fechaLimite = new Date(2000, 0, 1); }
+
+            let totalIngresos = 0; let totalGastos = 0;
+
+            reservasGlobales.forEach(res => {
+                let fr = getDateFromFirebase(res.fechaRegistro);
+                if(fr >= fechaLimite) totalIngresos += (parseFloat(res.pagoEfectivo) || 0) + (parseFloat(res.pagoTransferencia) || 0);
+            });
+            ingresosGlobal.forEach(ing => {
+                let fr = getDateFromFirebase(ing.fechaRegistro);
+                if(fr >= fechaLimite) totalIngresos += (parseFloat(ing.efectivo) || 0) + (parseFloat(ing.transferencia) || 0);
+            });
+            gastosGlobal.forEach(gasto => {
+                let fr = getDateFromFirebase(gasto.fechaRegistro);
+                if(fr >= fechaLimite) totalGastos += parseFloat(gasto.importe) || 0;
+            });
+
+            let gananciaNeta = totalIngresos - totalGastos;
+            let textoPeriodo = "";
+            if (periodoDias === "todo") { textoPeriodo = "Historial Completo"; } 
+            else if (periodoDias === "1") { textoPeriodo = "Últimas 24hs"; } 
+            else { textoPeriodo = `Últimos ${periodoDias} días`; }
+
+            try {
+                await addDoc(collection(db, "balances"), {
+                    titulo: titulo, periodoTexto: textoPeriodo, ingresos: totalIngresos, gastos: totalGastos,
+                    ganancia: gananciaNeta, fechaCreacion: serverTimestamp()
+                });
+                document.getElementById('balance-titulo').value = ''; document.getElementById('balance-periodo').value = '';
+            } catch (e) { alert("Error al guardar el balance."); }
+        }
+
+        window.eliminarBalance = async function(id) { if(confirm("¿Borrar este balance?")) await deleteDoc(doc(db, "balances", id)); }
+
+        function renderizarBalances() {
+            const tbody = document.getElementById('tabla-balances');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            if(balancesGlobal.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #9ca3af; padding: 15px;">No hay balances</td></tr>'; return; }
+
+            balancesGlobal.sort((a,b) => (b.fechaCreacion?.seconds || 0) - (a.fechaCreacion?.seconds || 0)).forEach(bal => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong class="text-neutral-main">${bal.titulo}</strong><br><small class="text-neutral-sub">(${bal.periodoTexto})</small></td>
+                        <td style="text-align: right;" class="text-neutral-sub">$${window.formatearDinero(bal.ingresos)}</td>
+                        <td style="text-align: right;" class="text-neutral-sub">$${window.formatearDinero(bal.gastos)}</td>
+                        <td style="text-align: right; font-weight: bold;" class="text-neutral-main">$${window.formatearDinero(bal.ganancia)}</td>
+                        <td style="text-align: center;"><button onclick="window.eliminarBalance('${bal.id}')" style="background:none;border:none;cursor:pointer;font-size:1.1em;">🗑️</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        // METRICAS
+        window.abrirModalMetricas = function() { calcularMetricas(); document.getElementById('modal-metricas').style.display = 'flex'; }
+        window.cerrarModalMetricas = function() { document.getElementById('modal-metricas').style.display = 'none'; }
+        function calcularMetricas() {
+            const m = {}; const n = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            reservasGlobales.forEach(r => {
+                if(!r.fecha) return; let p = r.fecha.split('-'); let txt = `${n[parseInt(p[1])-1]} ${p[0]}`;
+                if(!m[txt]) m[txt] = { t: 0 }; m[txt].t++;
+            });
+            let html = ""; let k = Object.keys(m);
+            if(k.length===0){ document.getElementById('contenido-metricas').innerHTML = "<p style='color:#9ca3af; text-align:center;'>Aún no hay partidos.</p>"; return; }
+            k.sort().reverse().forEach(mes => {
+                html += `<div style="background:#242c36; padding:15px; border-radius:8px; margin-bottom:15px; border: 1px solid #2c3540;">
+                            <h4 style="margin:0 0 10px 0; color:#3b82f6; border-bottom:1px solid #44505d; padding-bottom:8px;">📅 ${mes}</h4>
+                            <div style="text-align: center; background: #171d24; padding: 10px; border-radius: 6px;">
+                                <div style="font-size: 1.8em; font-weight: bold; color: #10b981;">${m[mes].t}</div>
+                                <div style="font-size: 0.9em; color: #9ca3af;">Eventos Totales</div>
+                            </div></div>`;
+            });
+            document.getElementById('contenido-metricas').innerHTML = html;
+        }
+
+        // --- RESERVA DESDE VISTA JUGADOR (PÚBLICA) ---
+        window.abrirModalReservaJugador = function(hora) {
             let minI = window.aMinutos(hora); let minU = window.aMinutos(ultimoTurno);
-            if (minI > minU) { alert("Supera el límite de cierre."); return; }
+            if (minI > minU) { alert("Horario excede el límite del club."); return; }
             if(validarEsHoraPasada(hora)) { alert("No puedes reservar un horario que ya pasó."); return; }
 
             reservaEnProcesoHora = hora;
             let pF = fechaSeleccionada.split('-');
             document.getElementById('reserva-fecha-display').innerText = `${pF[2]}/${pF[1]}/${pF[0]}`;
-            document.getElementById('reserva-hora-display').innerText = `${hora} hs`;
+            document.getElementById('reserva-hora-display').innerText = `${hora} hs (${duracionGlobal/60}h)`;
 
-            let selectMod = document.getElementById('select-modalidad');
-            selectMod.innerHTML = '';
-            if (cantF7 > 0 || cantF9 > 0 || cantF11 > 0) selectMod.innerHTML += `<option value="F7">Fútbol 7 ($${window.formatearDinero(precioF7)})</option>`;
-            if (cantF9 > 0 || cantF11 > 0) selectMod.innerHTML += `<option value="F9">Fútbol 9 ($${window.formatearDinero(precioF9)})</option>`;
-            if (cantF11 > 0) selectMod.innerHTML += `<option value="F11">Fútbol 11 ($${window.formatearDinero(precioF11)})</option>`;
+            const dowNumSelected = window.getDayOfWeekFromDate(fechaSeleccionada);
+            const numBloquesNuevo = duracionGlobal / 30;
+            let bloquesNuevos = [];
+            for(let b=0; b < numBloquesNuevo; b++) { bloquesNuevos.push(window.sumarMinutos(hora, b * 30)); }
+
+            let canchasOcupadas = new Set();
+            reservasGlobales.forEach(r => {
+                let aplica = false;
+                let canceladas = r.fechasCanceladas || [];
+                if ((r.fecha || fechasValidas[0]) === fechaSeleccionada && !canceladas.includes(fechaSeleccionada)) aplica = true;
+                if (r.fijo === true && window.getDayOfWeekFromDate(r.fecha) === dowNumSelected && !canceladas.includes(fechaSeleccionada)) aplica = true;
+
+                if (aplica) {
+                    let resDuracion = r.duracion || duracionGlobal;
+                    let numBloquesRes = resDuracion / 30;
+                    let bloquesRes = [];
+                    for(let b=0; b < numBloquesRes; b++) { bloquesRes.push(window.sumarMinutos(r.hora, b * 30)); }
+                    if(bloquesNuevos.some(b => bloquesRes.includes(b))) {
+                        let n = parseInt(r.cancha);
+                        if(!isNaN(n)) canchasOcupadas.add(n);
+                    }
+                }
+            });
+
+            let totalCanchas = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0) + (canchasTenisGlobal || 0);
+            let maxPadel = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0);
+
+            let indoorLibres = [];
+            for(let c=1; c<=(canchasIndoorGlobal || 0); c++) { if(!canchasOcupadas.has(c)) indoorLibres.push(c); }
             
-            window.actualizarOpcionesCanchas();
+            let outdoorLibres = [];
+            for(let c=(canchasIndoorGlobal || 0)+1; c<=maxPadel; c++) { if(!canchasOcupadas.has(c)) outdoorLibres.push(c); }
+            
+            let tenisLibres = [];
+            for(let c=maxPadel+1; c<=totalCanchas; c++) { if(!canchasOcupadas.has(c)) tenisLibres.push(c); }
 
-            document.getElementById('input-nombre-cliente').value = ""; 
-            document.getElementById('input-telefono-cliente').value = ""; 
-            document.getElementById('modal-reserva-cliente').style.display = 'flex';
+            const selectTipo = document.getElementById('select-cancha-modal');
+            selectTipo.innerHTML = '';
+            
+            if(indoorLibres.length > 0) selectTipo.innerHTML += `<option value="${indoorLibres[0]}" style="color: black;">Indoor ($${window.formatearDinero(precioIndoorGlobal)})</option>`;
+            if(outdoorLibres.length > 0) selectTipo.innerHTML += `<option value="${outdoorLibres[0]}" style="color: black;">Outdoor ($${window.formatearDinero(precioOutdoorGlobal)})</option>`;
+            if(tenisLibres.length > 0) selectTipo.innerHTML += `<option value="${tenisLibres[0]}" style="color: black;">Tenis ($${window.formatearDinero(precioTenisGlobal)})</option>`;
+
+            if (indoorLibres.length === 0 && outdoorLibres.length === 0 && tenisLibres.length === 0) { alert("No quedan canchas libres."); return; }
+
+            document.getElementById('input-nombre-jugador').value = ""; document.getElementById('input-telefono-jugador').value = ""; 
+            document.getElementById('modal-reserva-jugador').style.display = 'flex';
         }
 
-        window.cerrarModalReservaCliente = function() { reservaEnProcesoHora = null; document.getElementById('modal-reserva-cliente').style.display = 'none'; }
+        window.cerrarModalReservaJugador = function() { reservaEnProcesoHora = null; document.getElementById('modal-reserva-jugador').style.display = 'none'; }
 
-        window.confirmarReservaCliente = async function() {
-            const iN = document.getElementById('input-nombre-cliente').value;
-            const iT = document.getElementById('input-telefono-cliente').value;
-            const cM = document.getElementById('select-cancha-modal').value;
-            const mod = document.getElementById('select-modalidad').value;
+        window.confirmarReservaJugador = async function() {
+            const inputNombre = document.getElementById('input-nombre-jugador').value;
+            const inputTelefono = document.getElementById('input-telefono-jugador').value;
+            const canchaAsignada = document.getElementById('select-cancha-modal').value;
 
-            if (!iN) { alert("Ingresa el Nombre."); return; }
-            if (!cM) { alert("No hay cancha seleccionada válida."); return; }
-            
-            const btn = document.getElementById('btn-guardar-reserva');
-            btn.innerText = "Guardando..."; btn.disabled = true;
+            if (!inputNombre || inputNombre.trim() === "") { alert("Por favor, ingresa Nombre y Apellido."); return; }
+            if (!inputTelefono || inputTelefono.trim() === "") { alert("Por favor, ingresa tu número de Teléfono."); return; }
 
             try {
                 await addDoc(collection(db, "reservas"), { 
-                    fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: cM, modalidad: mod,
-                    jugador: iN, telefono: iT, duracion: duracionGlobal, 
-                    fechaRegistro: serverTimestamp(), esFijo: false,
-                    pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: [], tipoEvento: "Normal"
+                    fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: canchaAsignada, 
+                    jugador: inputNombre, telefono: inputTelefono, duracion: duracionGlobal, 
+                    fechaRegistro: serverTimestamp(), asistencia: false, fijo: false, fechasCanceladas: [],
+                    pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: [],
+                    tipoEvento: "Normal", esClase: false, profe: null
                 });
-                window.cerrarModalReservaCliente();
-            } catch (error) { 
-                alert("Error de red."); 
-            } finally {
-                btn.innerText = "Confirmar Turno"; btn.disabled = false;
-            }
+                alert("¡Reserva guardada con éxito!");
+                window.cerrarModalReservaJugador();
+            } catch (error) { alert("Hubo un error de conexión."); }
         }
 
-
-        // --- VISTA ADMIN: NUEVO MODAL PERSONALIZADO ---
+        // --- RESERVA DESDE VISTA ADMIN (GRILLA) ---
         window.cambioTipoEvento = function() {
             let tipo = document.getElementById('admin-tipo-evento').value;
             let divProfe = document.getElementById('admin-div-profe');
-            if(tipo === 'Clases') { divProfe.style.display = 'block'; } 
-            else { divProfe.style.display = 'none'; }
-        }
-
-        window.actualizarOpcionesCanchasAdmin = function() {
-            if (!reservaEnProcesoHora) return;
-            let mod = document.getElementById('select-modalidad-admin').value;
-            let duracionAdmin = parseInt(document.getElementById('select-duracion-admin').value) || duracionGlobal;
-            
-            let resDelDia = reservasGlobales.filter(r => r.fecha === fechaSeleccionada);
-            let ocupadas = getOcupadas(resDelDia, reservaEnProcesoHora, duracionAdmin);
-            
-            let opciones = calcularOpcionesCanchas(mod, ocupadas);
-            
-            const selectCancha = document.getElementById('select-cancha-admin');
-            const btnGuardar = document.getElementById('btn-guardar-reserva-admin');
-            const msjDisp = document.getElementById('mensaje-disponibilidad-admin');
-
-            selectCancha.innerHTML = '';
-            if (opciones.length === 0) {
-                btnGuardar.disabled = true; btnGuardar.style.opacity = '0.5';
-                msjDisp.style.display = 'block';
+            if(tipo === 'Clases') {
+                divProfe.style.display = 'block';
             } else {
-                opciones.forEach(o => selectCancha.innerHTML += `<option value="${o.id}" style="color:black;">${o.label}</option>`);
-                btnGuardar.disabled = false; btnGuardar.style.opacity = '1';
-                msjDisp.style.display = 'none';
+                divProfe.style.display = 'none';
             }
         }
 
-        window.abrirModalReservaAdmin = function(hora) {
-            let minI = window.aMinutos(hora); let minU = window.aMinutos(ultimoTurno);
-            if (minI > minU) { alert("Supera el límite de cierre."); return; }
+        window.abrirModalReservaAdmin = function(hora, cancha) {
+            let minInicio = window.aMinutos(hora);
+            let minUltimo = window.aMinutos(ultimoTurno);
+            if (minInicio > minUltimo) { alert("Horario excede el límite del club."); return; }
             if(validarEsHoraPasada(hora)) { alert("No puedes reservar un horario que ya pasó."); return; }
 
             reservaEnProcesoHora = hora;
-            let pF = fechaSeleccionada.split('-');
-            document.getElementById('admin-fecha-display').innerText = `${pF[2]}/${pF[1]}/${pF[0]}`;
+            document.getElementById('admin-cancha-id').value = cancha;
+
+            const partes = fechaSeleccionada.split('-');
+            const f = new Date(partes[0], partes[1] - 1, partes[2]);
+            document.getElementById('admin-fecha-display').innerText = `${f.getDate()}/${f.getMonth() + 1}/${f.getFullYear()}`;
             document.getElementById('admin-hora-display').innerText = `${hora} hs`;
-
-            document.getElementById('select-evento-admin').value = "Normal";
-            window.cambioTipoEvento();
-            document.getElementById('select-duracion-admin').value = duracionGlobal.toString();
-
-            let selectMod = document.getElementById('select-modalidad-admin');
-            selectMod.innerHTML = '';
-            if (cantF7 > 0 || cantF9 > 0 || cantF11 > 0) selectMod.innerHTML += `<option value="F7">Fútbol 7</option>`;
-            if (cantF9 > 0 || cantF11 > 0) selectMod.innerHTML += `<option value="F9">Fútbol 9</option>`;
-            if (cantF11 > 0) selectMod.innerHTML += `<option value="F11">Fútbol 11</option>`;
             
-            window.actualizarOpcionesCanchasAdmin();
+            let numC = parseInt(cancha);
+            let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+            let tipoC = "";
+            if (numC <= canchasIndoorGlobal) tipoC = "Indoor";
+            else if (numC <= maxPadel) tipoC = "Outdoor";
+            else tipoC = "Tenis";
 
-            document.getElementById('input-nombre-admin').value = ""; 
-            document.getElementById('input-telefono-admin').value = ""; 
+            document.getElementById('admin-cancha-display').innerText = `Cancha ${cancha} (${tipoC})`;
+            
+            document.getElementById('admin-tipo-evento').value = "Normal";
+            window.cambioTipoEvento();
+            document.getElementById('admin-duracion').value = duracionGlobal.toString();
+
+            document.getElementById('admin-input-jugador').value = ""; 
+            document.getElementById('admin-input-telefono').value = ""; 
+            
             document.getElementById('modal-reserva-admin').style.display = 'flex';
         }
 
         window.cerrarModalReservaAdmin = function() { reservaEnProcesoHora = null; document.getElementById('modal-reserva-admin').style.display = 'none'; }
 
         window.confirmarReservaAdmin = async function() {
-            const iN = document.getElementById('input-nombre-admin').value;
-            const iT = document.getElementById('input-telefono-admin').value;
-            const cM = document.getElementById('select-cancha-admin').value;
-            const mod = document.getElementById('select-modalidad-admin').value;
-            const duracionAdmin = parseInt(document.getElementById('select-duracion-admin').value) || duracionGlobal;
-            const tipoEvento = document.getElementById('select-evento-admin').value;
-
+            const inputNombre = document.getElementById('admin-input-jugador').value;
+            const inputTelefono = document.getElementById('admin-input-telefono').value;
+            const canchaAsignada = document.getElementById('admin-cancha-id').value;
+            const tipoEvento = document.getElementById('admin-tipo-evento').value;
+            const duracionSel = parseInt(document.getElementById('admin-duracion').value) || duracionGlobal;
+            
             let profeSel = null;
             if(tipoEvento === 'Clases') {
                 profeSel = document.getElementById('admin-select-profe').value;
                 if(!profeSel) { alert("Selecciona un profesor para la clase."); return; }
             }
 
-            if (!iN) { alert("Ingresa el Nombre o Título del evento."); return; }
-            if (!cM) { alert("No hay cancha seleccionada válida para este bloque de tiempo."); return; }
+            if (!inputNombre || inputNombre.trim() === "") { alert("Por favor, ingresa el Nombre / Título."); return; }
             
+            // Validar superposición con la duración custom seleccionada
+            const dowNumSelectedClub = window.getDayOfWeekFromDate(fechaSeleccionada);
+            let bloqueNuevoMinutos = [];
+            for(let b=0; b < duracionSel/30; b++) { bloqueNuevoMinutos.push(window.sumarMinutos(reservaEnProcesoHora, b * 30)); }
+            
+            let hayCruce = false;
+            reservasGlobales.forEach(r => {
+                if(r.cancha != canchaAsignada) return;
+                let aplica = false;
+                let canceladas = r.fechasCanceladas || [];
+                if ((r.fecha || fechasValidas[0]) === fechaSeleccionada && !canceladas.includes(fechaSeleccionada)) aplica = true;
+                if (r.fijo === true && window.getDayOfWeekFromDate(r.fecha) === dowNumSelectedClub && !canceladas.includes(fechaSeleccionada)) aplica = true;
+
+                if (aplica) {
+                    let rBloques = [];
+                    for(let b=0; b < (r.duracion || duracionGlobal)/30; b++) { rBloques.push(window.sumarMinutos(r.hora, b * 30)); }
+                    if(bloqueNuevoMinutos.some(b => rBloques.includes(b))) { hayCruce = true; }
+                }
+            });
+
+            if(hayCruce) {
+                alert("La duración seleccionada se superpone con otro turno en esta cancha.");
+                return;
+            }
+
             const btn = document.getElementById('btn-guardar-reserva-admin');
             btn.innerText = "Guardando..."; btn.disabled = true;
 
             try {
                 await addDoc(collection(db, "reservas"), { 
-                    fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: cM, modalidad: mod,
-                    jugador: iN, telefono: iT, duracion: duracionAdmin, 
-                    fechaRegistro: serverTimestamp(), esFijo: false,
-                    pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: [], 
+                    fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: canchaAsignada, 
+                    jugador: inputNombre, telefono: inputTelefono, duracion: duracionSel, 
+                    fechaRegistro: serverTimestamp(), asistencia: false, fijo: false, fechasCanceladas: [],
+                    pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: [],
                     tipoEvento: tipoEvento, esClase: (tipoEvento === 'Clases'), profe: profeSel
                 });
                 window.cerrarModalReservaAdmin();
-            } catch (error) { 
-                alert("Error de red."); 
-            } finally {
-                btn.innerText = "Guardar Evento"; btn.disabled = false;
+            } catch (error) { alert("Hubo un error de conexión."); }
+            finally { btn.innerText = "Guardar Evento"; btn.disabled = false; }
+        }
+
+        // --- GESTIÓN DE TURNOS (ACCIONES) ---
+        window.abrirModal = function(id) { 
+            reservaSeleccionadaId = id; 
+            const res = reservasGlobales.find(r => r.id === id);
+            if(!res) return;
+            document.getElementById('pago-efectivo').value = res.pagoEfectivo || "";
+            document.getElementById('pago-transferencia').value = res.pagoTransferencia || "";
+            document.getElementById('pago-descuento').value = res.descuento || "";
+            renderizarModalTurnoAcciones();
+            document.getElementById('modal-acciones').style.display = 'flex'; 
+        }
+
+        window.renderizarModalTurnoAcciones = function() {
+            if(!reservaSeleccionadaId) return;
+            const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
+            if(!res) { window.cerrarModalAcciones(); return; }
+
+            let txtE = (res.tipoEvento && res.tipoEvento !== 'Normal') ? `[${res.tipoEvento}]` : '';
+            document.getElementById('titulo-modal-acciones').innerText = `Gestión: ${res.jugador} ${txtE} (${res.hora}hs)`;
+
+            const btnFijar = document.getElementById('btn-toggle-fijo');
+            if(res.fijo) { btnFijar.innerHTML = "📌 Quitar Turno Fijo"; btnFijar.style.backgroundColor = "#4b5563"; } 
+            else { btnFijar.innerHTML = "📌 Fijar Turno"; btnFijar.style.backgroundColor = "#374151"; }
+
+            document.getElementById('btn-whatsapp').style.display = (res.telefono && res.telefono.trim() !== "") ? 'block' : 'none';
+            document.getElementById('btn-excepcion').style.display = res.fijo ? 'block' : 'none';
+
+            let factorPrecio = (res.duracion || duracionGlobal) / duracionGlobal;
+            let pCancha = 0;
+            let numC = parseInt(res.cancha || "1");
+            let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+            
+            if (numC <= canchasIndoorGlobal) { pCancha = parseInt(precioIndoorGlobal); } 
+            else if (numC <= maxPadel) { pCancha = parseInt(precioOutdoorGlobal); } 
+            else { pCancha = parseInt(precioTenisGlobal); }
+            pCancha = pCancha * factorPrecio;
+            
+            let consumos = res.consumos || [];
+            let totalConsumos = consumos.reduce((acc, curr) => acc + (parseFloat(curr.precio) || 0), 0);
+            
+            let desc = parseFloat(res.descuento) || 0;
+            let totalGeneral = pCancha + totalConsumos - desc;
+            if(totalGeneral < 0) totalGeneral = 0;
+
+            document.getElementById('res-precio-cancha').innerText = `$${window.formatearDinero(pCancha)}`;
+            document.getElementById('res-precio-consumos').innerText = `$${window.formatearDinero(totalConsumos)}`;
+            document.getElementById('res-precio-total').innerText = `$${window.formatearDinero(totalGeneral)}`;
+
+            let sel = document.getElementById('select-consumo-turno');
+            sel.innerHTML = '<option value="" disabled selected>Elegir producto...</option>';
+            inventarioGlobal.sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(p => {
+                let stock = parseInt(p.stock) || 0;
+                if(stock > 0) sel.innerHTML += `<option value="${p.id}">${p.nombre} - $${window.formatearDinero(p.precio)}</option>`;
+            });
+
+            let ul = document.getElementById('lista-consumos-turno');
+            ul.innerHTML = '';
+            if(consumos.length === 0) {
+                ul.innerHTML = '<li style="color: #9ca3af; font-style: italic;">Sin consumos adicionales.</li>';
+            } else {
+                consumos.forEach((c, index) => {
+                    ul.innerHTML += `<li style="display: flex; justify-content: space-between; border-bottom: 1px solid #2c3540; padding: 5px 0;">
+                            <span class="text-neutral-main">${c.nombre}</span><span><span class="text-neutral-bold" style="margin-right: 10px;">$${window.formatearDinero(c.precio)}</span>
+                            <button onclick="window.eliminarConsumoTurno(${index}, '${c.prodId}')" style="background:none;border:none;cursor:pointer;font-size:1.1em;">❌</button></span></li>`;
+                });
+            }
+            window.calcularFaltante(); 
+        }
+
+        window.cerrarModalAcciones = function() { reservaSeleccionadaId = null; document.getElementById('modal-acciones').style.display = 'none'; }
+
+        window.agregarConsumoTurno = async function() {
+            if(!reservaSeleccionadaId) return;
+            const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
+            const select = document.getElementById('select-consumo-turno');
+            const prodId = select.value;
+            if(!prodId) return;
+            
+            const producto = inventarioGlobal.find(p => p.id === prodId);
+            if(producto) {
+                let stockActual = parseInt(producto.stock) || 0;
+                if(stockActual <= 0) { alert("No hay stock disponible de este producto."); return; }
+
+                let consumosActuales = res.consumos || [];
+                consumosActuales.push({ prodId: producto.id, nombre: producto.nombre, precio: producto.precio });
+                
+                try {
+                    await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { consumos: consumosActuales });
+                    await updateDoc(doc(db, "inventario", prodId), { stock: stockActual - 1 });
+                } catch(e) { alert("Error al añadir consumo."); }
             }
         }
 
-
-        window.renderizarPantallas = function() {
-            let fActualStr = fechaSeleccionada;
-            let fSelecObj = new Date(fActualStr.split('-')[0], fActualStr.split('-')[1] - 1, fActualStr.split('-')[2]);
-            let diaCerrado = !diasAbiertosGlobal.includes(fSelecObj.getDay());
-
-            const contHorarios = document.getElementById('lista-horarios');
-            const contTurnero = document.getElementById('lista-reservas-club');
+        window.eliminarConsumoTurno = async function(index, prodId) {
+            if(!reservaSeleccionadaId) return;
+            const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
+            let consumosActuales = res.consumos || [];
             
-            contHorarios.innerHTML = ''; contTurnero.innerHTML = '';
+            consumosActuales.splice(index, 1);
+            
+            try {
+                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { consumos: consumosActuales });
+                if(prodId && prodId !== 'undefined') {
+                    const producto = inventarioGlobal.find(p => p.id === prodId);
+                    if(producto) {
+                        let stockActual = parseInt(producto.stock) || 0;
+                        await updateDoc(doc(db, "inventario", prodId), { stock: stockActual + 1 });
+                    }
+                }
+            } catch(e) { alert("Error al quitar consumo."); }
+        }
 
-            if (diaCerrado) {
-                contHorarios.innerHTML = `<p style="text-align:center; color:#9ca3af; margin-top:20px;">El complejo está cerrado.</p>`;
-                contTurnero.innerHTML = `<p style="text-align:center; color:#9ca3af; margin-top:40px;">No hay actividad. Complejo cerrado.</p>`;
+        window.calcularFaltante = function() {
+            if(!reservaSeleccionadaId) return;
+            const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
+            if(!res) return;
+
+            let factorPrecio = (res.duracion || duracionGlobal) / duracionGlobal;
+            let pCancha = 0;
+            let numC = parseInt(res.cancha || "1");
+            let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+            if (numC <= canchasIndoorGlobal) { pCancha = parseInt(precioIndoorGlobal); } 
+            else if (numC <= maxPadel) { pCancha = parseInt(precioOutdoorGlobal); } 
+            else { pCancha = parseInt(precioTenisGlobal); }
+            pCancha = pCancha * factorPrecio;
+
+            let cConsumos = (res.consumos || []).reduce((acc, c) => acc + parseFloat(c.precio), 0);
+            
+            let desc = parseFloat(document.getElementById('pago-descuento').value) || 0;
+            let tGen = pCancha + cConsumos - desc;
+            if(tGen < 0) tGen = 0;
+
+            let efe = parseFloat(document.getElementById('pago-efectivo').value) || 0;
+            let trans = parseFloat(document.getElementById('pago-transferencia').value) || 0;
+
+            let faltante = tGen - (efe + trans);
+            let txt = document.getElementById('txt-faltante');
+            document.getElementById('res-precio-total').innerText = `$${window.formatearDinero(tGen)}`;
+
+            if(faltante <= 0 && tGen > 0) {
+                txt.innerText = `Pagado por completo ✅`; txt.style.color = "#d1d5db";
+            } else {
+                txt.innerText = `Falta cobrar: $${window.formatearDinero(faltante)}`; txt.style.color = "#ef4444";
+            }
+        }
+
+        window.cobrarTurno = async function() {
+            if(!reservaSeleccionadaId) return;
+            let efe = parseFloat(document.getElementById('pago-efectivo').value) || 0;
+            let trans = parseFloat(document.getElementById('pago-transferencia').value) || 0;
+            let desc = parseFloat(document.getElementById('pago-descuento').value) || 0;
+            try {
+                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { pagoEfectivo: efe, pagoTransferencia: trans, descuento: desc });
+                window.cerrarModalAcciones();
+            } catch(e) { alert("Error al registrar pago."); }
+        }
+
+        window.hacerTurnoFijo = async function() { 
+            if(!reservaSeleccionadaId) return;
+            const resO = reservasGlobales.find(r => r.id === reservaSeleccionadaId); if(!resO) return;
+
+            if (resO.fijo) { 
+                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fijo: false });
+                window.cerrarModalAcciones();
                 return; 
             }
 
-            let resDelDia = reservasGlobales.filter(r => r.fecha === fechaSeleccionada);
-
-            // 1. VISTA CLIENTE
-            const horariosFiltrados = horariosBase.filter(h => h >= primerTurno && h <= ultimoTurno);
-            try {
-                horariosFiltrados.forEach(hora => {
-                    if(validarEsHoraPasada(hora)) return; 
-
-                    let ocupadas = getOcupadas(resDelDia, hora, duracionGlobal); 
-                    
-                    let libresF7Total = columnasGrid.filter(c => c.type === 'F7' && !ocupadas.has(c.id)).length;
-                    let libresF9Completas = 0;
-                    for(let i=1; i<=cantF9; i++) {
-                        let ok = true; for(let j=1; j<=equivF9; j++) { if(ocupadas.has(`F9-${i}-S${j}`)) ok=false; }
-                        if (ok) libresF9Completas++;
-                    }
-                    let libresF9enF11 = 0;
-                    for(let i=1; i<=cantF11; i++) {
-                        for (let s=1; s <= equivF11 - equivF9 + 1; s++) {
-                            let ok = true;
-                            for(let j=0; j<equivF9; j++) { if(ocupadas.has(`F11-${i}-S${s + j}`)) ok=false; }
-                            if (ok) { libresF9enF11++; break; } 
-                        }
-                    }
-                    let totalF9Disponibles = libresF9Completas + libresF9enF11;
-                    let libresF11Completas = 0;
-                    for(let i=1; i<=cantF11; i++) {
-                        let ok = true; for(let j=1; j<=equivF11; j++) { if(ocupadas.has(`F11-${i}-S${j}`)) ok=false; }
-                        if (ok) libresF11Completas++;
-                    }
-
-                    if (libresF7Total > 0 || totalF9Disponibles > 0 || libresF11Completas > 0) {
-                        const div = document.createElement('div'); div.className = 'turno-item';
-                        div.onclick = () => window.abrirModalReservaCliente(hora);
-                        
-                        let tags = [];
-                        if (libresF11Completas > 0) tags.push(`${libresF11Completas} F11`);
-                        if (totalF9Disponibles > 0) tags.push(`${totalF9Disponibles} F9`);
-                        if (libresF7Total > 0) tags.push(`Total ${libresF7Total} F7`);
-                        
-                        div.innerHTML = `<span class="punto-verde"></span><span class="hora">${hora} hs | </span><span class="texto-disponible">Turno ${duracionGlobal/60}h</span><span class="texto-canchas-disp">${tags.join(' / ')} libres</span>`;
-                        contHorarios.appendChild(div);
-                    }
-                });
-            } catch(e) { console.error("Error render cliente:", e); }
-
-            // 2. VISTA TURNERO GRILLA
-            let minActual = window.aMinutos(primerTurno);
-            let minFin = window.aMinutos(ultimoTurno) + duracionGlobal; 
-            if (minFin <= minActual) minFin += 1440; 
+            if (!confirm("¿Convertir en TURNO FIJO?\n\nEl sistema reservará automáticamente esta misma cancha y horario para las próximas semanas.")) return;
 
             try {
-                let htmlGrilla = `<div class="contenedor-grilla">`;
-                const celdaH = 30; 
-
-                // LINEA DE TIEMPO
-                htmlGrilla += `<div id="linea-tiempo-actual"></div>`;
-
-                htmlGrilla += `<div style="width: 55px; flex-shrink: 0; border-right: 1px solid #2c3540; background: #1e252d;">`;
-                htmlGrilla += `<div style="height: ${celdaH}px; border-bottom: 1px solid #2c3540; background: #242c36;"></div>`; 
-                for (let m = minActual; m < minFin; m += 30) {
-                    let hStr = (m % 60 === 0) ? `${Math.floor(m / 60) % 24}:00` : '';
-                    let border = (m % 60 === 0) ? 'border-bottom: 1px dashed rgba(255,255,255,0.05);' : 'border-bottom: 1px solid #2c3540;';
-                    htmlGrilla += `<div style="height: ${celdaH}px; ${border} text-align: center; color: #9ca3af; font-size: 0.8em; padding-top: 3px; box-sizing: border-box;">${hStr}</div>`;
+                let idG = "FIJO-" + Date.now();
+                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fijo: true, grupoFijoId: idG });
+                
+                let p = []; let fB = new Date(`${resO.fecha}T12:00:00`); 
+                for(let i=1; i<=52; i++) {
+                    let fT = new Date(fB); fT.setDate(fT.getDate() + (i * 7));
+                    let fISO = `${fT.getFullYear()}-${(fT.getMonth()+1).toString().padStart(2,'0')}-${fT.getDate().toString().padStart(2,'0')}`;
+                    p.push(addDoc(collection(db, "reservas"), { 
+                        ...resO, id: undefined, fecha: fISO, fechaRegistro: serverTimestamp(), fijo: true, grupoFijoId: idG, pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: []
+                    }));
                 }
-                htmlGrilla += `</div>`;
+                await Promise.all(p); 
+                alert(`¡Turno Fijo establecido exitosamente!`); 
+                window.cerrarModalAcciones();
+            } catch (e) { alert("Error al establecer fijo."); }
+        }
 
-                columnasGrid.forEach(col => {
-                    htmlGrilla += `<div style="flex: 1; min-width: 140px; border-right: 1px solid #2c3540; position: relative;">`;
-                    htmlGrilla += `<div style="height: ${celdaH}px; border-bottom: 1px solid #2c3540; text-align: center; line-height: ${celdaH}px; font-weight: bold; background: #242c36; font-size: 0.85em; color: #d1d5db; overflow: hidden; white-space: nowrap;">${col.name}</div>`;
+        window.accionEliminar = async function() { 
+            if(!reservaSeleccionadaId) return;
+            const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
+            if(!res) return;
+
+            if (res.fijo && res.grupoFijoId) {
+                let accion = confirm("Este es un TURNO FIJO.\n\n[ACEPTAR] para eliminar TODO el turno fijo desde esta fecha en adelante.\n[CANCELAR] para eliminar SOLO el partido de esta semana.");
+                if (accion) {
+                    let futuros = reservasGlobales.filter(r => r.grupoFijoId === res.grupoFijoId && r.fecha >= res.fecha);
+                    if (confirm(`Se eliminarán permanentemente ${futuros.length} partidos. ¿Continuar?`)) {
+                        let promesas = futuros.map(f => deleteDoc(doc(db, "reservas", f.id)));
+                        await Promise.all(promesas);
+                        window.cerrarModalAcciones();
+                    }
+                } else {
+                    if (confirm("¿Borrar solo este partido específico?")) {
+                        await deleteDoc(doc(db, "reservas", reservaSeleccionadaId)); 
+                        window.cerrarModalAcciones(); 
+                    }
+                }
+            } else {
+                if(confirm("¿Cancelar este evento?")) { 
+                    await deleteDoc(doc(db, "reservas", reservaSeleccionadaId)); 
+                    window.cerrarModalAcciones(); 
+                }
+            }
+        }
+        
+        window.accionWhatsApp = function() {
+            if(reservaSeleccionadaId) {
+                const r = reservasGlobales.find(x => x.id === reservaSeleccionadaId);
+                if(r && r.telefono) {
+                    let numeroLimpio = r.telefono.replace(/\D/g,''); 
                     
-                    for (let m = minActual; m < minFin; m += 30) {
-                        let hFormateada = `${(Math.floor(m / 60) % 24).toString().padStart(2,'0')}:${(m % 60).toString().padStart(2,'0')}`;
-                        let border = (m % 60 === 0) ? 'border-bottom: 1px dashed rgba(255,255,255,0.05);' : 'border-bottom: 1px solid #2c3540;';
+                    let factorPrecio = (r.duracion || duracionGlobal) / duracionGlobal;
+                    let pCancha = 0;
+                    let tipoCancha = "indoor";
+                    let numC = parseInt(r.cancha || "1");
+                    let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+                    
+                    if (numC <= canchasIndoorGlobal) {
+                        pCancha = parseInt(precioIndoorGlobal);
+                        tipoCancha = "Pádel Indoor";
+                    } else if (numC <= maxPadel) {
+                        pCancha = parseInt(precioOutdoorGlobal);
+                        tipoCancha = "Pádel Outdoor";
+                    } else {
+                        pCancha = parseInt(precioTenisGlobal);
+                        tipoCancha = "Tenis";
+                    }
+                    pCancha = pCancha * factorPrecio;
+
+                    let desc = parseFloat(r.descuento) || 0;
+                    let precioFinal = pCancha - desc;
+
+                    let txtDur = r.duracion ? ` de ${r.duracion} min` : '';
+                    let mensaje = `Hola ${r.jugador}, confirmamos tu turno${txtDur} a las ${r.hora} en cancha de ${tipoCancha}. El valor a abonar es de $${window.formatearDinero(precioFinal)}. Te esperamos!`;
+                    window.open(`https://wa.me/${numeroLimpio}?text=${encodeURIComponent(mensaje)}`, '_blank');
+                }
+            }
+        }
+
+        window.accionCancelarExcepcion = async function() {
+            if(reservaSeleccionadaId && confirm(`¿Quieres cancelar este turno fijo SOLO para la fecha ${fechaSeleccionada}?`)) {
+                const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
+                let canceladas = res.fechasCanceladas || [];
+                if (!canceladas.includes(fechaSeleccionada)) {
+                    canceladas.push(fechaSeleccionada);
+                    await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fechasCanceladas: canceladas });
+                }
+                window.cerrarModalAcciones();
+            }
+        }
+
+        // --- RENDERIZAR PANTALLAS ---
+        window.renderizarPantallas = function() {
+            try {
+                let totalCanchas = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0) + (canchasTenisGlobal || 0);
+                if (totalCanchas <= 0) totalCanchas = 1; 
+
+                const dowNumSelected = window.getDayOfWeekFromDate(fechaSeleccionada);
+
+                // 1. VISTA JUGADOR
+                const contenedorHorarios = document.getElementById('lista-horarios');
+                contenedorHorarios.innerHTML = '';
+                
+                if (!diasAbiertosGlobal.includes(dowNumSelected)) {
+                    contenedorHorarios.innerHTML = '<div style="text-align:center; padding: 30px; color:#9ca3af; font-size: 1.1em; background: #242c36; border-radius: 8px;">El club se encuentra cerrado este día.</div>';
+                } else {
+                    const horariosFiltrados = horariosBase.filter(h => h >= primerTurno && h <= ultimoTurno);
+                    const numBloquesNuevo = duracionGlobal / 30;
+
+                    horariosFiltrados.forEach(hora => {
+                        if(validarEsHoraPasada(hora)) return; // <-- BLOQUEO HORARIOS PASADOS
+
+                        let bloquesNuevos = [];
+                        for(let b=0; b < numBloquesNuevo; b++) { bloquesNuevos.push(window.sumarMinutos(hora, b * 30)); }
                         
-                        let isOcupadoAhora = false;
-                        resDelDia.forEach(r => {
-                            let mI = window.aMinutos(r.hora); let mF = mI + (r.duracion || duracionGlobal);
-                            if (m >= mI && m < mF) {
-                                if (r.modalidad === 'F7' && r.cancha === col.id) isOcupadoAhora = true;
-                                if (r.modalidad === 'F9') {
-                                    if (r.cancha.includes('-S') && r.cancha.split('-S')[0] === col.parent) {
-                                        let startS = parseInt(r.cancha.split('-S')[1]);
-                                        if (col.index + 1 >= startS && col.index + 1 < startS + equivF9) isOcupadoAhora = true;
-                                    } else if (!r.cancha.includes('-S') && r.cancha === col.parent) isOcupadoAhora = true;
+                        let canchasOcupadas = new Set();
+                        reservasGlobales.forEach(r => {
+                            let aplica = false;
+                            let canceladas = r.fechasCanceladas || [];
+                            if ((r.fecha || fechasValidas[0]) === fechaSeleccionada && !canceladas.includes(fechaSeleccionada)) aplica = true;
+                            if (r.fijo === true && window.getDayOfWeekFromDate(r.fecha) === dowNumSelected && !canceladas.includes(fechaSeleccionada)) aplica = true;
+
+                            if(aplica) {
+                                let resDuracion = r.duracion || duracionGlobal; // USA duracion de la reserva si existe
+                                let numBloquesRes = resDuracion / 30;
+                                let bloquesRes = [];
+                                for(let b=0; b < numBloquesRes; b++) { bloquesRes.push(window.sumarMinutos(r.hora, b * 30)); }
+                                if(bloquesNuevos.some(b => bloquesRes.includes(b))) {
+                                    let n = parseInt(r.cancha);
+                                    if(!isNaN(n)) canchasOcupadas.add(n);
                                 }
-                                if (r.modalidad === 'F11' && r.cancha === col.parent) isOcupadoAhora = true;
                             }
                         });
 
-                        let esPasado = validarEsHoraPasada(hFormateada);
+                        let indoorLibres = [];
+                        for(let c=1; c<=(canchasIndoorGlobal || 0); c++) { if(!canchasOcupadas.has(c)) indoorLibres.push(c); }
+                        
+                        let outdoorLibres = [];
+                        let maxPadel = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0);
+                        for(let c=(canchasIndoorGlobal || 0)+1; c<=maxPadel; c++) { if(!canchasOcupadas.has(c)) outdoorLibres.push(c); }
+                        
+                        let tenisLibres = [];
+                        for(let c=maxPadel+1; c<=totalCanchas; c++) { if(!canchasOcupadas.has(c)) tenisLibres.push(c); }
 
-                        if (!isOcupadoAhora) {
-                            if (esPasado) {
-                                htmlGrilla += `<div style="height: ${celdaH}px; ${border} box-sizing: border-box; opacity: 0.2; cursor: not-allowed; background: rgba(0,0,0,0.3);"></div>`;
-                            } else {
-                                htmlGrilla += `<div class="celda-vacia-hover" style="height: ${celdaH}px; ${border} box-sizing: border-box; cursor: pointer;" onclick="window.abrirModalReservaAdmin('${hFormateada}')"></div>`;
-                            }
-                        } else {
-                            htmlGrilla += `<div style="height: ${celdaH}px; ${border} box-sizing: border-box;"></div>`;
+                        let canchasLibresTotal = totalCanchas - canchasOcupadas.size;
+                        let hsTexto = duracionGlobal % 60 === 0 ? (duracionGlobal/60) : (duracionGlobal/60).toFixed(1);
+
+                        if (canchasLibresTotal > 0) {
+                            const div = document.createElement('div'); div.className = 'turno-item';
+                            div.onclick = () => window.abrirModalReservaJugador(hora);
+                            
+                            let textoDisp = [];
+                            if(indoorLibres.length > 0) textoDisp.push(`${indoorLibres.length} In`);
+                            if(outdoorLibres.length > 0) textoDisp.push(`${outdoorLibres.length} Out`);
+                            if(tenisLibres.length > 0) textoDisp.push(`${tenisLibres.length} Tenis`);
+                            
+                            let textoCanchas = textoDisp.join(' / ');
+                            
+                            div.innerHTML = `<span class="punto-verde"></span><span class="hora">${hora} hs | </span><span class="texto-disponible">Turno ${hsTexto} hs</span><span class="texto-canchas-disp">${textoCanchas} libres</span>`;
+                            contenedorHorarios.appendChild(div);
                         }
+                    });
+                }
+
+                // 2. VISTA CLUB 
+                const contenedorClub = document.getElementById('lista-reservas-club');
+                contenedorClub.innerHTML = '';
+
+                const dowNumSelectedClub = window.getDayOfWeekFromDate(fechaSeleccionada);
+                let reservasAMostrar = reservasGlobales.filter(r => {
+                    let canceladas = r.fechasCanceladas || [];
+                    let fechaReserva = r.fecha || fechasValidas[0];
+                    return (fechaReserva === fechaSeleccionada && !canceladas.includes(fechaSeleccionada)) || 
+                           (r.fijo === true && window.getDayOfWeekFromDate(r.fecha) === dowNumSelectedClub && !canceladas.includes(fechaSeleccionada));
+                });
+
+                let minActual = window.aMinutos(primerTurno);
+                let minFin = window.aMinutos(ultimoTurno) + duracionGlobal; 
+                if (minFin <= minActual) minFin += 1440; 
+
+                let htmlGrilla = `<div class="contenedor-grilla">`;
+                
+                htmlGrilla += `<div id="linea-tiempo-actual"></div>`;
+
+                htmlGrilla += `<div style="width: 55px; flex-shrink: 0; border-right: 1px solid #2c3540; background: #1e252d;">`;
+                htmlGrilla += `<div style="height: 50px; border-bottom: 1px solid #2c3540; background: #242c36;"></div>`; 
+                for (let m = minActual; m < minFin; m += 30) {
+                    let esHoraEnPunto = (m % 60 === 0);
+                    let hLabel = Math.floor(m / 60) % 24;
+                    let borderStyle = esHoraEnPunto ? 'border-bottom: 1px dashed rgba(255,255,255,0.05);' : 'border-bottom: 1px solid #2c3540;';
+                    let texto = esHoraEnPunto ? `${hLabel.toString().padStart(2, '0')}:00` : ``;
+                    htmlGrilla += `<div style="height: 40px; ${borderStyle} text-align: center; color: #9ca3af; font-size: 0.8em; padding-top: 3px; box-sizing: border-box;">${texto}</div>`;
+                }
+                htmlGrilla += `</div>`;
+
+                let maxPadel = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0);
+
+                for(let c = 1; c <= totalCanchas; c++) {
+                    htmlGrilla += `<div style="flex: 1; min-width: 140px; border-right: 1px solid #2c3540; position: relative;">`;
+                    
+                    let tipoLabel = "";
+                    let colorTipo = "";
+                    if(c <= (canchasIndoorGlobal || 0)) {
+                        tipoLabel = "Pádel Indoor"; colorTipo = "#d1d5db";
+                    } else if(c <= maxPadel) {
+                        tipoLabel = "Pádel Outdoor"; colorTipo = "#9ca3af";
+                    } else {
+                        tipoLabel = "Tenis"; colorTipo = "#f59e0b";
                     }
-
-                    // Renderizar Tarjetas
-                    let resQueEmpiezanAqui = resDelDia.filter(r => {
-                        if (r.modalidad === 'F7' && r.cancha === col.id) return true;
-                        if (r.modalidad === 'F9') {
-                            if (r.cancha.includes('-S') && r.cancha === col.id) return true; 
-                            if (!r.cancha.includes('-S') && r.cancha === col.parent && col.index === 0) return true; 
-                        }
-                        if (r.modalidad === 'F11' && r.cancha === col.parent && col.index === 0) return true;
-                        return false;
+                    
+                    htmlGrilla += `<div style="height: 50px; border-bottom: 1px solid #2c3540; text-align: center; background: #242c36; font-size: 0.9em; display:flex; flex-direction:column; justify-content:center;">
+                                    <span style="font-weight: bold;" class="text-neutral-main">Cancha ${c}</span>
+                                    <span style="font-size: 0.8em; color:${colorTipo};">${tipoLabel}</span>
+                                   </div>`;
+                    
+                    let reservasCancha = reservasAMostrar.filter(r => (r.cancha || "1") == c);
+                    let bloquesOcupadosCancha = new Set();
+                    
+                    reservasCancha.forEach(res => {
+                        let resDur = res.duracion || duracionGlobal;
+                        let numBloques = resDur / 30;
+                        for(let b=0; b < numBloques; b++) { bloquesOcupadosCancha.add(window.sumarMinutos(res.hora, b * 30)); }
                     });
 
-                    resQueEmpiezanAqui.forEach(res => {
-                        let minRes = window.aMinutos(res.hora); if (minRes < minActual && minFin > 1440) minRes += 1440;
+                    for (let m = minActual; m < minFin; m += 30) {
+                        let esHoraEnPunto = (m % 60 === 0);
+                        let hLabel = Math.floor(m / 60) % 24;
+                        let mLabel = m % 60;
+                        let horaFormateada = `${hLabel.toString().padStart(2, '0')}:${mLabel.toString().padStart(2, '0')}`;
                         
-                        let offsetTop = ((minRes - minActual) / 30) * celdaH + celdaH; 
-                        let rDur = res.duracion || duracionGlobal;
-                        let height = (rDur / 30) * celdaH; 
+                        let borderStyle = esHoraEnPunto ? 'border-bottom: 1px dashed rgba(255,255,255,0.05);' : 'border-bottom: 1px solid #2c3540;';
                         
-                        let spanCol = 1;
-                        if (res.modalidad === 'F9') spanCol = equivF9;
-                        if (res.modalidad === 'F11') spanCol = equivF11;
+                        let htmlExtra = "";
+                        if (!bloquesOcupadosCancha.has(horaFormateada)) {
+                            if(validarEsHoraPasada(horaFormateada)) {
+                                htmlExtra = `style="height: 40px; ${borderStyle} box-sizing: border-box; opacity: 0.2; cursor: not-allowed; background: rgba(0,0,0,0.3);"`;
+                            } else {
+                                htmlExtra = `class="celda-vacia-hover" style="height: 40px; ${borderStyle} box-sizing: border-box; cursor: pointer;" onclick="window.abrirModalReservaAdmin('${horaFormateada}', '${c}')"`;
+                            }
+                        } else {
+                            htmlExtra = `style="height: 40px; ${borderStyle} box-sizing: border-box;"`;
+                        }
+
+                        htmlGrilla += `<div ${htmlExtra}></div>`;
+                    }
+
+                    reservasCancha.forEach(res => {
+                        let minRes = window.aMinutos(res.hora);
+                        if (minRes < minActual && minFin > 1440) minRes += 1440;
                         
-                        let cardWidth = `calc(${spanCol * 100}% + ${spanCol - 1}px - 8px)`; 
-                        
-                        let eClass = res.fijo ? "fijo" : "";
-                        let cTxt = res.fijo ? "#2e1065" : "#064e3b";
-                        let bgTag = res.fijo ? "rgba(0,0,0,0.15)" : "rgba(0,0,0,0.15)";
-                        
+                        let offsetTop = ((minRes - minActual) / 30) * 40 + 50; 
+                        let resDur = res.duracion || duracionGlobal;
+                        let height = (resDur / 30) * 40; 
+
+                        let textoFijo = res.fijo === true ? ' 📌' : '';
                         let iconEvento = "";
                         if (res.tipoEvento === "Torneo") iconEvento = "🏆 ";
                         else if (res.tipoEvento === "Especial") iconEvento = "⭐ ";
                         else if (res.esClase) iconEvento = "🧑‍🏫 ";
                         
-                        let textoSecundario = res.esClase ? `<br><span style="font-size:0.85em; color:${cTxt}; opacity:0.8;">Profe: ${res.profe}</span>` : '';
+                        let textoSecundario = res.esClase ? `<br><span style="font-size:0.85em; color:#d1d5db;">Profe: ${res.profe}</span>` : '';
 
                         let factorPrecio = (res.duracion || duracionGlobal) / duracionGlobal;
                         let pCancha = 0;
-                        if (res.modalidad === 'F7') pCancha = parseInt(precioF7) * factorPrecio;
-                        else if (res.modalidad === 'F9') pCancha = parseInt(precioF9) * factorPrecio;
-                        else if (res.modalidad === 'F11') pCancha = parseInt(precioF11) * factorPrecio;
+                        if (c <= canchasIndoorGlobal) { pCancha = parseInt(precioIndoorGlobal); } 
+                        else if (c <= maxPadel) { pCancha = parseInt(precioOutdoorGlobal); } 
+                        else { pCancha = parseInt(precioTenisGlobal); }
+                        pCancha = pCancha * factorPrecio;
 
                         let cConsumos = (res.consumos || []).reduce((acc, curr) => acc + parseFloat(curr.precio), 0);
                         let desc = parseFloat(res.descuento) || 0;
                         let tGen = pCancha + cConsumos - desc;
                         if(tGen < 0) tGen = 0;
-
+                        
                         let tAbonado = (parseFloat(res.pagoEfectivo) || 0) + (parseFloat(res.pagoTransferencia) || 0);
-                        let tickPago = (tAbonado >= tGen && tGen > 0) ? "✅" : "⚠️";
-
+                        let textoSaldo = (tAbonado >= tGen && tGen > 0) ? "✅" : "Pend";
+                        
                         htmlGrilla += `
-                            <div class="tarjeta-reserva-grilla ${eClass}" onclick="window.abrirModal('${res.id}')" 
-                                 style="position: absolute; top: ${offsetTop}px; left: 4px; width: ${cardWidth}; height: ${height - 4}px; 
-                                        padding: 6px 8px; font-size: 0.8em; overflow: hidden; border-radius: 6px; cursor: pointer; box-shadow: 0 3px 5px rgba(0,0,0,0.2); display: flex; flex-direction: column; justify-content: space-between; z-index: 10;">
+                            <div class="tarjeta-reserva-grilla ${res.fijo ? 'fijo' : ''}" onclick="window.abrirModal('${res.id}')" 
+                                 style="position: absolute; top: ${offsetTop}px; left: 4px; right: 4px; height: ${height - 6}px; 
+                                        padding: 8px; font-size: 0.85em; overflow: hidden; border-radius: 6px; cursor: pointer; 
+                                        box-shadow: 0 4px 6px rgba(0,0,0,0.4); display: flex; flex-direction: column; z-index: 10;">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start; line-height: 1;">
-                                    <span style="font-weight: 900; font-size: 1.15em; color: ${cTxt}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${iconEvento}${res.jugador}${textoSecundario}</span>
-                                    <span style="background: ${bgTag}; padding: 2px 5px; border-radius: 4px; font-weight: bold; font-size: 0.75em; color: ${cTxt};">${res.modalidad}</span>
+                                    <span style="font-weight: 900; font-size: 1.15em; color: ${res.fijo ? '#2e1065' : '#171d24'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${iconEvento}${res.jugador}${textoFijo}${textoSecundario}</span>
                                 </div>
-                                <span style="color: ${cTxt}; opacity: 0.9; font-weight: 800; font-size: 0.95em; line-height: 1;">${res.hora} hs ${res.fijo ? '🔄' : ''} ${tickPago}</span>
-                                <span style="margin-top: auto; font-size: 0.9em; font-weight: 700; color: ${cTxt}; opacity: 0.85; line-height: 1; display: flex; align-items: center; gap: 4px;">
-                                    <span>📱</span> ${res.telefono || 'Sin tel'}
-                                </span>
+                                <span style="margin-top: 4px; color: ${res.fijo ? '#2e1065' : '#171d24'}; opacity: 0.8; font-weight: 700;">${res.hora} hs</span>
+                                <span style="margin-top: auto; font-weight: bold; color: ${res.fijo ? '#2e1065' : '#171d24'};">Pago: ${textoSaldo}</span>
                             </div>
                         `;
                     });
                     
                     htmlGrilla += `</div>`; 
-                });
+                }
+                htmlGrilla += `</div>`; 
 
-                htmlGrilla += `</div>`;
-                contTurnero.innerHTML = htmlGrilla;
-                actualizarLineaDeTiempo();
-
-            } catch(e) { console.error("Error render turnero:", e); }
+                contenedorClub.innerHTML = htmlGrilla;
+                actualizarLineaDeTiempo(); 
+            } catch (error) {
+                console.error("Error al renderizar las pantallas:", error);
+            }
         }
 
-        // --- LISTENERS FIREBASE ---
-        onSnapshot(doc(db, "configuracion", "club"), (docSnap) => {
-            if (docSnap.exists()) {
-                let d = docSnap.data();
-                primerTurno = d.primerTurno || "18:00"; ultimoTurno = d.ultimoTurno || "23:00"; duracionGlobal = d.duracionTurno || 60;
-                
-                precioF7 = d.precioF7 || "15000"; 
-                precioF9 = d.precioF9 || "20000"; 
-                precioF11 = d.precioF11 || "25000"; 
-                
-                cantF7 = d.canchasF7 !== undefined ? d.canchasF7 : 3; 
-                cantF9 = d.canchasF9 !== undefined ? d.canchasF9 : 1; 
-                cantF11 = d.canchasF11 !== undefined ? d.canchasF11 : 1;
-                equivF9 = d.equivF9 || 2; 
-                equivF11 = d.equivF11 || 3;
-                diasAbiertosGlobal = d.diasAbiertos || [0,1,2,3,4,5,6];
-                
-                document.getElementById('input-primer-turno').value = primerTurno; 
-                document.getElementById('input-ultimo-turno').value = ultimoTurno;
-                document.getElementById('input-duracion').value = duracionGlobal;
-                
-                document.getElementById('input-precio-f7').value = precioF7;
-                document.getElementById('input-precio-f9').value = precioF9;
-                document.getElementById('input-precio-f11').value = precioF11;
-                
-                document.getElementById('input-canchas-f7').value = cantF7; 
-                document.getElementById('input-canchas-f9').value = cantF9; 
-                document.getElementById('input-canchas-f11').value = cantF11;
-                document.getElementById('input-equiv-f9').value = equivF9; 
-                document.getElementById('input-equiv-f11').value = equivF11;
-                
-                document.querySelectorAll('.check-dia').forEach(cb => cb.checked = diasAbiertosGlobal.includes(parseInt(cb.value)));
+        // --- LISTENERS FIREBASE Y CONFIG ---
+        onSnapshot(doc(db, "configuracion", "club"), (documento) => {
+            if (documento.exists()) {
+                let data = documento.data();
+                primerTurno = data.primerTurno || "08:00"; ultimoTurno = data.ultimoTurno || "21:30";
+                duracionGlobal = parseInt(data.duracionTurno) || 90; 
+                canchasIndoorGlobal = isNaN(parseInt(data.canchasIndoor)) ? 1 : parseInt(data.canchasIndoor); 
+                canchasOutdoorGlobal = isNaN(parseInt(data.canchasOutdoor)) ? 0 : parseInt(data.canchasOutdoor);
+                canchasTenisGlobal = isNaN(parseInt(data.canchasTenis)) ? 0 : parseInt(data.canchasTenis);
+                precioIndoorGlobal = data.precioIndoor || "15000"; precioOutdoorGlobal = data.precioOutdoor || "12000";
+                precioTenisGlobal = data.precioTenis || "10000";
+                diasAbiertosGlobal = data.diasAbiertos || [0,1,2,3,4,5,6]; 
+            } else {
+                primerTurno = "08:00"; ultimoTurno = "21:30"; duracionGlobal = 90; 
+                canchasIndoorGlobal = 1; canchasOutdoorGlobal = 0; canchasTenisGlobal = 0;
+                precioIndoorGlobal = "15000"; precioOutdoorGlobal = "12000"; precioTenisGlobal = "10000";
+                diasAbiertosGlobal = [0,1,2,3,4,5,6]; 
             }
-            construirColumnas();
             
-            let fA = new Date(fechaSeleccionada.split('-')[0], fechaSeleccionada.split('-')[1] - 1, fechaSeleccionada.split('-')[2]);
-            if (!diasAbiertosGlobal.includes(fA.getDay())) {
-                let prox = fechasValidas.find(f => diasAbiertosGlobal.includes(new Date(f.split('-')[0], f.split('-')[1]-1, f.split('-')[2]).getDay()));
-                if(prox) fechaSeleccionada = prox;
-            }
-            renderizarCalendarios(); renderizarPantallas(); 
+            document.getElementById('input-primer-turno').value = primerTurno; document.getElementById('input-ultimo-turno').value = ultimoTurno;
+            document.getElementById('input-duracion').value = duracionGlobal;
+            document.getElementById('input-canchas-in').value = canchasIndoorGlobal; document.getElementById('input-precio-in').value = precioIndoorGlobal;
+            document.getElementById('input-canchas-out').value = canchasOutdoorGlobal; document.getElementById('input-precio-out').value = precioOutdoorGlobal;
+            document.getElementById('input-canchas-tenis').value = canchasTenisGlobal; document.getElementById('input-precio-tenis').value = precioTenisGlobal;
+
+            [0,1,2,3,4,5,6].forEach(d => {
+                const cb = document.getElementById('dia-'+d);
+                if(cb) cb.checked = diasAbiertosGlobal.includes(d);
+            });
+            
+            renderizarPantallas(); 
         });
 
-        onSnapshot(collection(db, "reservas"), (snap) => {
-            reservasGlobales = []; snap.forEach(d => reservasGlobales.push({ id: d.id, ...d.data() }));
+        onSnapshot(collection(db, "reservas"), (snapshot) => {
+            reservasGlobales = [];
+            snapshot.forEach((doc) => reservasGlobales.push({ id: doc.id, ...doc.data() }));
             renderizarPantallas(); 
-            renderizarIngresos();
+            renderizarIngresos(); 
+            renderizarClasesPendientes(); 
             renderizarHistorial();
-            renderizarClasesPendientes();
-            if(reservaSeleccionadaId) renderizarModalTurnoAcciones();
+            if(reservaSeleccionadaId) renderizarModalTurnoAcciones(); 
         });
 
         onSnapshot(collection(db, "profesores"), (snapshot) => {
-            profesoresGlobal = []; snapshot.forEach((doc) => profesoresGlobal.push({ id: doc.id, ...doc.data() }));
+            profesoresGlobal = [];
+            snapshot.forEach((doc) => profesoresGlobal.push({ id: doc.id, ...doc.data() }));
             renderizarProfesores();
         });
 
-        // Listeners Finanzas
         onSnapshot(collection(db, "inventario"), (snapshot) => {
             inventarioGlobal = []; snapshot.forEach((doc) => inventarioGlobal.push({ id: doc.id, ...doc.data() }));
             renderizarInventario(); if(reservaSeleccionadaId) renderizarModalTurnoAcciones(); 
@@ -1404,6 +2009,8 @@
             balancesGlobal = []; snapshot.forEach((doc) => balancesGlobal.push({ id: doc.id, ...doc.data() })); 
             renderizarBalances(); 
         });
+
+        renderizarCalendarios();
 
     </script>
 </body>
