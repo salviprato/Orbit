@@ -82,11 +82,11 @@
         /* LINEA DE TIEMPO EN VIVO */
         #linea-tiempo-actual {
             position: absolute; left: 55px; right: 0; height: 2px;
-            background-color: #ef4444; z-index: 20; display: none; pointer-events: none;
+            background-color: #3b82f6; z-index: 20; display: none; pointer-events: none;
         }
         #linea-tiempo-actual::before {
             content: ''; position: absolute; left: -4px; top: -4px;
-            width: 10px; height: 10px; border-radius: 50%; background-color: #ef4444;
+            width: 10px; height: 10px; border-radius: 50%; background-color: #3b82f6;
         }
 
         /* Modales */
@@ -116,7 +116,6 @@
         .btn-balance { background-color: #4b5563; color: #ffffff; } .btn-balance:hover { background-color: #374151; }
         .btn-eliminar { background-color: #ef4444; } .btn-eliminar:hover { background-color: #dc2626; }
         .btn-whatsapp { background-color: #25d366; } .btn-whatsapp:hover { background-color: #1ebd57; }
-        .btn-excepcion { background-color: #f59e0b; color: #171d24;} .btn-excepcion:hover { background-color: #d97706; }
         .btn-cerrar { background-color: #4b5563; margin-top: 10px;}
         .btn-stock { background-color: #4b5563; padding: 4px 8px; font-size: 0.8em; } .btn-stock:hover { background-color: #374151; }
         .btn-cobrar-clase { background-color: #10b981; padding: 6px 10px; font-size: 0.85em;} .btn-cobrar-clase:hover { background-color: #059669; }
@@ -124,7 +123,7 @@
         .scroll-interno::-webkit-scrollbar { width: 6px; }
         .scroll-interno::-webkit-scrollbar-thumb { background: #44505d; border-radius: 4px; }
         
-        .checkbox-dias label, .checkbox-clase label { cursor: pointer; color: #d1d5db; font-size: 0.9em; display: flex; align-items: center; gap: 5px;}
+        .checkbox-dias label { cursor: pointer; color: #d1d5db; font-size: 0.9em; display: flex; align-items: center; gap: 5px;}
         
         table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
         th { padding: 8px; text-align: left; border-bottom: 2px solid #44505d; color: #9ca3af; }
@@ -167,12 +166,29 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 style="margin: 0;">Panel de Control</h2>
             <div style="display: flex; gap: 15px;">
+                <button onclick="window.abrirModalProfesores()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #9ca3af; transition: 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#9ca3af'" title="Gestión de Profesores">🧑‍🏫</button>
                 <button onclick="window.abrirModalFinanzas()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #9ca3af; transition: 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#9ca3af'" title="Finanzas e Inventario">💰</button>
                 <button onclick="window.abrirModalConfig()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #9ca3af; transition: 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#9ca3af'" title="Configuración del Club">⚙️</button>
             </div>
         </div>
         <div id="calendario-club" class="calendario-strip"></div>
         <div id="lista-reservas-club"></div>
+    </div>
+
+    <div id="modal-profesores" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin: 0; border-bottom: 1px solid #44505d; padding-bottom: 10px;">🧑‍🏫 Profesores del Club</h3>
+            <div style="display: flex; gap: 10px; margin-top: 10px; margin-bottom: 10px;">
+                <input type="text" id="input-nuevo-profe" class="input-form" placeholder="Nombre del Profesor">
+                <button class="btn-modal btn-guardar" style="width: auto; padding: 10px 15px;" onclick="window.agregarProfe()">Añadir</button>
+            </div>
+            <div class="scroll-interno" style="max-height: 200px; overflow-y: auto; background: #242c36; border-radius: 8px; border: 1px solid #2c3540; padding: 5px;">
+                <table style="width: 100%;">
+                    <tbody id="lista-profesores"></tbody>
+                </table>
+            </div>
+            <button class="btn-modal btn-cerrar" onclick="window.cerrarModalProfesores()">Cerrar</button>
+        </div>
     </div>
 
     <div id="modal-reserva-jugador" class="modal-overlay">
@@ -202,28 +218,52 @@
 
     <div id="modal-reserva-admin" class="modal-overlay" style="z-index: 1050;">
         <div class="modal-content">
-            <h3 style="margin: 0; margin-bottom: 5px;">Crear Turno (Admin)</h3>
-            <p style="margin: 0; color: #9ca3af; margin-bottom: 15px;">Fecha: <strong id="admin-fecha-display" style="color:white;"></strong><br>Horario: <strong id="admin-hora-display" style="color:white;"></strong><br>Cancha: <strong id="admin-cancha-display" style="color:white;"></strong></p>
+            <h3 style="margin: 0; margin-bottom: 5px;">Agendar Evento (Admin)</h3>
+            <p style="margin: 0; color: #9ca3af; margin-bottom: 15px;">Fecha: <strong id="admin-fecha-display" style="color:white;"></strong><br>Cancha: <strong id="admin-cancha-display" style="color:white;"></strong></p>
             
             <input type="hidden" id="admin-cancha-id">
 
             <div style="text-align: left; display: flex; flex-direction: column; gap: 12px;">
-                <div style="background: #242c36; padding: 10px; border-radius: 6px; border: 1px solid #44505d;">
-                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">1. Elegir Profe (Opcional):</label>
-                    <input type="text" id="admin-input-profe" class="input-form" placeholder="Nombre del profesor" style="margin-top: 5px;">
-                    <small style="color: #9ca3af; font-size: 0.8em; display: block; margin-top: 5px;">Si escribes un nombre, este turno se guardará automáticamente como una Clase.</small>
+                
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">Tipo de Evento:</label>
+                        <select id="admin-tipo-evento" class="input-form" style="margin-top: 5px;" onchange="window.cambioTipoEvento()">
+                            <option value="Normal">Reserva Normal</option>
+                            <option value="Clases">Clase / Profe</option>
+                            <option value="Torneo">Torneo 🏆</option>
+                            <option value="Especial">Ocasión Especial ⭐</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">Duración:</label>
+                        <select id="admin-duracion" class="input-form" style="margin-top: 5px;">
+                            <option value="30">30 Minutos</option>
+                            <option value="60">60 Min (1h)</option>
+                            <option value="90">90 Min (1.5h)</option>
+                            <option value="120">120 Min (2h)</option>
+                            <option value="150">150 Min (2.5h)</option>
+                            <option value="180">180 Min (3h)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="admin-div-profe" style="display:none; background: #242c36; padding: 10px; border-radius: 6px; border: 1px solid #44505d;">
+                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">Elegir Profesor:</label>
+                    <select id="admin-select-profe" class="input-form" style="margin-top: 5px;"></select>
+                </div>
+
+                <div>
+                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">Nombre del Cliente / Título:</label>
+                    <input type="text" id="admin-input-jugador" class="input-form" placeholder="Ej: Franco Aramayo o 'Torneo Verano'" style="margin-top: 5px;">
                 </div>
                 <div>
-                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">2. Nombre del Alumno/Cliente:</label>
-                    <input type="text" id="admin-input-jugador" class="input-form" placeholder="Ej: Franco Aramayo" style="margin-top: 5px;">
-                </div>
-                <div>
-                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">3. Teléfono (WhatsApp):</label>
+                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">Teléfono (Opcional):</label>
                     <input type="tel" id="admin-input-telefono" class="input-form" placeholder="Ej: 3511234567" style="margin-top: 5px;">
                 </div>
             </div>
 
-            <button class="btn-modal btn-guardar" style="margin-top: 20px;" onclick="window.confirmarReservaAdmin()">Guardar Turno/Clase</button>
+            <button id="btn-guardar-reserva-admin" class="btn-modal btn-guardar" style="margin-top: 20px;" onclick="window.confirmarReservaAdmin()">Guardar Evento</button>
             <button class="btn-modal btn-cerrar" style="margin-top: 0;" onclick="window.cerrarModalReservaAdmin()">Cancelar</button>
         </div>
     </div>
@@ -404,12 +444,10 @@
             <h3 style="margin: 0; color: #ffffff;">Editar Precio</h3>
             <p id="lbl-editar-prod" style="color: #9ca3af; margin: 5px 0 15px 0; font-weight: bold;"></p>
             <input type="hidden" id="editar-id-prod">
-            
             <div style="text-align: left;">
                 <label style="font-size: 0.85em; color: #d1d5db;">Nuevo Precio de Venta ($):</label>
                 <input type="number" id="editar-precio-nuevo" class="input-form" min="0" placeholder="Ej: 1500" style="margin-top: 4px;">
             </div>
-            
             <button class="btn-modal btn-guardar" style="margin-top: 15px; background-color:#3b82f6;" onclick="window.confirmarEditarPrecio()">Guardar Precio</button>
             <button class="btn-modal btn-cerrar" onclick="window.cerrarModalEditarPrecio()">Cancelar</button>
         </div>
@@ -420,19 +458,17 @@
             <h3 style="margin: 0; color: #ffffff;">Reponer Stock</h3>
             <p id="lbl-reponer-prod" style="color: #9ca3af; margin: 5px 0 15px 0; font-weight: bold;"></p>
             <input type="hidden" id="reponer-id-prod">
-            
             <div style="text-align: left; display: flex; flex-direction: column; gap: 10px;">
                 <div>
                     <label style="font-size: 0.85em; color: #d1d5db;">Cantidad Comprada:</label>
-                    <input type="number" id="reponer-cantidad" class="input-form" min="1" placeholder="Ej: 10" style="margin-top: 4px;">
+                    <input type="number" id="reponer-cantidad" class="input-form" min="1" style="margin-top: 4px;">
                 </div>
                 <div>
                     <label style="font-size: 0.85em; color: #d1d5db;">Costo Unitario ($):</label>
-                    <input type="number" id="reponer-costo" class="input-form" min="0" placeholder="Costo por unidad" style="margin-top: 4px;">
+                    <input type="number" id="reponer-costo" class="input-form" min="0" style="margin-top: 4px;">
                 </div>
-                <p style="font-size: 0.75em; color: #9ca3af; margin: 0;">El costo total se registrará automáticamente como un Gasto Externo.</p>
+                <p style="font-size: 0.75em; color: #9ca3af; margin: 0;">El costo total se registrará como Gasto Externo.</p>
             </div>
-            
             <button class="btn-modal btn-gasto" style="margin-top: 15px;" onclick="window.confirmarReposicionStock()">Reponer y Registrar Gasto</button>
             <button class="btn-modal btn-cerrar" onclick="window.cerrarModalReposicion()">Cancelar</button>
         </div>
@@ -443,7 +479,6 @@
             <h3 style="margin: 0; color: #ffffff;">Cobrar Clase</h3>
             <p id="lbl-cobrar-clase" style="color: #9ca3af; margin: 5px 0 15px 0; font-weight: bold; font-size: 0.9em;"></p>
             <input type="hidden" id="cobrar-clase-id">
-            
             <div style="text-align: left; display: flex; flex-direction: column; gap: 10px;">
                 <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1em; color: #ffffff; border-bottom: 1px solid #44505d; padding-bottom: 5px;">
                     <span>A COBRAR:</span> <span id="cobrar-clase-total">$0</span>
@@ -457,7 +492,6 @@
                     <input type="number" id="clase-pago-transferencia" class="input-form" placeholder="0" style="margin-top: 4px;">
                 </div>
             </div>
-            
             <button class="btn-modal btn-guardar" style="margin-top: 15px;" onclick="window.confirmarCobroClase()">Confirmar Pago</button>
             <button class="btn-modal btn-cerrar" onclick="window.cerrarModalCobrarClase()">Cancelar</button>
         </div>
@@ -482,11 +516,17 @@
 
             <div style="background: #242c36; padding: 15px; border-radius: 8px; border: 1px solid #2c3540; text-align: left; margin-bottom: 10px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em; color: #9ca3af;">
-                    <span>Precio Cancha/Clase:</span> <span id="res-precio-cancha" class="text-neutral-main">$0</span>
+                    <span>Precio Cancha (Proporcional):</span> <span id="res-precio-cancha" class="text-neutral-main">$0</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em; color: #9ca3af;">
                     <span>Total Consumos:</span> <span id="res-precio-consumos" class="text-neutral-main">$0</span>
                 </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9em; color: #9ca3af; align-items: center;">
+                    <span>Descuento / Ajuste ($):</span> 
+                    <input type="number" id="pago-descuento" class="input-form" style="width: 100px; padding: 6px; text-align: right;" placeholder="0" oninput="window.calcularFaltante()">
+                </div>
+
                 <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2em; color: #ffffff; margin-bottom: 15px; border-top: 1px solid #44505d; padding-top: 10px;">
                     <span>A COBRAR:</span> <span id="res-precio-total">$0</span>
                 </div>
@@ -502,13 +542,13 @@
                         <input type="number" id="pago-transferencia" class="input-form" placeholder="0" oninput="window.calcularFaltante()">
                     </div>
                 </div>
-                <div style="text-align: right; margin-top: 8px; font-size: 0.9em; font-weight: bold; color: #d1d5db;" id="txt-faltante">Falta cobrar: $0</div>
+                <div style="text-align: right; margin-top: 8px; font-size: 0.95em; font-weight: bold; color: #d1d5db;" id="txt-faltante">Falta cobrar: $0</div>
 
-                <button class="btn-modal btn-gasto" style="margin-top: 15px;" onclick="window.cobrarTurno()">Guardar Pagos</button>
+                <button class="btn-modal btn-guardar" style="margin-top: 15px;" onclick="window.cobrarTurno()">Guardar Pagos</button>
             </div>
 
             <div style="display: flex; flex-wrap: wrap; gap: 8px; border-top: 1px solid #44505d; padding-top: 15px;">
-                <button class="btn-modal btn-whatsapp" id="btn-whatsapp" onclick="window.accionWhatsApp()" style="flex: 1; min-width: 45%; font-size: 0.85em;">💬 WhatsApp</button>
+                <button class="btn-modal btn-whatsapp" id="btn-whatsapp" onclick="window.enviarWhatsApp()" style="flex: 1; min-width: 45%; font-size: 0.85em;">💬 WhatsApp</button>
                 <button class="btn-modal btn-gasto" id="btn-toggle-fijo" onclick="window.accionFijarTurno()" style="flex: 1; min-width: 45%; font-size: 0.85em;">📌 Fijar Turno</button>
                 <button class="btn-modal btn-gasto" id="btn-excepcion" onclick="window.accionCancelarExcepcion()" style="flex: 1; min-width: 45%; font-size: 0.85em; display:none;">🚫 Cancelar Hoy</button>
                 <button class="btn-modal btn-cerrar" onclick="window.accionEliminar()" style="flex: 1; min-width: 45%; font-size: 0.85em; margin-top: 0;">🗑️ Borrar Turno</button>
@@ -569,7 +609,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // CONEXIÓN GREENPOINT
+        // CONEXIÓN GREENPOINT (ORBIT)
         const firebaseConfig = {
             apiKey: "AIzaSyAMRLDlarJiomWY4IX5c6CR3RFWHqmMu30",
             authDomain: "greenpoint-80ba8.firebaseapp.com",
@@ -581,6 +621,11 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        // --- FUNCIÓN DE FORMATEO MILES ---
+        window.formatearDinero = function(numero) {
+            return Number(numero).toLocaleString('es-AR');
+        };
 
         let fechasValidas = [];
         let fechaActual = new Date();
@@ -649,6 +694,7 @@
         let gastosGlobal = []; 
         let ingresosGlobal = []; 
         let balancesGlobal = []; 
+        let profesoresGlobal = []; 
         
         let reservaSeleccionadaId = null; 
         let reservaEnProcesoHora = null;
@@ -722,6 +768,46 @@
         }
         setInterval(actualizarLineaDeTiempo, 60000);
 
+        // --- GESTIÓN DE PROFESORES ---
+        window.abrirModalProfesores = function() { document.getElementById('modal-profesores').style.display = 'flex'; }
+        window.cerrarModalProfesores = function() { document.getElementById('modal-profesores').style.display = 'none'; }
+        
+        window.agregarProfe = async function() {
+            let nombre = document.getElementById('input-nuevo-profe').value.trim();
+            if(!nombre) return;
+            try {
+                await addDoc(collection(db, "profesores"), { nombre: nombre });
+                document.getElementById('input-nuevo-profe').value = '';
+            } catch(e) { alert("Error guardando profesor"); }
+        }
+
+        window.eliminarProfe = async function(id) {
+            if(confirm("¿Eliminar este profesor de la lista?")) {
+                await deleteDoc(doc(db, "profesores", id));
+            }
+        }
+
+        function renderizarProfesores() {
+            const tbody = document.getElementById('lista-profesores');
+            const select = document.getElementById('admin-select-profe');
+            if(tbody) tbody.innerHTML = '';
+            if(select) select.innerHTML = '<option value="" disabled selected>Selecciona un profe...</option>';
+
+            profesoresGlobal.sort((a,b) => a.nombre.localeCompare(b.nombre)).forEach(p => {
+                if(tbody) {
+                    tbody.innerHTML += `
+                        <tr style="border-bottom: 1px solid #44505d;">
+                            <td style="padding: 10px; color: #d1d5db;">${p.nombre}</td>
+                            <td style="text-align: right;"><button onclick="window.eliminarProfe('${p.id}')" style="background:none;border:none;cursor:pointer;">🗑️</button></td>
+                        </tr>
+                    `;
+                }
+                if(select) {
+                    select.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
+                }
+            });
+        }
+
         // --- FINANZAS E INVENTARIO ---
         window.abrirModalFinanzas = function() { document.getElementById('modal-finanzas').style.display = 'flex'; }
         window.cerrarModalFinanzas = function() { document.getElementById('modal-finanzas').style.display = 'none'; }
@@ -771,7 +857,7 @@
                     await updateDoc(doc(db, "inventario", id), { stock: nuevoStock, costo: costoUnitario });
                     if(gastoTotal > 0) {
                         await addDoc(collection(db, "gastos"), { 
-                            titulo: `Reposición Stock: ${nombreProd}`, descripcion: `${cant} unidades a $${costoUnitario} c/u`, 
+                            titulo: `Reposición Stock: ${nombreProd}`, descripcion: `${cant} unidades a $${window.formatearDinero(costoUnitario)} c/u`, 
                             importe: gastoTotal, fechaRegistro: serverTimestamp() 
                         });
                     }
@@ -812,7 +898,7 @@
                 tbody.innerHTML += `<tr>
                     <td><strong class="text-neutral-main">${prod.nombre}</strong><br><small class="text-neutral-sub">${prod.categoria}</small></td>
                     <td style="text-align: center; color: ${stockVal <= 0 ? '#ef4444' : '#d1d5db'}; font-weight: bold;">${stockVal}</td>
-                    <td style="text-align: right;" class="text-neutral-bold">$${prod.precio}</td>
+                    <td style="text-align: right;" class="text-neutral-bold">$${window.formatearDinero(prod.precio)}</td>
                     <td style="text-align: center;">
                         <button class="btn-modal btn-stock" onclick="window.abrirModalReposicion('${prod.id}', '${prod.nombre}', ${prod.costo || 0})" title="Reponer Stock">➕</button>
                         <button class="btn-modal btn-stock" onclick="window.abrirModalEditarPrecio('${prod.id}', '${prod.nombre}', ${prod.precio || 0})" title="Editar Precio" style="margin-left: 5px; background-color: #3b82f6;">✏️</button>
@@ -828,7 +914,7 @@
                 selTurno.innerHTML = '<option value="" disabled selected>Elegir producto...</option>';
                 inventarioGlobal.sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(p => {
                     let stock = parseInt(p.stock) || 0;
-                    if(stock > 0) selTurno.innerHTML += `<option value="${p.id}">${p.nombre} ($${p.precio}) - Disp: ${stock}</option>`;
+                    if(stock > 0) selTurno.innerHTML += `<option value="${p.id}">${p.nombre} ($${window.formatearDinero(p.precio)}) - Disp: ${stock}</option>`;
                 });
             }
 
@@ -837,7 +923,7 @@
                 selVR.innerHTML = '<option value="" disabled selected>Selecciona producto para vender...</option>';
                 inventarioGlobal.sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(p => {
                     let stock = parseInt(p.stock) || 0;
-                    if(stock > 0) selVR.innerHTML += `<option value="${p.id}">${p.nombre} ($${p.precio}) - Disp: ${stock}</option>`;
+                    if(stock > 0) selVR.innerHTML += `<option value="${p.id}">${p.nombre} ($${window.formatearDinero(p.precio)}) - Disp: ${stock}</option>`;
                 });
             }
         }
@@ -862,7 +948,7 @@
             gastosGlobal.sort((a, b) => (b.fechaRegistro?.seconds || 0) - (a.fechaRegistro?.seconds || 0)).forEach(gasto => {
                 let descHtml = gasto.descripcion ? `<br><small class="text-neutral-sub" style="font-size:0.85em;">${gasto.descripcion}</small>` : '';
                 tbody.innerHTML += `<tr><td><strong class="text-neutral-main">${gasto.titulo}</strong>${descHtml}</td>
-                    <td style="text-align: right; font-weight: bold;" class="text-neutral-bold">$${gasto.importe}</td>
+                    <td style="text-align: right; font-weight: bold;" class="text-neutral-bold">$${window.formatearDinero(gasto.importe)}</td>
                     <td style="text-align: center;"><button onclick="window.eliminarGasto('${gasto.id}')" style="background:none;border:none;cursor:pointer;font-size:1.1em;">🗑️</button></td></tr>`;
             });
         }
@@ -913,9 +999,9 @@
                 let efe = parseFloat(res.pagoEfectivo) || 0;
                 let trans = parseFloat(res.pagoTransferencia) || 0;
                 if(efe > 0 || trans > 0) {
-                    let tipoTxt = res.esClase ? `Clase: ${res.profe} - Alum: ${res.jugador}` : `Turno: ${res.jugador}`;
+                    let tipoE = res.tipoEvento && res.tipoEvento !== 'Normal' ? ` [${res.tipoEvento}]` : '';
                     listaCombinada.push({
-                        id: res.id, tipo: 'reserva', titulo: `${tipoTxt} (${res.fecha})`,
+                        id: res.id, tipo: 'reserva', titulo: `Turno: ${res.jugador}${tipoE} (${res.fecha})`,
                         efectivo: efe, transferencia: trans, fechaObj: getDateFromFirebase(res.fechaRegistro).getTime()
                     });
                 }
@@ -938,13 +1024,103 @@
                     : `<span style="color:#9ca3af; font-size:0.8em; border: 1px solid #44505d; padding: 2px 5px; border-radius: 4px;">Turno</span>`;
                 
                 tbody.innerHTML += `<tr><td><strong class="text-neutral-main">${item.titulo}</strong></td>
-                    <td style="text-align: right;" class="text-neutral-bold">$${item.efectivo}</td>
-                    <td style="text-align: right;" class="text-neutral-sub">$${item.transferencia}</td>
+                    <td style="text-align: right;" class="text-neutral-bold">$${window.formatearDinero(item.efectivo)}</td>
+                    <td style="text-align: right;" class="text-neutral-sub">$${window.formatearDinero(item.transferencia)}</td>
                     <td style="text-align: center;">${btnHtml}</td></tr>`;
             });
         }
 
-        // HISTORIAL DE TRANSACCIONES COMPLETO
+        // COBRO DE CLASES
+        function renderizarClasesPendientes() {
+            const tbody = document.getElementById('tabla-clases-pendientes');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            let clasesPendientes = reservasGlobales.filter(r => {
+                if(!r.esClase) return false;
+                
+                let pCancha = 0;
+                let numC = parseInt(r.cancha || "1");
+                let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+                
+                if (numC <= canchasIndoorGlobal) { pCancha = parseInt(precioIndoorGlobal); } 
+                else if (numC <= maxPadel) { pCancha = parseInt(precioOutdoorGlobal); } 
+                else { pCancha = parseInt(precioTenisGlobal); }
+
+                let factorPrecio = (r.duracion || duracionGlobal) / duracionGlobal;
+                pCancha = pCancha * factorPrecio;
+
+                let cConsumos = (r.consumos || []).reduce((acc, c) => acc + parseFloat(c.precio), 0);
+                let desc = parseFloat(r.descuento) || 0;
+                let totalACobrar = pCancha + cConsumos - desc;
+                if(totalACobrar < 0) totalACobrar = 0;
+                
+                let abonado = (parseFloat(r.pagoEfectivo) || 0) + (parseFloat(r.pagoTransferencia) || 0);
+                
+                if(totalACobrar > 0 && abonado < totalACobrar) {
+                    r.faltante = totalACobrar - abonado;
+                    return true;
+                }
+                return false;
+            });
+
+            if(clasesPendientes.length === 0) { 
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #9ca3af; padding: 15px;">No hay clases pendientes de cobro</td></tr>'; 
+                return; 
+            }
+
+            clasesPendientes.sort((a,b) => {
+                if(a.fecha === b.fecha) return window.aMinutos(a.hora) - window.aMinutos(b.hora);
+                return new Date(a.fecha) - new Date(b.fecha);
+            }).forEach(clase => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <strong class="text-neutral-main">Profe: ${clase.profe}</strong><br>
+                            <small class="text-neutral-sub">Alum: ${clase.jugador} (${clase.fecha} ${clase.hora}hs)</small>
+                        </td>
+                        <td style="text-align: right; color: #ef4444; font-weight: bold;">$${window.formatearDinero(clase.faltante)}</td>
+                        <td style="text-align: center;">
+                            <button class="btn-modal btn-cobrar-clase" onclick="window.abrirModalCobrarClase('${clase.id}', '${clase.profe}', '${clase.jugador}', ${clase.faltante})">Cobrar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.abrirModalCobrarClase = function(id, profe, alumno, faltante) {
+            document.getElementById('cobrar-clase-id').value = id;
+            document.getElementById('lbl-cobrar-clase').innerText = `Prof: ${profe} | Alum: ${alumno}`;
+            document.getElementById('cobrar-clase-total').innerText = `$${window.formatearDinero(faltante)}`;
+            document.getElementById('clase-pago-efectivo').value = '';
+            document.getElementById('clase-pago-transferencia').value = '';
+            document.getElementById('modal-cobrar-clase').style.display = 'flex';
+        }
+        
+        window.cerrarModalCobrarClase = function() {
+            document.getElementById('modal-cobrar-clase').style.display = 'none';
+        }
+
+        window.confirmarCobroClase = async function() {
+            const id = document.getElementById('cobrar-clase-id').value;
+            const res = reservasGlobales.find(r => r.id === id);
+            if(!res) return;
+
+            let efeNuevo = parseFloat(document.getElementById('clase-pago-efectivo').value) || 0;
+            let transNuevo = parseFloat(document.getElementById('clase-pago-transferencia').value) || 0;
+
+            if(efeNuevo === 0 && transNuevo === 0) { alert("Ingresa un monto para cobrar."); return; }
+
+            let efeTotal = (parseFloat(res.pagoEfectivo) || 0) + efeNuevo;
+            let transTotal = (parseFloat(res.pagoTransferencia) || 0) + transNuevo;
+
+            try {
+                await updateDoc(doc(db, "reservas", id), { pagoEfectivo: efeTotal, pagoTransferencia: transTotal });
+                window.cerrarModalCobrarClase();
+            } catch(e) { alert("Error al registrar el cobro de la clase."); }
+        }
+
+        // HISTORIAL DE TRANSACCIONES (COMPLETO)
         function renderizarHistorial() {
             const tbody = document.getElementById('tabla-historial');
             if(!tbody) return;
@@ -982,7 +1158,7 @@
                 let tot = (parseFloat(r.pagoEfectivo) || 0) + (parseFloat(r.pagoTransferencia) || 0);
                 if(tot > 0) {
                     let fr = getDateFromFirebase(r.fechaRegistro); 
-                    let tipoE = r.esClase ? ` [Clase ${r.profe}]` : '';
+                    let tipoE = r.tipoEvento && r.tipoEvento !== 'Normal' ? ` [${r.tipoEvento}]` : '';
                     historial.push({
                         fechaObj: fr,
                         fechaStr: `${fr.getDate().toString().padStart(2,'0')}/${(fr.getMonth()+1).toString().padStart(2,'0')}`, 
@@ -998,7 +1174,6 @@
                 return;
             }
 
-            // Ordenar por fecha descendente
             historial.sort((a,b) => b.fechaObj.getTime() - a.fechaObj.getTime());
 
             historial.forEach(item => {
@@ -1008,99 +1183,10 @@
                     <tr>
                         <td style="color: #9ca3af; font-size: 0.85em;">${item.fechaStr}</td>
                         <td class="text-neutral-main">${item.detalle}</td>
-                        <td style="text-align: right; color: ${colorMonto}; font-weight: bold;">${signo} $${item.monto}</td>
+                        <td style="text-align: right; color: ${colorMonto}; font-weight: bold;">${signo} $${window.formatearDinero(item.monto)}</td>
                     </tr>
                 `;
             });
-        }
-
-        // COBRO DE CLASES
-        function renderizarClasesPendientes() {
-            const tbody = document.getElementById('tabla-clases-pendientes');
-            if(!tbody) return;
-            tbody.innerHTML = '';
-            
-            let clasesPendientes = reservasGlobales.filter(r => {
-                if(!r.esClase) return false;
-                
-                let pCancha = 0;
-                let numC = parseInt(r.cancha || "1");
-                let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
-                
-                if (numC <= canchasIndoorGlobal) {
-                    pCancha = parseInt(precioIndoorGlobal);
-                } else if (numC <= maxPadel) {
-                    pCancha = parseInt(precioOutdoorGlobal);
-                } else {
-                    pCancha = parseInt(precioTenisGlobal);
-                }
-
-                let cConsumos = (r.consumos || []).reduce((acc, c) => acc + parseFloat(c.precio), 0);
-                let totalACobrar = pCancha + cConsumos;
-                
-                let abonado = (parseFloat(r.pagoEfectivo) || 0) + (parseFloat(r.pagoTransferencia) || 0);
-                
-                if(totalACobrar > 0 && abonado < totalACobrar) {
-                    r.faltante = totalACobrar - abonado;
-                    return true;
-                }
-                return false;
-            });
-
-            if(clasesPendientes.length === 0) { 
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #9ca3af; padding: 15px;">No hay clases pendientes de cobro</td></tr>'; 
-                return; 
-            }
-
-            clasesPendientes.sort((a,b) => {
-                if(a.fecha === b.fecha) return window.aMinutos(a.hora) - window.aMinutos(b.hora);
-                return new Date(a.fecha) - new Date(b.fecha);
-            }).forEach(clase => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>
-                            <strong class="text-neutral-main">Profe: ${clase.profe}</strong><br>
-                            <small class="text-neutral-sub">Alum: ${clase.jugador} (${clase.fecha} ${clase.hora}hs)</small>
-                        </td>
-                        <td style="text-align: right; color: #ef4444; font-weight: bold;">$${clase.faltante}</td>
-                        <td style="text-align: center;">
-                            <button class="btn-modal btn-cobrar-clase" onclick="window.abrirModalCobrarClase('${clase.id}', '${clase.profe}', '${clase.jugador}', ${clase.faltante})">Cobrar</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        window.abrirModalCobrarClase = function(id, profe, alumno, faltante) {
-            document.getElementById('cobrar-clase-id').value = id;
-            document.getElementById('lbl-cobrar-clase').innerText = `Prof: ${profe} | Alum: ${alumno}`;
-            document.getElementById('cobrar-clase-total').innerText = `$${faltante}`;
-            document.getElementById('clase-pago-efectivo').value = '';
-            document.getElementById('clase-pago-transferencia').value = '';
-            document.getElementById('modal-cobrar-clase').style.display = 'flex';
-        }
-        
-        window.cerrarModalCobrarClase = function() {
-            document.getElementById('modal-cobrar-clase').style.display = 'none';
-        }
-
-        window.confirmarCobroClase = async function() {
-            const id = document.getElementById('cobrar-clase-id').value;
-            const res = reservasGlobales.find(r => r.id === id);
-            if(!res) return;
-
-            let efeNuevo = parseFloat(document.getElementById('clase-pago-efectivo').value) || 0;
-            let transNuevo = parseFloat(document.getElementById('clase-pago-transferencia').value) || 0;
-
-            if(efeNuevo === 0 && transNuevo === 0) { alert("Ingresa un monto para cobrar."); return; }
-
-            let efeTotal = (parseFloat(res.pagoEfectivo) || 0) + efeNuevo;
-            let transTotal = (parseFloat(res.pagoTransferencia) || 0) + transNuevo;
-
-            try {
-                await updateDoc(doc(db, "reservas", id), { pagoEfectivo: efeTotal, pagoTransferencia: transTotal });
-                window.cerrarModalCobrarClase();
-            } catch(e) { alert("Error al registrar el cobro de la clase."); }
         }
 
         // BALANCES
@@ -1131,13 +1217,9 @@
 
             let gananciaNeta = totalIngresos - totalGastos;
             let textoPeriodo = "";
-            if (periodoDias === "todo") {
-                textoPeriodo = "Historial Completo";
-            } else if (periodoDias === "1") {
-                textoPeriodo = "Últimas 24hs";
-            } else {
-                textoPeriodo = `Últimos ${periodoDias} días`;
-            }
+            if (periodoDias === "todo") { textoPeriodo = "Historial Completo"; } 
+            else if (periodoDias === "1") { textoPeriodo = "Últimas 24hs"; } 
+            else { textoPeriodo = `Últimos ${periodoDias} días`; }
 
             try {
                 await addDoc(collection(db, "balances"), {
@@ -1160,9 +1242,9 @@
                 tbody.innerHTML += `
                     <tr>
                         <td><strong class="text-neutral-main">${bal.titulo}</strong><br><small class="text-neutral-sub">(${bal.periodoTexto})</small></td>
-                        <td style="text-align: right;" class="text-neutral-sub">$${bal.ingresos}</td>
-                        <td style="text-align: right;" class="text-neutral-sub">$${bal.gastos}</td>
-                        <td style="text-align: right; font-weight: bold;" class="text-neutral-main">$${bal.ganancia}</td>
+                        <td style="text-align: right;" class="text-neutral-sub">$${window.formatearDinero(bal.ingresos)}</td>
+                        <td style="text-align: right;" class="text-neutral-sub">$${window.formatearDinero(bal.gastos)}</td>
+                        <td style="text-align: right; font-weight: bold;" class="text-neutral-main">$${window.formatearDinero(bal.ganancia)}</td>
                         <td style="text-align: center;"><button onclick="window.eliminarBalance('${bal.id}')" style="background:none;border:none;cursor:pointer;font-size:1.1em;">🗑️</button></td>
                     </tr>
                 `;
@@ -1191,13 +1273,199 @@
             document.getElementById('contenido-metricas').innerHTML = html;
         }
 
-        // --- GESTIÓN DE TURNOS ---
+        // --- RESERVA DESDE VISTA JUGADOR (PÚBLICA) ---
+        window.abrirModalReservaJugador = function(hora) {
+            let minI = window.aMinutos(hora); let minU = window.aMinutos(ultimoTurno);
+            if (minI > minU) { alert("Horario excede el límite del club."); return; }
+            if(validarEsHoraPasada(hora)) { alert("No puedes reservar un horario que ya pasó."); return; }
+
+            reservaEnProcesoHora = hora;
+            let pF = fechaSeleccionada.split('-');
+            document.getElementById('reserva-fecha-display').innerText = `${pF[2]}/${pF[1]}/${pF[0]}`;
+            document.getElementById('reserva-hora-display').innerText = `${hora} hs (${duracionGlobal/60}h)`;
+
+            const dowNumSelected = window.getDayOfWeekFromDate(fechaSeleccionada);
+            const numBloquesNuevo = duracionGlobal / 30;
+            let bloquesNuevos = [];
+            for(let b=0; b < numBloquesNuevo; b++) { bloquesNuevos.push(window.sumarMinutos(hora, b * 30)); }
+
+            let canchasOcupadas = new Set();
+            reservasGlobales.forEach(r => {
+                let aplica = false;
+                let canceladas = r.fechasCanceladas || [];
+                if ((r.fecha || fechasValidas[0]) === fechaSeleccionada && !canceladas.includes(fechaSeleccionada)) aplica = true;
+                if (r.fijo === true && window.getDayOfWeekFromDate(r.fecha) === dowNumSelected && !canceladas.includes(fechaSeleccionada)) aplica = true;
+
+                if (aplica) {
+                    let resDuracion = r.duracion || 90;
+                    let numBloquesRes = resDuracion / 30;
+                    let bloquesRes = [];
+                    for(let b=0; b < numBloquesRes; b++) { bloquesRes.push(window.sumarMinutos(r.hora, b * 30)); }
+                    if(bloquesNuevos.some(b => bloquesRes.includes(b))) {
+                        let n = parseInt(r.cancha);
+                        if(!isNaN(n)) canchasOcupadas.add(n);
+                    }
+                }
+            });
+
+            let totalCanchas = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0) + (canchasTenisGlobal || 0);
+            let maxPadel = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0);
+
+            let indoorLibres = [];
+            for(let c=1; c<=(canchasIndoorGlobal || 0); c++) { if(!canchasOcupadas.has(c)) indoorLibres.push(c); }
+            
+            let outdoorLibres = [];
+            for(let c=(canchasIndoorGlobal || 0)+1; c<=maxPadel; c++) { if(!canchasOcupadas.has(c)) outdoorLibres.push(c); }
+            
+            let tenisLibres = [];
+            for(let c=maxPadel+1; c<=totalCanchas; c++) { if(!canchasOcupadas.has(c)) tenisLibres.push(c); }
+
+            const selectTipo = document.getElementById('select-cancha-modal');
+            selectTipo.innerHTML = '';
+            
+            if(indoorLibres.length > 0) selectTipo.innerHTML += `<option value="${indoorLibres[0]}" style="color: black;">Indoor ($${window.formatearDinero(precioIndoorGlobal)})</option>`;
+            if(outdoorLibres.length > 0) selectTipo.innerHTML += `<option value="${outdoorLibres[0]}" style="color: black;">Outdoor ($${window.formatearDinero(precioOutdoorGlobal)})</option>`;
+            if(tenisLibres.length > 0) selectTipo.innerHTML += `<option value="${tenisLibres[0]}" style="color: black;">Tenis ($${window.formatearDinero(precioTenisGlobal)})</option>`;
+
+            if (indoorLibres.length === 0 && outdoorLibres.length === 0 && tenisLibres.length === 0) { alert("No quedan canchas libres."); return; }
+
+            document.getElementById('input-nombre-jugador').value = ""; document.getElementById('input-telefono-jugador').value = ""; 
+            document.getElementById('modal-reserva-jugador').style.display = 'flex';
+        }
+
+        window.cerrarModalReservaJugador = function() { reservaEnProcesoHora = null; document.getElementById('modal-reserva-jugador').style.display = 'none'; }
+
+        window.confirmarReservaJugador = async function() {
+            const inputNombre = document.getElementById('input-nombre-jugador').value;
+            const inputTelefono = document.getElementById('input-telefono-jugador').value;
+            const canchaAsignada = document.getElementById('select-cancha-modal').value;
+
+            if (!inputNombre || inputNombre.trim() === "") { alert("Por favor, ingresa Nombre y Apellido."); return; }
+            if (!inputTelefono || inputTelefono.trim() === "") { alert("Por favor, ingresa tu número de Teléfono."); return; }
+
+            try {
+                await addDoc(collection(db, "reservas"), { 
+                    fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: canchaAsignada, 
+                    jugador: inputNombre, telefono: inputTelefono, duracion: duracionGlobal, 
+                    fechaRegistro: serverTimestamp(), asistencia: false, fijo: false, fechasCanceladas: [],
+                    pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: [],
+                    tipoEvento: "Normal", esClase: false, profe: null
+                });
+                alert("¡Reserva guardada con éxito!");
+                window.cerrarModalReservaJugador();
+            } catch (error) { alert("Hubo un error de conexión."); }
+        }
+
+        // --- RESERVA DESDE VISTA ADMIN (GRILLA) ---
+        window.cambioTipoEvento = function() {
+            let tipo = document.getElementById('admin-tipo-evento').value;
+            let divProfe = document.getElementById('admin-div-profe');
+            if(tipo === 'Clases') {
+                divProfe.style.display = 'block';
+            } else {
+                divProfe.style.display = 'none';
+            }
+        }
+
+        window.abrirModalReservaAdmin = function(hora, cancha) {
+            let minInicio = window.aMinutos(hora);
+            let minUltimo = window.aMinutos(ultimoTurno);
+            if (minInicio > minUltimo) { alert("Horario excede el límite del club."); return; }
+            if(validarEsHoraPasada(hora)) { alert("No puedes reservar un horario que ya pasó."); return; }
+
+            reservaEnProcesoHora = hora;
+            document.getElementById('admin-cancha-id').value = cancha;
+
+            const partes = fechaSeleccionada.split('-');
+            const f = new Date(partes[0], partes[1] - 1, partes[2]);
+            document.getElementById('admin-fecha-display').innerText = `${f.getDate()}/${f.getMonth() + 1}/${f.getFullYear()}`;
+            document.getElementById('admin-hora-display').innerText = `${hora} hs`;
+            
+            let numC = parseInt(cancha);
+            let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+            let tipoC = "";
+            if (numC <= canchasIndoorGlobal) tipoC = "Indoor";
+            else if (numC <= maxPadel) tipoC = "Outdoor";
+            else tipoC = "Tenis";
+
+            document.getElementById('admin-cancha-display').innerText = `Cancha ${cancha} (${tipoC})`;
+            
+            document.getElementById('admin-tipo-evento').value = "Normal";
+            window.cambioTipoEvento();
+            document.getElementById('admin-duracion').value = duracionGlobal.toString();
+
+            document.getElementById('admin-input-jugador').value = ""; 
+            document.getElementById('admin-input-telefono').value = ""; 
+            
+            document.getElementById('modal-reserva-admin').style.display = 'flex';
+        }
+
+        window.cerrarModalReservaAdmin = function() { reservaEnProcesoHora = null; document.getElementById('modal-reserva-admin').style.display = 'none'; }
+
+        window.confirmarReservaAdmin = async function() {
+            const inputNombre = document.getElementById('admin-input-jugador').value;
+            const inputTelefono = document.getElementById('admin-input-telefono').value;
+            const canchaAsignada = document.getElementById('admin-cancha-id').value;
+            const tipoEvento = document.getElementById('admin-tipo-evento').value;
+            const duracionSel = parseInt(document.getElementById('admin-duracion').value) || duracionGlobal;
+            
+            let profeSel = null;
+            if(tipoEvento === 'Clases') {
+                profeSel = document.getElementById('admin-select-profe').value;
+                if(!profeSel) { alert("Selecciona un profesor para la clase."); return; }
+            }
+
+            if (!inputNombre || inputNombre.trim() === "") { alert("Por favor, ingresa el Nombre / Título."); return; }
+            
+            // Validar superposición con la duración custom seleccionada
+            const dowNumSelectedClub = window.getDayOfWeekFromDate(fechaSeleccionada);
+            let bloqueNuevoMinutos = [];
+            for(let b=0; b < duracionSel/30; b++) { bloqueNuevoMinutos.push(window.sumarMinutos(reservaEnProcesoHora, b * 30)); }
+            
+            let hayCruce = false;
+            reservasGlobales.forEach(r => {
+                if(r.cancha != canchaAsignada) return;
+                let aplica = false;
+                let canceladas = r.fechasCanceladas || [];
+                if ((r.fecha || fechasValidas[0]) === fechaSeleccionada && !canceladas.includes(fechaSeleccionada)) aplica = true;
+                if (r.fijo === true && window.getDayOfWeekFromDate(r.fecha) === dowNumSelectedClub && !canceladas.includes(fechaSeleccionada)) aplica = true;
+
+                if (aplica) {
+                    let rBloques = [];
+                    for(let b=0; b < (r.duracion || 90)/30; b++) { rBloques.push(window.sumarMinutos(r.hora, b * 30)); }
+                    if(bloqueNuevoMinutos.some(b => rBloques.includes(b))) { hayCruce = true; }
+                }
+            });
+
+            if(hayCruce) {
+                alert("La duración seleccionada se superpone con otro turno en esta cancha.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-guardar-reserva-admin');
+            btn.innerText = "Guardando..."; btn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "reservas"), { 
+                    fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: canchaAsignada, 
+                    jugador: inputNombre, telefono: inputTelefono, duracion: duracionSel, 
+                    fechaRegistro: serverTimestamp(), asistencia: false, fijo: false, fechasCanceladas: [],
+                    pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: [],
+                    tipoEvento: tipoEvento, esClase: (tipoEvento === 'Clases'), profe: profeSel
+                });
+                window.cerrarModalReservaAdmin();
+            } catch (error) { alert("Hubo un error de conexión."); }
+            finally { btn.innerText = "Guardar Evento"; btn.disabled = false; }
+        }
+
+        // --- GESTIÓN DE TURNOS (ACCIONES) ---
         window.abrirModal = function(id) { 
             reservaSeleccionadaId = id; 
             const res = reservasGlobales.find(r => r.id === id);
             if(!res) return;
             document.getElementById('pago-efectivo').value = res.pagoEfectivo || "";
             document.getElementById('pago-transferencia').value = res.pagoTransferencia || "";
+            document.getElementById('pago-descuento').value = res.descuento || "";
             renderizarModalTurnoAcciones();
             document.getElementById('modal-acciones').style.display = 'flex'; 
         }
@@ -1207,7 +1475,8 @@
             const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
             if(!res) { window.cerrarModalAcciones(); return; }
 
-            document.getElementById('titulo-modal-acciones').innerText = res.esClase ? `Clase: ${res.profe} - Alum: ${res.jugador} (${res.hora}hs)` : `Gestión: ${res.jugador} (${res.hora}hs)`;
+            let txtE = (res.tipoEvento && res.tipoEvento !== 'Normal') ? `[${res.tipoEvento}]` : '';
+            document.getElementById('titulo-modal-acciones').innerText = `Gestión: ${res.jugador} ${txtE} (${res.hora}hs)`;
 
             const btnFijar = document.getElementById('btn-toggle-fijo');
             if(res.fijo) { btnFijar.innerHTML = "📌 Quitar Turno Fijo"; btnFijar.style.backgroundColor = "#4b5563"; } 
@@ -1216,31 +1485,32 @@
             document.getElementById('btn-whatsapp').style.display = (res.telefono && res.telefono.trim() !== "") ? 'block' : 'none';
             document.getElementById('btn-excepcion').style.display = res.fijo ? 'block' : 'none';
 
+            let factorPrecio = (res.duracion || duracionGlobal) / duracionGlobal;
             let pCancha = 0;
             let numC = parseInt(res.cancha || "1");
             let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
             
-            if (numC <= canchasIndoorGlobal) {
-                pCancha = parseInt(precioIndoorGlobal);
-            } else if (numC <= maxPadel) {
-                pCancha = parseInt(precioOutdoorGlobal);
-            } else {
-                pCancha = parseInt(precioTenisGlobal);
-            }
+            if (numC <= canchasIndoorGlobal) { pCancha = parseInt(precioIndoorGlobal); } 
+            else if (numC <= maxPadel) { pCancha = parseInt(precioOutdoorGlobal); } 
+            else { pCancha = parseInt(precioTenisGlobal); }
+            pCancha = pCancha * factorPrecio;
             
             let consumos = res.consumos || [];
             let totalConsumos = consumos.reduce((acc, curr) => acc + (parseFloat(curr.precio) || 0), 0);
-            let totalGeneral = pCancha + totalConsumos;
+            
+            let desc = parseFloat(res.descuento) || 0;
+            let totalGeneral = pCancha + totalConsumos - desc;
+            if(totalGeneral < 0) totalGeneral = 0;
 
-            document.getElementById('res-precio-cancha').innerText = `$${pCancha}`;
-            document.getElementById('res-precio-consumos').innerText = `$${totalConsumos}`;
-            document.getElementById('res-precio-total').innerText = `$${totalGeneral}`;
+            document.getElementById('res-precio-cancha').innerText = `$${window.formatearDinero(pCancha)}`;
+            document.getElementById('res-precio-consumos').innerText = `$${window.formatearDinero(totalConsumos)}`;
+            document.getElementById('res-precio-total').innerText = `$${window.formatearDinero(totalGeneral)}`;
 
             let sel = document.getElementById('select-consumo-turno');
             sel.innerHTML = '<option value="" disabled selected>Elegir producto...</option>';
             inventarioGlobal.sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(p => {
                 let stock = parseInt(p.stock) || 0;
-                if(stock > 0) sel.innerHTML += `<option value="${p.id}">${p.nombre} - $${p.precio}</option>`;
+                if(stock > 0) sel.innerHTML += `<option value="${p.id}">${p.nombre} - $${window.formatearDinero(p.precio)}</option>`;
             });
 
             let ul = document.getElementById('lista-consumos-turno');
@@ -1250,7 +1520,7 @@
             } else {
                 consumos.forEach((c, index) => {
                     ul.innerHTML += `<li style="display: flex; justify-content: space-between; border-bottom: 1px solid #2c3540; padding: 5px 0;">
-                            <span class="text-neutral-main">${c.nombre}</span><span><span class="text-neutral-bold" style="margin-right: 10px;">$${c.precio}</span>
+                            <span class="text-neutral-main">${c.nombre}</span><span><span class="text-neutral-bold" style="margin-right: 10px;">$${window.formatearDinero(c.precio)}</span>
                             <button onclick="window.eliminarConsumoTurno(${index}, '${c.prodId}')" style="background:none;border:none;cursor:pointer;font-size:1.1em;">❌</button></span></li>`;
                 });
             }
@@ -1305,30 +1575,32 @@
             const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
             if(!res) return;
 
+            let factorPrecio = (res.duracion || duracionGlobal) / duracionGlobal;
             let pCancha = 0;
             let numC = parseInt(res.cancha || "1");
             let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
-            
-            if (numC <= canchasIndoorGlobal) {
-                pCancha = parseInt(precioIndoorGlobal);
-            } else if (numC <= maxPadel) {
-                pCancha = parseInt(precioOutdoorGlobal);
-            } else {
-                pCancha = parseInt(precioTenisGlobal);
-            }
+            if (numC <= canchasIndoorGlobal) { pCancha = parseInt(precioIndoorGlobal); } 
+            else if (numC <= maxPadel) { pCancha = parseInt(precioOutdoorGlobal); } 
+            else { pCancha = parseInt(precioTenisGlobal); }
+            pCancha = pCancha * factorPrecio;
 
             let cConsumos = (res.consumos || []).reduce((acc, c) => acc + parseFloat(c.precio), 0);
-            let tGen = pCancha + cConsumos;
+            
+            let desc = parseFloat(document.getElementById('pago-descuento').value) || 0;
+            let tGen = pCancha + cConsumos - desc;
+            if(tGen < 0) tGen = 0;
 
             let efe = parseFloat(document.getElementById('pago-efectivo').value) || 0;
             let trans = parseFloat(document.getElementById('pago-transferencia').value) || 0;
 
             let faltante = tGen - (efe + trans);
             let txt = document.getElementById('txt-faltante');
+            document.getElementById('res-precio-total').innerText = `$${window.formatearDinero(tGen)}`;
+
             if(faltante <= 0 && tGen > 0) {
                 txt.innerText = `Pagado por completo ✅`; txt.style.color = "#d1d5db";
             } else {
-                txt.innerText = `Falta cobrar: $${faltante}`; txt.style.color = "#d1d5db";
+                txt.innerText = `Falta cobrar: $${window.formatearDinero(faltante)}`; txt.style.color = "#ef4444";
             }
         }
 
@@ -1336,8 +1608,9 @@
             if(!reservaSeleccionadaId) return;
             let efe = parseFloat(document.getElementById('pago-efectivo').value) || 0;
             let trans = parseFloat(document.getElementById('pago-transferencia').value) || 0;
+            let desc = parseFloat(document.getElementById('pago-descuento').value) || 0;
             try {
-                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { pagoEfectivo: efe, pagoTransferencia: trans });
+                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { pagoEfectivo: efe, pagoTransferencia: trans, descuento: desc });
                 window.cerrarModalAcciones();
             } catch(e) { alert("Error al registrar pago."); }
         }
@@ -1355,28 +1628,61 @@
             if (!confirm("¿Convertir en TURNO FIJO?\n\nEl sistema reservará automáticamente esta misma cancha y horario para las próximas semanas.")) return;
 
             try {
-                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fijo: true });
+                let idG = "FIJO-" + Date.now();
+                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fijo: true, grupoFijoId: idG });
+                
+                let p = []; let fB = new Date(`${resO.fecha}T12:00:00`); 
+                for(let i=1; i<=52; i++) {
+                    let fT = new Date(fB); fT.setDate(fT.getDate() + (i * 7));
+                    let fISO = `${fT.getFullYear()}-${(fT.getMonth()+1).toString().padStart(2,'0')}-${fT.getDate().toString().padStart(2,'0')}`;
+                    p.push(addDoc(collection(db, "reservas"), { 
+                        ...resO, id: undefined, fecha: fISO, fechaRegistro: serverTimestamp(), fijo: true, grupoFijoId: idG, pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: []
+                    }));
+                }
+                await Promise.all(p); 
                 alert(`¡Turno Fijo establecido exitosamente!`); 
                 window.cerrarModalAcciones();
             } catch (e) { alert("Error al establecer fijo."); }
         }
 
         window.accionEliminar = async function() { 
-            if(reservaSeleccionadaId && confirm("¿Borrar COMPLETAMENTE esta reserva?")) { 
-                await deleteDoc(doc(db, "reservas", reservaSeleccionadaId)); 
-                window.cerrarModalAcciones(); 
-            } 
+            if(!reservaSeleccionadaId) return;
+            const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
+            if(!res) return;
+
+            if (res.fijo && res.grupoFijoId) {
+                let accion = confirm("Este es un TURNO FIJO.\n\n[ACEPTAR] para eliminar TODO el turno fijo desde esta fecha en adelante.\n[CANCELAR] para eliminar SOLO el partido de esta semana.");
+                if (accion) {
+                    let futuros = reservasGlobales.filter(r => r.grupoFijoId === res.grupoFijoId && r.fecha >= res.fecha);
+                    if (confirm(`Se eliminarán permanentemente ${futuros.length} partidos. ¿Continuar?`)) {
+                        let promesas = futuros.map(f => deleteDoc(doc(db, "reservas", f.id)));
+                        await Promise.all(promesas);
+                        window.cerrarModalAcciones();
+                    }
+                } else {
+                    if (confirm("¿Borrar solo este partido específico?")) {
+                        await deleteDoc(doc(db, "reservas", reservaSeleccionadaId)); 
+                        window.cerrarModalAcciones(); 
+                    }
+                }
+            } else {
+                if(confirm("¿Cancelar este evento?")) { 
+                    await deleteDoc(doc(db, "reservas", reservaSeleccionadaId)); 
+                    window.cerrarModalAcciones(); 
+                }
+            }
         }
         
         window.accionWhatsApp = function() {
             if(reservaSeleccionadaId) {
-                const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
-                if(res && res.telefono) {
-                    let numeroLimpio = res.telefono.replace(/\D/g,''); 
+                const r = reservasGlobales.find(x => x.id === reservaSeleccionadaId);
+                if(r && r.telefono) {
+                    let numeroLimpio = r.telefono.replace(/\D/g,''); 
                     
+                    let factorPrecio = (r.duracion || duracionGlobal) / duracionGlobal;
                     let pCancha = 0;
                     let tipoCancha = "indoor";
-                    let numC = parseInt(res.cancha || "1");
+                    let numC = parseInt(r.cancha || "1");
                     let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
                     
                     if (numC <= canchasIndoorGlobal) {
@@ -1389,8 +1695,13 @@
                         pCancha = parseInt(precioTenisGlobal);
                         tipoCancha = "Tenis";
                     }
+                    pCancha = pCancha * factorPrecio;
 
-                    let mensaje = `te recordamos que tenes un turno a las ${res.hora} en cancha de ${tipoCancha} con un precio de $${pCancha}, Te esperamos`;
+                    let desc = parseFloat(r.descuento) || 0;
+                    let precioFinal = pCancha - desc;
+
+                    let txtDur = r.duracion ? ` de ${r.duracion} min` : '';
+                    let mensaje = `Hola ${r.jugador}, confirmamos tu turno${txtDur} a las ${r.hora} en cancha de ${tipoCancha}. El valor a abonar es de $${window.formatearDinero(precioFinal)}. Te esperamos!`;
                     window.open(`https://wa.me/${numeroLimpio}?text=${encodeURIComponent(mensaje)}`, '_blank');
                 }
             }
@@ -1427,7 +1738,7 @@
                     const numBloquesNuevo = duracionGlobal / 30;
 
                     horariosFiltrados.forEach(hora => {
-                        if(validarEsHoraPasada(hora)) return; // <-- BLOQUEO HORARIOS PASADOS
+                        if(validarEsHoraPasada(hora)) return;
 
                         let bloquesNuevos = [];
                         for(let b=0; b < numBloquesNuevo; b++) { bloquesNuevos.push(window.sumarMinutos(hora, b * 30)); }
@@ -1551,7 +1862,6 @@
                         
                         let htmlExtra = "";
                         if (!bloquesOcupadosCancha.has(horaFormateada)) {
-                            // <-- BLOQUEO HORARIOS PASADOS ADMIN
                             if(validarEsHoraPasada(horaFormateada)) {
                                 htmlExtra = `style="height: 40px; ${borderStyle} box-sizing: border-box; opacity: 0.2; cursor: not-allowed; background: rgba(0,0,0,0.3);"`;
                             } else {
@@ -1573,31 +1883,37 @@
                         let height = (resDur / 30) * 40; 
 
                         let textoFijo = res.fijo === true ? ' 📌' : '';
-                        let textoProfe = res.esClase ? `<br><span style="font-size:0.85em; color:#d1d5db;">🧑‍🏫 ${res.profe}</span>` : '';
+                        let iconEvento = "";
+                        if (res.tipoEvento === "Torneo") iconEvento = "🏆 ";
+                        else if (res.tipoEvento === "Especial") iconEvento = "⭐ ";
+                        else if (res.esClase) iconEvento = "🧑‍🏫 ";
+                        
+                        let textoSecundario = res.esClase ? `<br><span style="font-size:0.85em; color:#d1d5db;">Profe: ${res.profe}</span>` : '';
 
+                        let factorPrecio = (res.duracion || duracionGlobal) / duracionGlobal;
                         let pCancha = 0;
                         let numC = parseInt(res.cancha || "1");
-                        if (numC <= canchasIndoorGlobal) {
-                            pCancha = parseInt(precioIndoorGlobal);
-                        } else if (numC <= maxPadel) {
-                            pCancha = parseInt(precioOutdoorGlobal);
-                        } else {
-                            pCancha = parseInt(precioTenisGlobal);
-                        }
+                        if (numC <= canchasIndoorGlobal) { pCancha = parseInt(precioIndoorGlobal); } 
+                        else if (numC <= maxPadel) { pCancha = parseInt(precioOutdoorGlobal); } 
+                        else { pCancha = parseInt(precioTenisGlobal); }
+                        pCancha = pCancha * factorPrecio;
 
                         let cConsumos = (res.consumos || []).reduce((acc, curr) => acc + parseFloat(curr.precio), 0);
-                        let tGen = pCancha + cConsumos;
+                        let desc = parseFloat(res.descuento) || 0;
+                        let tGen = pCancha + cConsumos - desc;
+                        if(tGen < 0) tGen = 0;
+                        
                         let tAbonado = (parseFloat(res.pagoEfectivo) || 0) + (parseFloat(res.pagoTransferencia) || 0);
                         let textoSaldo = (tAbonado >= tGen && tGen > 0) ? "✅" : "Pend";
                         
                         htmlGrilla += `
-                            <div class="tarjeta-reserva-grilla" onclick="window.abrirModal('${res.id}')" 
+                            <div class="tarjeta-reserva-grilla ${res.fijo ? 'fijo' : ''}" onclick="window.abrirModal('${res.id}')" 
                                  style="position: absolute; top: ${offsetTop}px; left: 4px; right: 4px; height: ${height - 6}px; 
                                         padding: 8px; font-size: 0.85em; overflow: hidden; border-radius: 6px; cursor: pointer; 
                                         box-shadow: 0 4px 6px rgba(0,0,0,0.4); display: flex; flex-direction: column; z-index: 10;">
-                                <span style="font-weight: 900; font-size: 1.1em; color: #171d24; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${res.jugador}${textoFijo}${textoProfe}</span>
-                                <span style="margin-top: 4px; color: #171d24; opacity: 0.8; font-weight: 700;">${res.hora} hs</span>
-                                <span style="margin-top: auto; font-weight: bold; color: #171d24;">Pago: ${textoSaldo}</span>
+                                <span style="font-weight: 900; font-size: 1.1em; color: ${res.fijo ? '#2e1065' : '#171d24'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${iconEvento}${res.jugador}${textoFijo}${textoSecundario}</span>
+                                <span style="margin-top: 4px; color: ${res.fijo ? '#2e1065' : '#171d24'}; opacity: 0.8; font-weight: 700;">${res.hora} hs</span>
+                                <span style="margin-top: auto; font-weight: bold; color: ${res.fijo ? '#2e1065' : '#171d24'};">Pago: ${textoSaldo}</span>
                             </div>
                         `;
                     });
@@ -1613,7 +1929,7 @@
             }
         }
 
-        // --- LISTENERS FIREBASE ---
+        // --- LISTENERS FIREBASE Y CONFIG ---
         window.abrirModalConfig = function() { document.getElementById('modal-config').style.display = 'flex'; }
         window.cerrarModalConfig = function() { document.getElementById('modal-config').style.display = 'none'; }
 
@@ -1672,6 +1988,12 @@
             renderizarClasesPendientes(); 
             renderizarHistorial();
             if(reservaSeleccionadaId) renderizarModalTurnoAcciones(); 
+        });
+
+        onSnapshot(collection(db, "profesores"), (snapshot) => {
+            profesoresGlobal = [];
+            snapshot.forEach((doc) => profesoresGlobal.push({ id: doc.id, ...doc.data() }));
+            renderizarProfesores();
         });
 
         onSnapshot(collection(db, "inventario"), (snapshot) => {
