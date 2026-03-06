@@ -650,6 +650,12 @@
                         <option value="120">120 Minutos (2h)</option>
                     </select>
                 </div>
+
+                <div style="border-top: 1px solid #2c3540; padding-top: 10px; margin-top: 10px;">
+                    <label style="font-size: 0.85em; color: #d1d5db;">Teléfono de WhatsApp del Club (Con código de país, ej: 549351...):</label>
+                    <input type="tel" id="input-telefono-club" class="input-form" placeholder="Ej: 5493511234567" style="margin-top: 4px;">
+                </div>
+
             </div>
             <button class="btn-modal btn-guardar" style="margin-top: 20px;" onclick="window.guardarConfiguracion()">Guardar Todo</button>
             <button class="btn-modal btn-cerrar" style="margin-top: 0;" onclick="window.cerrarModalConfig()">Cancelar</button>
@@ -739,6 +745,9 @@
         let precioTenisGlobal = "10000";
 
         let diasAbiertosGlobal = [0,1,2,3,4,5,6]; 
+
+        // NUEVA VARIABLE GLOBAL PARA EL TELEFONO DEL CLUB
+        let telefonoClubGlobal = "";
 
         let reservasGlobales = [];
         let inventarioGlobal = []; 
@@ -1625,6 +1634,7 @@
 
         window.cerrarModalReservaJugador = function() { reservaEnProcesoHora = null; document.getElementById('modal-reserva-jugador').style.display = 'none'; }
 
+        // --- FUNCIÓN MODIFICADA: Enviar WhatsApp al club ---
         window.confirmarReservaJugador = async function() {
             const inputNombre = document.getElementById('input-nombre-jugador').value;
             const inputTelefono = document.getElementById('input-telefono-jugador').value;
@@ -1641,7 +1651,32 @@
                     pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: [],
                     tipoEvento: "Normal", esClase: false, profe: null
                 });
-                alert("¡Reserva guardada con éxito!");
+
+                // Lógica de Redirección a WhatsApp del Club
+                let numC = parseInt(canchaAsignada);
+                let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+                let tipoCanchaStr = "";
+
+                if (numC <= canchasIndoorGlobal) {
+                    tipoCanchaStr = "indoor";
+                } else if (numC <= maxPadel) {
+                    tipoCanchaStr = "outdoor";
+                } else {
+                    tipoCanchaStr = "tenis";
+                }
+
+                if (telefonoClubGlobal && telefonoClubGlobal.trim() !== "") {
+                    let numeroLimpioClub = telefonoClubGlobal.replace(/\D/g,'');
+                    // Mensaje solicitado con la hora, nombre y tipo de cancha insertados
+                    let mensajeWhatsApp = `reserve una cancha de ${tipoCanchaStr} a las ${reservaEnProcesoHora} a nombre de ${inputNombre}`;
+                    let urlWhatsapp = `https://wa.me/${numeroLimpioClub}?text=${encodeURIComponent(mensajeWhatsApp)}`;
+                    
+                    alert("¡Reserva guardada con éxito! Ahora te redirigiremos para que le envíes un mensaje al club.");
+                    window.open(urlWhatsapp, '_blank');
+                } else {
+                    alert("¡Reserva guardada con éxito!\n\nNota: El club no ha configurado su número de WhatsApp para recibir el mensaje automático.");
+                }
+
                 window.cerrarModalReservaJugador();
             } catch (error) { alert("Hubo un error de conexión."); }
         }
@@ -2237,7 +2272,8 @@
                     canchasIndoor: parseInt(document.getElementById('input-canchas-in').value) || 0, precioIndoor: document.getElementById('input-precio-in').value || "0",
                     canchasOutdoor: parseInt(document.getElementById('input-canchas-out').value) || 0, precioOutdoor: document.getElementById('input-precio-out').value || "0",
                     canchasTenis: parseInt(document.getElementById('input-canchas-tenis').value) || 0, precioTenis: document.getElementById('input-precio-tenis').value || "0",
-                    duracionTurno: parseInt(document.getElementById('input-duracion').value) || 90, diasAbiertos: diasCheck
+                    duracionTurno: parseInt(document.getElementById('input-duracion').value) || 90, diasAbiertos: diasCheck,
+                    telefonoClub: document.getElementById('input-telefono-club').value.trim() // GUARDAR TELÉFONO DEL CLUB
                 }); 
                 window.cerrarModalConfig();
                 alert("¡Configuración guardada exitosamente!");
@@ -2255,11 +2291,13 @@
                 precioIndoorGlobal = data.precioIndoor || "15000"; precioOutdoorGlobal = data.precioOutdoor || "12000";
                 precioTenisGlobal = data.precioTenis || "10000";
                 diasAbiertosGlobal = data.diasAbiertos || [0,1,2,3,4,5,6]; 
+                telefonoClubGlobal = data.telefonoClub || ""; // LEER TELÉFONO
             } else {
                 primerTurno = "08:00"; ultimoTurno = "21:30"; duracionGlobal = 90; 
                 canchasIndoorGlobal = 1; canchasOutdoorGlobal = 0; canchasTenisGlobal = 0;
                 precioIndoorGlobal = "15000"; precioOutdoorGlobal = "12000"; precioTenisGlobal = "10000";
                 diasAbiertosGlobal = [0,1,2,3,4,5,6]; 
+                telefonoClubGlobal = "";
             }
             
             document.getElementById('input-primer-turno').value = primerTurno; document.getElementById('input-ultimo-turno').value = ultimoTurno;
@@ -2267,6 +2305,7 @@
             document.getElementById('input-canchas-in').value = canchasIndoorGlobal; document.getElementById('input-precio-in').value = precioIndoorGlobal;
             document.getElementById('input-canchas-out').value = canchasOutdoorGlobal; document.getElementById('input-precio-out').value = precioOutdoorGlobal;
             document.getElementById('input-canchas-tenis').value = canchasTenisGlobal; document.getElementById('input-precio-tenis').value = precioTenisGlobal;
+            document.getElementById('input-telefono-club').value = telefonoClubGlobal; // ACTUALIZAR UI
 
             [0,1,2,3,4,5,6].forEach(d => {
                 const cb = document.getElementById('dia-'+d);
