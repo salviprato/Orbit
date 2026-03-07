@@ -2375,7 +2375,7 @@
                     </div>
                     
                     <div style="margin-bottom: 10px; border-top: 1px solid #2c3540; padding-top: 15px;">
-                        <span style="font-size: 0.9em; color: #9ca3af; font-weight: bold;">Tabla General de Posiciones (Lectura Automática)</span>
+                        <span style="font-size: 0.9em; color: #9ca3af; font-weight: bold;">Tabla General de Posiciones (Automática)</span>
                     </div>
 
                     <div class="scroll-interno" style="background: #242c36; border-radius: 8px; border: 1px solid #2c3540; padding: 5px;">
@@ -2396,11 +2396,12 @@
                 </div>
 
                 <div id="modal-jugar-competitivo" class="modal-overlay" style="z-index: 1250;">
-                    <div class="modal-content" style="max-width: 450px; padding: 20px;">
-                        <div style="display: flex; gap: 8px; margin-bottom: 15px; border-bottom: 2px solid #2c3540; padding-bottom: 15px;">
-                            <button id="tab-btn-crear" class="btn-vista activo" style="flex: 1; padding: 8px; font-size: 0.85em; background-color: #f59e0b; border-color: #f59e0b;" onclick="window.cambiarTabCompetitivo('crear')">➕ Crear</button>
-                            <button id="tab-btn-unirse" class="btn-vista" style="flex: 1; padding: 8px; font-size: 0.85em; background-color: #242c36; border-color: #44505d;" onclick="window.cambiarTabCompetitivo('unirse')">🤝 Unirse</button>
-                            <button id="tab-btn-resultados" class="btn-vista" style="flex: 1; padding: 8px; font-size: 0.85em; background-color: #242c36; border-color: #44505d;" onclick="window.cambiarTabCompetitivo('resultados')">📊 Resultados</button>
+                    <div class="modal-content" style="max-width: 480px; padding: 20px;">
+                        <div style="display: flex; gap: 4px; margin-bottom: 15px; border-bottom: 2px solid #2c3540; padding-bottom: 15px; flex-wrap: wrap;">
+                            <button id="tab-btn-crear" class="btn-vista activo" style="flex: 1; min-width: 80px; padding: 8px; font-size: 0.85em; background-color: #f59e0b; border-color: #f59e0b;" onclick="window.cambiarTabCompetitivo('crear')">➕ Crear</button>
+                            <button id="tab-btn-unirse" class="btn-vista" style="flex: 1; min-width: 80px; padding: 8px; font-size: 0.85em; background-color: #242c36; border-color: #44505d;" onclick="window.cambiarTabCompetitivo('unirse')">🤝 Unirse</button>
+                            <button id="tab-btn-resultados" class="btn-vista" style="flex: 1; min-width: 80px; padding: 8px; font-size: 0.85em; background-color: #242c36; border-color: #44505d;" onclick="window.cambiarTabCompetitivo('resultados')">📊 Result.</button>
+                            <button id="tab-btn-historial" class="btn-vista" style="flex: 1; min-width: 80px; padding: 8px; font-size: 0.85em; background-color: #242c36; border-color: #44505d;" onclick="window.cambiarTabCompetitivo('historial')">📜 Historial</button>
                         </div>
                         
                         <div id="tab-crear-partido" style="text-align: left; display: flex; flex-direction: column; gap: 12px;">
@@ -2421,14 +2422,15 @@
                             <div style="display: flex; gap: 10px;">
                                 <div style="flex: 1;">
                                     <label style="font-size: 0.85em; color: #d1d5db; font-weight: bold;">2. Superficie:</label>
-                                    <select id="comp-cancha" class="input-form" style="margin-top: 4px;">
+                                    <select id="comp-cancha" class="input-form" style="margin-top: 4px;" onchange="window.llenarHorariosDisponiblesCompetitivo()">
                                         <option value="Indoor">Indoor</option>
                                         <option value="Outdoor">Outdoor</option>
                                     </select>
                                 </div>
                                 <div style="flex: 1;">
-                                    <label style="font-size: 0.85em; color: #d1d5db; font-weight: bold;">3. Horario:</label>
-                                    <input type="time" id="comp-hora" class="input-form" style="margin-top: 4px;">
+                                    <label style="font-size: 0.85em; color: #d1d5db; font-weight: bold;">3. Horario (Libres):</label>
+                                    <select id="comp-hora" class="input-form" style="margin-top: 4px;">
+                                        </select>
                                 </div>
                             </div>
 
@@ -2450,14 +2452,17 @@
 
                         <div id="tab-unirse-partido" style="display: none; text-align: left;">
                             <p style="font-size: 0.85em; color: #9ca3af; margin-top: 0; margin-bottom: 10px;">Partidos buscando rivales (Anónimo):</p>
-                            <div id="lista-partidos-abiertos" class="scroll-interno" style="max-height: 250px; overflow-y: auto;">
-                                </div>
+                            <div id="lista-partidos-abiertos" class="scroll-interno" style="max-height: 250px; overflow-y: auto;"></div>
                         </div>
 
                         <div id="tab-resultados-partido" style="display: none; text-align: left;">
                             <p style="font-size: 0.85em; color: #9ca3af; margin-top: 0; margin-bottom: 10px;">Partidos confirmados por jugar / jugados:</p>
-                            <div id="lista-partidos-resultados" class="scroll-interno" style="max-height: 250px; overflow-y: auto;">
-                                </div>
+                            <div id="lista-partidos-resultados" class="scroll-interno" style="max-height: 250px; overflow-y: auto;"></div>
+                        </div>
+
+                        <div id="tab-historial-partido" style="display: none; text-align: left;">
+                            <p style="font-size: 0.85em; color: #9ca3af; margin-top: 0; margin-bottom: 10px;">Historial completo de encuentros:</p>
+                            <div id="lista-partidos-historial" class="scroll-interno" style="max-height: 250px; overflow-y: auto;"></div>
                         </div>
 
                         <button class="btn-modal btn-cerrar" style="margin-top: 15px;" onclick="window.cerrarModalJugarCompetitivo()">Cerrar Panel</button>
@@ -2523,8 +2528,19 @@
             }
         };
 
+        // Interceptar el cambio de fecha para refrescar los horarios si el modal está abierto
+        const seleccionarFechaBase = window.seleccionarFecha;
+        window.seleccionarFecha = function(fechaISO) {
+            seleccionarFechaBase(fechaISO);
+            if (document.getElementById('modal-jugar-competitivo').style.display === 'flex') {
+                window.llenarHorariosDisponiblesCompetitivo();
+                window.renderizarPartidosAbiertos();
+            }
+        };
+
         window.abrirModalJugarCompetitivo = function() {
             window.cambiarTabCompetitivo('crear');
+            window.llenarHorariosDisponiblesCompetitivo();
             document.getElementById('modal-jugar-competitivo').style.display = 'flex';
         };
         window.cerrarModalJugarCompetitivo = function() {
@@ -2535,17 +2551,19 @@
             const btnCrear = document.getElementById('tab-btn-crear');
             const btnUnirse = document.getElementById('tab-btn-unirse');
             const btnRes = document.getElementById('tab-btn-resultados');
+            const btnHist = document.getElementById('tab-btn-historial');
             const divCrear = document.getElementById('tab-crear-partido');
             const divUnirse = document.getElementById('tab-unirse-partido');
             const divRes = document.getElementById('tab-resultados-partido');
+            const divHist = document.getElementById('tab-historial-partido');
 
-            // Resetear todos
-            [btnCrear, btnUnirse, btnRes].forEach(b => { b.style.backgroundColor = '#242c36'; b.style.borderColor = '#44505d'; });
-            [divCrear, divUnirse, divRes].forEach(d => d.style.display = 'none');
+            [btnCrear, btnUnirse, btnRes, btnHist].forEach(b => { b.style.backgroundColor = '#242c36'; b.style.borderColor = '#44505d'; });
+            [divCrear, divUnirse, divRes, divHist].forEach(d => d.style.display = 'none');
 
             if (tab === 'crear') {
                 btnCrear.style.backgroundColor = '#f59e0b'; btnCrear.style.borderColor = '#f59e0b';
                 divCrear.style.display = 'flex';
+                window.llenarHorariosDisponiblesCompetitivo();
             } else if (tab === 'unirse') {
                 btnUnirse.style.backgroundColor = '#f59e0b'; btnUnirse.style.borderColor = '#f59e0b';
                 divUnirse.style.display = 'block';
@@ -2554,6 +2572,10 @@
                 btnRes.style.backgroundColor = '#f59e0b'; btnRes.style.borderColor = '#f59e0b';
                 divRes.style.display = 'block';
                 window.renderizarPartidosResultados();
+            } else if (tab === 'historial') {
+                btnHist.style.backgroundColor = '#f59e0b'; btnHist.style.borderColor = '#f59e0b';
+                divHist.style.display = 'block';
+                window.renderizarHistorialCompetitivo();
             }
         };
 
@@ -2566,6 +2588,77 @@
         let matchmakingGlobal = [];
         let rankingGlobal = [];
 
+        // --- CALCULAR HORARIOS DISPONIBLES COMPETITIVO ---
+        window.llenarHorariosDisponiblesCompetitivo = function() {
+            const selectHora = document.getElementById('comp-hora');
+            if(!selectHora) return;
+            
+            const superficie = document.getElementById('comp-cancha').value; 
+            let totalCanchasDisp = superficie === 'Indoor' ? canchasIndoorGlobal : canchasOutdoorGlobal;
+            
+            if(totalCanchasDisp <= 0) {
+                selectHora.innerHTML = '<option value="" disabled selected>Sin canchas de este tipo</option>';
+                return;
+            }
+
+            const horariosFiltrados = horariosBase.filter(h => h >= primerTurno && h <= ultimoTurno);
+            const dowNumSelected = window.getDayOfWeekFromDate(fechaSeleccionada);
+            
+            if (!diasAbiertosGlobal.includes(dowNumSelected)) {
+                selectHora.innerHTML = '<option value="" disabled selected>Club cerrado este día</option>';
+                return;
+            }
+
+            selectHora.innerHTML = '<option value="" disabled selected>Elegí un horario...</option>';
+            let hayOpciones = false;
+            const numBloquesNuevo = 90 / 30; // Partidos competitivos de 90 min (1.5 hs)
+
+            horariosFiltrados.forEach(hora => {
+                if(validarEsHoraPasada(hora)) return; 
+                
+                let bloquesNuevos = [];
+                for(let b=0; b < numBloquesNuevo; b++) { bloquesNuevos.push(window.sumarMinutos(hora, b * 30)); }
+                
+                let canchasOcupadas = 0;
+                
+                reservasGlobales.forEach(r => {
+                    let aplica = false;
+                    let canceladas = r.fechasCanceladas || [];
+                    if ((r.fecha || fechasValidas[0]) === fechaSeleccionada && !canceladas.includes(fechaSeleccionada)) aplica = true;
+                    if (r.fijo === true && window.getDayOfWeekFromDate(r.fecha) === dowNumSelected && !canceladas.includes(fechaSeleccionada)) aplica = true;
+
+                    if(aplica) {
+                        let numC = parseInt(r.cancha) || 1;
+                        let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
+                        let esIndoor = numC <= canchasIndoorGlobal;
+                        let esOutdoor = numC > canchasIndoorGlobal && numC <= maxPadel;
+                        
+                        let concuerdaSuperficie = (superficie === 'Indoor' && esIndoor) || (superficie === 'Outdoor' && esOutdoor);
+                        
+                        if (concuerdaSuperficie) {
+                            let resDuracion = r.duracion || duracionGlobal;
+                            let numBloquesRes = resDuracion / 30;
+                            let bloquesRes = [];
+                            for(let b=0; b < numBloquesRes; b++) { bloquesRes.push(window.sumarMinutos(r.hora, b * 30)); }
+                            
+                            if(bloquesNuevos.some(b => bloquesRes.includes(b))) {
+                                canchasOcupadas++;
+                            }
+                        }
+                    }
+                });
+
+                if (canchasOcupadas < totalCanchasDisp) {
+                    selectHora.innerHTML += `<option value="${hora}">${hora} hs</option>`;
+                    hayOpciones = true;
+                }
+            });
+
+            if(!hayOpciones) {
+                selectHora.innerHTML = '<option value="" disabled selected>Sin horarios disponibles</option>';
+            }
+        };
+
         // --- CREAR PARTIDO ---
         window.confirmarCrearCompetitivo = async function() {
             const jugador = document.getElementById('comp-nombre-jugador').value.trim();
@@ -2575,12 +2668,12 @@
             const modalidad = document.getElementById('comp-pareja').value;
             const amigo = document.getElementById('comp-nombre-amigo').value.trim();
 
-            if (!jugador || !hora) { alert("Completa tu nombre y el horario preferido."); return; }
+            if (!jugador || !hora) { alert("Completa tu nombre y selecciona un horario disponible."); return; }
             if (modalidad === 'amigo' && !amigo) { alert("Ingresa el nombre de tu compañero."); return; }
 
             try {
                 await addDoc(collection(db, "matchmaking"), {
-                    fechaDeseada: fechaSeleccionada, // Atado al día seleccionado en la UI
+                    fechaDeseada: fechaSeleccionada,
                     creadorPrincipal: jugador,
                     creadorCompañero: modalidad === 'amigo' ? amigo : 'Random',
                     clubSeleccionado: club,
@@ -2644,26 +2737,24 @@
             if (!match) return;
 
             try {
-                // 1. Actualiza Matchmaking a Confirmado
                 await updateDoc(doc(db, "matchmaking", id), {
                     rivalPrincipal: nombre,
                     rivalCompañero: modalidad === 'amigo' ? amigo : 'Random',
                     estado: 'Partido Confirmado' 
                 });
                 
-                // 2. CREACIÓN AUTOMÁTICA DEL TURNO DE 1.5HS EN LA BASE PRINCIPAL
-                let tituloEvento = `${match.creadorPrincipal} (Comp)`;
+                let tituloEvento = `Torneo: ${match.creadorPrincipal}`;
                 await addDoc(collection(db, "reservas"), {
                     fecha: match.fechaDeseada,
                     hora: match.horaDeseada,
-                    cancha: "1", // Por defecto se manda a la cancha 1 (El admin puede moverla en la grilla)
+                    cancha: "1", 
                     jugador: tituloEvento,
                     telefono: "",
-                    duracion: 90, // 1.5 horas
+                    duracion: 90, 
                     fechaRegistro: serverTimestamp(),
                     asistencia: false, fijo: false, fechasCanceladas: [],
                     pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: [],
-                    tipoEvento: "Torneo", // Lo marcamos como torneo para que resalte
+                    tipoEvento: "Torneo", 
                     esClase: false, profe: null
                 });
 
@@ -2673,7 +2764,7 @@
             } catch(e) { alert("Error al confirmar el partido y crear la reserva."); }
         };
 
-        // --- CARGAR RESULTADOS Y ACTUALIZAR RANKING ---
+        // --- RESULTADOS Y RANKING ---
         window.renderizarPartidosResultados = function() {
             const contenedor = document.getElementById('lista-partidos-resultados');
             if (!contenedor) return;
@@ -2713,7 +2804,6 @@
 
         window.cerrarModalResultado = function() { document.getElementById('modal-cargar-resultado').style.display = 'none'; };
 
-        // Lógica de motorización del ranking
         window.confirmarResultado = async function(ganadorNum) {
             const id = document.getElementById('resultado-partido-id').value;
             const match = matchmakingGlobal.find(m => m.id === id);
@@ -2722,12 +2812,10 @@
             let ganadores = ganadorNum === 1 ? [match.creadorPrincipal, match.creadorCompañero] : [match.rivalPrincipal, match.rivalCompañero];
             let perdedores = ganadorNum === 1 ? [match.rivalPrincipal, match.rivalCompañero] : [match.creadorPrincipal, match.creadorCompañero];
 
-            // Puntos a repartir (Podés cambiarlo si querés otra escala)
             const PTS_GANADOR = 100;
             const PTS_PERDEDOR = 25;
 
             try {
-                // Función auxiliar para sumar puntos a un jugador en Firestore
                 const actualizarJugador = async (nombre, ptsSuma) => {
                     if (!nombre || nombre === 'Random') return; 
                     let jExistente = rankingGlobal.find(j => j.nombre.toLowerCase() === nombre.toLowerCase());
@@ -2738,14 +2826,12 @@
                             partidosJugados: jExistente.partidosJugados + 1
                         });
                     } else {
-                        // Si es nuevo, lo crea de cero
                         await addDoc(collection(db, "ranking"), {
                             nombre: nombre, puntos: ptsSuma, partidosJugados: 1, fechaInscripcion: serverTimestamp()
                         });
                     }
                 };
 
-                // Procesar a los 4 jugadores
                 await Promise.all([
                     actualizarJugador(ganadores[0], PTS_GANADOR),
                     actualizarJugador(ganadores[1], PTS_GANADOR),
@@ -2753,8 +2839,8 @@
                     actualizarJugador(perdedores[1], PTS_PERDEDOR)
                 ]);
 
-                // Marcar partido como Finalizado
-                await updateDoc(doc(db, "matchmaking", id), { estado: 'Finalizado' });
+                // Guardamos el ganador para verlo en el historial
+                await updateDoc(doc(db, "matchmaking", id), { estado: 'Finalizado', ganador: ganadorNum });
 
                 alert("¡Resultado cargado! El ranking se actualizó automáticamente.");
                 window.cerrarModalResultado();
@@ -2762,6 +2848,36 @@
             } catch (error) {
                 alert("Error al procesar los resultados.");
             }
+        };
+
+        // --- HISTORIAL COMPETITIVO ---
+        window.renderizarHistorialCompetitivo = function() {
+            const contenedor = document.getElementById('lista-partidos-historial');
+            if (!contenedor) return;
+            contenedor.innerHTML = '';
+
+            const finalizados = matchmakingGlobal.filter(m => m.estado === 'Finalizado');
+
+            if (finalizados.length === 0) {
+                contenedor.innerHTML = `<div style="text-align:center; padding: 20px; color:#9ca3af;">Aún no hay historial de partidos jugados.</div>`;
+                return;
+            }
+
+            finalizados.sort((a,b) => (b.fechaDeseada > a.fechaDeseada) ? 1 : -1).forEach(m => {
+                let eq1 = `${m.creadorPrincipal} / ${m.creadorCompañero}`;
+                let eq2 = `${m.rivalPrincipal} / ${m.rivalCompañero}`;
+                
+                let eq1Html = m.ganador === 1 ? `👑 ${eq1} (G)` : eq1;
+                let eq2Html = m.ganador === 2 ? `👑 ${eq2} (G)` : eq2;
+
+                contenedor.innerHTML += `
+                    <div style="background: #1e252d; border: 1px solid #44505d; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px;">
+                        <div style="font-size: 0.85em; color: #9ca3af;">📅 ${m.fechaDeseada} - ${m.horaDeseada} hs | 📍 ${m.clubSeleccionado}</div>
+                        <div style="color: ${m.ganador === 1 ? '#10b981' : '#3b82f6'}; font-weight: bold; font-size: 0.9em;">🔵 ${eq1Html}</div>
+                        <div style="color: ${m.ganador === 2 ? '#10b981' : '#ef4444'}; font-weight: bold; font-size: 0.9em;">🔴 ${eq2Html}</div>
+                    </div>
+                `;
+            });
         };
 
         // RENDERIZAR TABLA (Solo lectura)
@@ -2774,7 +2890,6 @@
                 return;
             }
             
-            // Ordenar por puntos (mayor a menor)
             rankingGlobal.sort((a, b) => b.puntos - a.puntos).forEach((jugador, index) => {
                 let posColor = index === 0 ? '#fbbf24' : (index === 1 ? '#9ca3af' : (index === 2 ? '#b45309' : '#d1d5db'));
                 let medalla = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : `<span style="font-size:0.8em; color:#9ca3af">${index + 1}°</span> `));
@@ -2789,12 +2904,13 @@
             });
         }
 
-        // Suscripciones a Firestore
+        // Suscripciones
         onSnapshot(collection(db, "matchmaking"), (snapshot) => {
             matchmakingGlobal = [];
             snapshot.forEach((doc) => matchmakingGlobal.push({ id: doc.id, ...doc.data() }));
             if (document.getElementById('tab-unirse-partido') && document.getElementById('tab-unirse-partido').style.display === 'block') window.renderizarPartidosAbiertos();
             if (document.getElementById('tab-resultados-partido') && document.getElementById('tab-resultados-partido').style.display === 'block') window.renderizarPartidosResultados();
+            if (document.getElementById('tab-historial-partido') && document.getElementById('tab-historial-partido').style.display === 'block') window.renderizarHistorialCompetitivo();
         });
 
         onSnapshot(collection(db, "ranking"), (snapshot) => {
