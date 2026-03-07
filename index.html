@@ -2354,7 +2354,167 @@
         });
 
         renderizarCalendarios();
+// =========================================================
+        // --- NUEVO MÓDULO: RANKING Y COMPETICIÓN ---
+        // =========================================================
 
+        // 1. Inyectar Botón en la botonera existente
+        const controles = document.querySelector('.controles-vista');
+        controles.insertAdjacentHTML('beforeend', `
+            <button id="btn-ranking" class="btn-vista" onclick="window.cambiarVista('ranking')">🏆 Ranking / Ligas</button>
+        `);
+
+        // 2. Inyectar la nueva vista de Ranking en el body
+        const body = document.querySelector('body');
+        body.insertAdjacentHTML('beforeend', `
+            <div id="pantalla-ranking" class="vista-jugador" style="display: none; max-width: 600px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">🏆 Ranking Competitivo</h2>
+                    <button class="btn-modal btn-guardar" style="width: auto; padding: 8px 15px;" onclick="window.abrirModalNuevoJugadorRanking()">+ Inscribir</button>
+                </div>
+                
+                <p style="font-size: 0.85em; color: #9ca3af; margin-top: -10px; margin-bottom: 15px;">
+                    Haz clic sobre un jugador en la tabla para sumarle puntos o actualizar sus partidos jugados.
+                </p>
+
+                <div class="scroll-interno" style="background: #242c36; border-radius: 8px; border: 1px solid #2c3540; padding: 5px;">
+                    <table style="width: 100%; text-align: left;">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%; text-align: center;">Pos</th>
+                                <th style="width: 45%;">Jugador / Pareja</th>
+                                <th style="width: 20%; text-align: center;">PTS</th>
+                                <th style="width: 20%; text-align: center;">PJ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-ranking">
+                            <tr><td colspan="4" style="text-align: center; color: #9ca3af; padding: 15px;">Cargando ranking...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="modal-nuevo-jugador-ranking" class="modal-overlay">
+                <div class="modal-content">
+                    <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">Inscribir al Ranking</h3>
+                    <div style="text-align: left;">
+                        <label style="font-size: 0.85em; color: #d1d5db;">Nombre del Jugador o Pareja:</label>
+                        <input type="text" id="input-nombre-ranking" class="input-form" placeholder="Ej: Franco Aramayo / Equipo A" style="margin-top: 5px;">
+                    </div>
+                    <button class="btn-modal btn-guardar" style="margin-top: 20px;" onclick="window.guardarJugadorRanking()">Agregar al Ranking</button>
+                    <button class="btn-modal btn-cerrar" style="margin-top: 10px;" onclick="window.cerrarModalNuevoJugadorRanking()">Cancelar</button>
+                </div>
+            </div>
+        `);
+
+        // 3. Modificar la función cambiarVista original para incluir el Ranking
+        const cambiarVistaOriginal = window.cambiarVista;
+        window.cambiarVista = function(vista) {
+            // Llamar a la original para ocultar/mostrar las vistas base (Jugador y Club)
+            cambiarVistaOriginal(vista);
+            
+            // Manejar la nueva vista
+            const pantallaRanking = document.getElementById('pantalla-ranking');
+            const btnRanking = document.getElementById('btn-ranking');
+            
+            if (pantallaRanking && btnRanking) {
+                pantallaRanking.style.display = vista === 'ranking' ? 'block' : 'none';
+                btnRanking.classList.toggle('activo', vista === 'ranking');
+            }
+        };
+
+        // 4. Lógica de Base de Datos y UI para el Ranking
+        let rankingGlobal = [];
+
+        window.abrirModalNuevoJugadorRanking = function() {
+            document.getElementById('input-nombre-ranking').value = '';
+            document.getElementById('modal-nuevo-jugador-ranking').style.display = 'flex';
+        };
+
+        window.cerrarModalNuevoJugadorRanking = function() {
+            document.getElementById('modal-nuevo-jugador-ranking').style.display = 'none';
+        };
+
+        window.guardarJugadorRanking = async function() {
+            const nombre = document.getElementById('input-nombre-ranking').value.trim();
+            if (!nombre) { alert("Ingresa un nombre."); return; }
+            
+            try {
+                await addDoc(collection(db, "ranking"), {
+                    nombre: nombre,
+                    puntos: 0,
+                    partidosJugados: 0,
+                    fechaInscripcion: serverTimestamp()
+                });
+                window.cerrarModalNuevoJugadorRanking();
+            } catch (error) {
+                alert("Error al inscribir jugador.");
+            }
+        };
+
+        // Click en un jugador para actualizarle los puntos o eliminarlo
+        window.gestionarJugadorRanking = async function(id, nombre, puntos, pj) {
+            let accion = confirm(`Gestión de ${nombre}\n\n[ACEPTAR] para sumarle PUNTOS y registrar partido.\n[CANCELAR] para opciones de eliminación.`);
+            
+            if (accion) {
+                let ptsGanados = prompt(`Puntos actuales: ${puntos} | Partidos Jugados: ${pj}\n¿Cuántos puntos ganó en esta fecha? (Ingresa el número)`);
+                if (ptsGanados === null || ptsGanados.trim() === "") return;
+                
+                let valorPts = parseInt(ptsGanados);
+                if (isNaN(valorPts)) { alert("Debes ingresar un número válido."); return; }
+                
+                try {
+                    await updateDoc(doc(db, "ranking", id), {
+                        puntos: puntos + valorPts,
+                        partidosJugados: pj + 1
+                    });
+                } catch(e) { alert("Error al actualizar puntos."); }
+            } else {
+                if(confirm(`¿Quieres ELIMINAR a ${nombre} del ranking permanentemente?`)) {
+                    await deleteDoc(doc(db, "ranking", id));
+                }
+            }
+        };
+
+        function renderizarRanking() {
+            const tbody = document.getElementById('lista-ranking');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            if (rankingGlobal.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #9ca3af; padding: 15px;">No hay jugadores inscriptos</td></tr>';
+                return;
+            }
+
+            // Ordenar por puntos (mayor a menor) y luego por partidos jugados (menor a mayor para desempate)
+            rankingGlobal.sort((a, b) => {
+                if (b.puntos !== a.puntos) return b.puntos - a.puntos;
+                return a.partidosJugados - b.partidosJugados;
+            }).forEach((jugador, index) => {
+                let posColor = index === 0 ? '#fbbf24' : (index === 1 ? '#9ca3af' : (index === 2 ? '#b45309' : '#d1d5db'));
+                let medalla = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : `<span style="font-size:0.8em; color:#9ca3af">${index + 1}°</span> `));
+                
+                tbody.innerHTML += `
+                    <tr style="cursor: pointer; transition: 0.1s; border-bottom: 1px solid #2c3540;" 
+                        onmouseover="this.style.backgroundColor='#2c3540'" onmouseout="this.style.backgroundColor='transparent'" 
+                        onclick="window.gestionarJugadorRanking('${jugador.id}', '${jugador.nombre}', ${jugador.puntos}, ${jugador.partidosJugados})">
+                        <td style="text-align: center; font-weight: bold; color: ${posColor}; font-size: 1.2em; padding: 10px 0;">${medalla}</td>
+                        <td class="text-neutral-main" style="font-weight: bold;">${jugador.nombre}</td>
+                        <td style="text-align: center; color: #10b981; font-weight: bold; font-size: 1.1em;">${jugador.puntos}</td>
+                        <td style="text-align: center; color: #9ca3af;">${jugador.partidosJugados}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 5. Escuchar base de datos en tiempo real
+        onSnapshot(collection(db, "ranking"), (snapshot) => {
+            rankingGlobal = [];
+            snapshot.forEach((doc) => rankingGlobal.push({ id: doc.id, ...doc.data() }));
+            renderizarRanking();
+        });
+        // =========================================================
+        
     </script>
 </body>
 </html>
