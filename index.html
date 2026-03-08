@@ -3260,6 +3260,24 @@
             renderizarRanking();
         });
         // =========================================================
+        <div id="modal-inscribirse-torneo" class="modal-overlay" style="z-index: 1500;">
+    <div class="modal-content" style="max-width: 350px;">
+        <h3 style="margin: 0; margin-bottom: 5px; color: #f59e0b;">Inscripción al Torneo</h3>
+        <p id="lbl-inscripcion-torneo" style="color: #9ca3af; font-size: 0.85em; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;"></p>
+        
+        <input type="hidden" id="inscripcion-torneo-id">
+
+        <div style="text-align: left; display: flex; flex-direction: column; gap: 10px;">
+            <div>
+                <label style="font-size: 0.85em; color: #d1d5db; font-weight: bold;">Nombre del Jugador / Pareja:</label>
+                <input type="text" id="inscripcion-nombre" class="input-form" placeholder="Ej: Juan Perez y Luis Gomez" style="margin-top: 4px;">
+            </div>
+        </div>
+
+        <button class="btn-modal btn-guardar" style="margin-top: 20px; background-color: #10b981;" onclick="window.confirmarInscripcionTorneo()">Confirmar Inscripción</button>
+        <button class="btn-modal btn-cerrar" style="margin-top: 10px;" onclick="window.cerrarModalInscripcionTorneo()">Cancelar</button>
+    </div>
+</div>
     </script>
 </body>
 </html>
