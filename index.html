@@ -2653,6 +2653,7 @@
             torneosAdminGlobal = [];
             snapshot.forEach((doc) => torneosAdminGlobal.push({ id: doc.id, ...doc.data() }));
             renderizarTorneosAdmin();
+            if(typeof window.renderizarTorneosPublicos === 'function') window.renderizarTorneosPublicos();
             
             const idActivo = document.getElementById('torneo-activo-id');
             if(idActivo && document.getElementById('modal-torneo-inscriptos').style.display === 'flex') {
