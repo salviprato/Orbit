@@ -3320,23 +3320,7 @@ window.confirmarInscripcionTorneo = async function() {
                 `;
             });
         }
-
-        // Suscripciones
-        onSnapshot(collection(db, "matchmaking"), (snapshot) => {
-            matchmakingGlobal = [];
-            snapshot.forEach((doc) => matchmakingGlobal.push({ id: doc.id, ...doc.data() }));
-            if (document.getElementById('tab-unirse-partido') && document.getElementById('tab-unirse-partido').style.display === 'block') window.renderizarPartidosAbiertos();
-            if (document.getElementById('tab-resultados-partido') && document.getElementById('tab-resultados-partido').style.display === 'block') window.renderizarPartidosResultados();
-            if (document.getElementById('tab-historial-partido') && document.getElementById('tab-historial-partido').style.display === 'block') window.renderizarHistorialCompetitivo();
-        });
-
-        onSnapshot(collection(db, "ranking"), (snapshot) => {
-            rankingGlobal = [];
-            snapshot.forEach((doc) => rankingGlobal.push({ id: doc.id, ...doc.data() }));
-            renderizarRanking();
-        });
-        // =========================================================
-        <div id="modal-inscribirse-torneo" class="modal-overlay" style="z-index: 1500;">
+   <div id="modal-inscribirse-torneo" class="modal-overlay" style="z-index: 1500;">
     <div class="modal-content" style="max-width: 350px;">
         <h3 style="margin: 0; margin-bottom: 5px; color: #f59e0b;">Inscripción al Torneo</h3>
         <p id="lbl-inscripcion-torneo" style="color: #9ca3af; font-size: 0.85em; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;"></p>
@@ -3353,7 +3337,23 @@ window.confirmarInscripcionTorneo = async function() {
         <button class="btn-modal btn-guardar" style="margin-top: 20px; background-color: #10b981;" onclick="window.confirmarInscripcionTorneo()">Confirmar Inscripción</button>
         <button class="btn-modal btn-cerrar" style="margin-top: 10px;" onclick="window.cerrarModalInscripcionTorneo()">Cancelar</button>
     </div>
-</div>
+</div
+        // Suscripciones
+        onSnapshot(collection(db, "matchmaking"), (snapshot) => {
+            matchmakingGlobal = [];
+            snapshot.forEach((doc) => matchmakingGlobal.push({ id: doc.id, ...doc.data() }));
+            if (document.getElementById('tab-unirse-partido') && document.getElementById('tab-unirse-partido').style.display === 'block') window.renderizarPartidosAbiertos();
+            if (document.getElementById('tab-resultados-partido') && document.getElementById('tab-resultados-partido').style.display === 'block') window.renderizarPartidosResultados();
+            if (document.getElementById('tab-historial-partido') && document.getElementById('tab-historial-partido').style.display === 'block') window.renderizarHistorialCompetitivo();
+        });
+
+        onSnapshot(collection(db, "ranking"), (snapshot) => {
+            rankingGlobal = [];
+            snapshot.forEach((doc) => rankingGlobal.push({ id: doc.id, ...doc.data() }));
+            renderizarRanking();
+        });
+        // =========================================================
+     >
     </script>
 </body>
 </html>
