@@ -1975,7 +1975,7 @@
             }
         }
         
-        // --- CIRCUITO COMPETITIVO (Global) ---
+       // --- CIRCUITO COMPETITIVO (Global) ---
         window.cambiarSubVistaCompetitiva = function(v) {
             document.getElementById('subvista-ranking').style.display = v === 'ranking' ? 'block' : 'none';
             document.getElementById('subvista-torneos').style.display = v === 'torneos' ? 'block' : 'none';
@@ -1983,17 +1983,81 @@
             document.getElementById('btn-sub-torneos').style.backgroundColor = v==='torneos'?'#8b5cf6':'#242c36';
         };
 
+        // Renderiza la lista de torneos que ven los JUGADORES
         window.renderizarTorneosPublicos = function() {
             const div = document.getElementById('lista-torneos'); if(!div) return; div.innerHTML = '';
-            torneosAdminGlobal.forEach(t => { div.innerHTML += `<div style="border:1px solid #44505d; padding:10px; margin-bottom:5px;">🏆 ${t.nombre} <button onclick="window.abrirModalInscripcionTorneo('${t.id}')">Anotarse</button></div>`; });
+            
+            if(torneosAdminGlobal.length === 0) {
+                div.innerHTML = '<div style="padding: 20px; color: #9ca3af;">Aún no hay torneos programados.</div>';
+                return;
+            }
+
+            torneosAdminGlobal.sort((a,b) => a.fecha > b.fecha ? 1 : -1).forEach(t => { 
+                let inscriptos = t.inscriptos || [];
+                let cuposDisponibles = t.cupo - inscriptos.length;
+                let [y, m, d] = t.fecha.split('-');
+                let fechaLegible = `${d}/${m}/${y}`;
+                
+                let btnHtml = '';
+                // Solo dejar inscribirse si hay cupo Y si el admin no cerró la inscripción (generando la fase de grupos)
+                if(cuposDisponibles > 0 && !t.faseGrupos) {
+                    btnHtml = `<button class="btn-modal btn-guardar" style="width: auto; padding: 8px 15px; font-size: 0.85em; background-color: #10b981;" onclick="window.abrirModalInscripcionTorneo('${t.id}')">Inscribirse</button>`;
+                } else if(t.faseGrupos) {
+                    btnHtml = `<button class="btn-modal" style="width: auto; padding: 8px 15px; font-size: 0.85em; background-color: #4b5563; color: white; cursor: not-allowed;" disabled>En Curso</button>`;
+                } else {
+                    btnHtml = `<button class="btn-modal" style="width: auto; padding: 8px 15px; font-size: 0.85em; background-color: #ef4444; color: white; cursor: not-allowed;" disabled>Completo</button>`;
+                }
+
+                div.innerHTML += `
+                    <div style="background: #1e252d; border: 1px solid #44505d; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; text-align: left;">
+                        <div>
+                            <div style="color: #f59e0b; font-weight: bold; font-size: 1.1em;">🏆 ${t.nombre}</div>
+                            <div style="color: #d1d5db; font-size: 0.85em; margin-top: 4px;">📅 ${fechaLegible} | ⌚ ${t.horaInicio} hs</div>
+                            <div style="color: #9ca3af; font-size: 0.8em; margin-top: 2px;">Cupos Disponibles: ${cuposDisponibles} de ${t.cupo}</div>
+                        </div>
+                        <div>
+                            ${btnHtml}
+                        </div>
+                    </div>
+                `; 
+            });
         };
-        window.abrirModalInscripcionTorneo = function(id) { document.getElementById('inscripcion-torneo-id').value=id; document.getElementById('modal-inscribirse-torneo').style.display='flex'; };
-        window.cerrarModalInscripcionTorneo = function() { document.getElementById('modal-inscribirse-torneo').style.display='none'; };
+
+        window.abrirModalInscripcionTorneo = function(id) { 
+            const t = torneosAdminGlobal.find(x => x.id === id);
+            if(!t) return;
+            document.getElementById('inscripcion-torneo-id').value = id; 
+            document.getElementById('lbl-inscripcion-torneo').innerHTML = `<strong>${t.nombre}</strong><br>Cupos libres: ${t.cupo - (t.inscriptos || []).length}`;
+            document.getElementById('inscripcion-nombre').value = '';
+            document.getElementById('modal-inscribirse-torneo').style.display='flex'; 
+        };
+
+        window.cerrarModalInscripcionTorneo = function() { 
+            document.getElementById('modal-inscribirse-torneo').style.display='none'; 
+        };
+
+        // Función que guarda al jugador en Firebase
         window.confirmarInscripcionTorneo = async function() {
-            const id = document.getElementById('inscripcion-torneo-id').value; const nom = document.getElementById('inscripcion-nombre').value.trim();
-            const t = torneosAdminGlobal.find(x=>x.id===id); if(!t || !nom) return;
-            let i = t.inscriptos || []; if(i.length >= t.cupo) return; i.push(nom);
-            await updateDoc(doc(db, "torneos_admin", id), { inscriptos: i }); window.cerrarModalInscripcionTorneo();
+            const id = document.getElementById('inscripcion-torneo-id').value; 
+            const nom = document.getElementById('inscripcion-nombre').value.trim();
+            
+            if(!nom) { alert("Ingresa tu nombre o el de tu pareja."); return; }
+
+            const t = torneosAdminGlobal.find(x=>x.id===id); 
+            if(!t) return;
+            
+            let i = t.inscriptos || []; 
+            if(i.length >= t.cupo) { alert("¡Ups! El torneo ya alcanzó su cupo máximo."); window.cerrarModalInscripcionTorneo(); return; } 
+            
+            i.push(nom);
+            
+            try {
+                await updateDoc(doc(db, "torneos_admin", id), { inscriptos: i }); 
+                alert("¡Inscripción exitosa! Ya formas parte del torneo.");
+                window.cerrarModalInscripcionTorneo();
+            } catch(e) {
+                alert("Hubo un error al procesar tu inscripción.");
+            }
         };
 
         window.abrirModalJugarCompetitivo = function() { window.cambiarTabCompetitivo('crear'); document.getElementById('modal-jugar-competitivo').style.display = 'flex'; };
@@ -2029,11 +2093,11 @@
         window.confirmarResultado = async function(g) { await updateDoc(doc(db, "matchmaking", document.getElementById('resultado-partido-id').value), { estado: 'Finalizado', ganador: g }); window.cerrarModalResultado(); };
         window.renderizarHistorialCompetitivo = function() { const div = document.getElementById('lista-partidos-historial'); if(div) div.innerHTML = matchmakingGlobal.filter(m=>m.estado==='Finalizado').map(m=>`<p>${m.fechaDeseada}: Eq${m.ganador} Gana</p>`).join(''); };
 
-       function renderizarRanking() {
+        function renderizarRanking() {
             const tb = document.getElementById('lista-ranking'); if(!tb) return; tb.innerHTML = '';
             rankingGlobal.sort((a,b)=>b.puntos-a.puntos).forEach((j, i) => { tb.innerHTML += `<tr><td>${i+1}</td><td>${j.nombre}</td><td>${j.puntos}</td><td>${j.partidosJugados}</td></tr>`; });
         }
-
+        
         // --- MÉTRICAS Y GRÁFICOS AVANZADOS (CHART.JS) ---
         window.abrirModalMetricas = function() { 
             // 1. Mostramos el modal primero para que el canvas tenga dimensiones
