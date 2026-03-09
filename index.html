@@ -23,7 +23,7 @@
         }
         .btn-vista.activo { background-color: #3b82f6; border-color: #3b82f6; }
 
-        /* Vista Club */
+        /* Vista General */
         .vista-club {
             display: none; background-color: #1e252d; width: 100%; max-width: 900px;
             border-radius: 12px; padding: 20px; box-sizing: border-box; margin-bottom: 30px;
@@ -885,8 +885,8 @@
             </div>
         </div>
 
-    </div> ```
-<script type="module">
+    </div> 
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, updateDoc, deleteDoc, serverTimestamp, query, where, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -1003,7 +1003,7 @@
                             document.getElementById('menu-modulos').style.display = 'flex';
                             window.cambiarVista('club');
                         } else if(window.usuarioRol === 'jugador') {
-                            document.getElementById('menu-modulos').style.display = 'none'; // Oculta botones
+                            document.getElementById('menu-modulos').style.display = 'none'; 
                             window.cambiarVista('ranking');
                         }
                         
@@ -1035,7 +1035,7 @@
             if(btnRanking) btnRanking.classList.toggle('activo', vista === 'ranking');
             
             if(vista === 'club') actualizarLineaDeTiempo();
-            if(vista === 'ranking') window.cambiarSubVistaCompetitiva('ranking'); // default al abrir
+            if(vista === 'ranking') window.cambiarSubVistaCompetitiva('ranking'); // default
         }
 
         window.toggleAcordeon = function(id) {
@@ -1598,7 +1598,7 @@
             if(cc > cPos.length) { alert("No hay tantas canchas de ese tipo."); return; }
 
             await addDoc(collection(db, "torneos_admin"), { clubId: window.clubIdActual, nombre: n, fecha: f, superficie: s, horaInicio: hi, horaFin: hf, canchas: cPos.slice(0,cc), cupo: cu, inscriptos: [], fechaCreacion: serverTimestamp() });
-            // Generar reservas de bloqueo (Falta validación de cruces por brevedad)
+            // Generar reservas de bloqueo 
             cPos.slice(0,cc).forEach(async cId => {
                 await addDoc(collection(db, "reservas"), { clubId: window.clubIdActual, fecha: f, hora: hi, cancha: cId.toString(), jugador: `🏆 ${n}`, duracion: (window.aMinutos(hf)-window.aMinutos(hi)), fechaRegistro: serverTimestamp(), fijo: false, consumos: [], tipoEvento: "Torneo" });
             });
@@ -1629,7 +1629,6 @@
             document.getElementById('btn-sub-torneos').style.backgroundColor = v==='torneos'?'#8b5cf6':'#242c36';
         };
 
-        // ... Mantenemos la lógica de torneos públicos (reducida por espacio)
         window.renderizarTorneosPublicos = function() {
             const div = document.getElementById('lista-torneos'); if(!div) return; div.innerHTML = '';
             torneosAdminGlobal.forEach(t => { div.innerHTML += `<div style="border:1px solid #44505d; padding:10px; margin-bottom:5px;">🏆 ${t.nombre} <button onclick="window.abrirModalInscripcionTorneo('${t.id}')">Anotarse</button></div>`; });
@@ -1651,7 +1650,6 @@
         window.toggleAmigoInput = function(s, d) { document.getElementById(d).style.display = document.getElementById(s).value === 'amigo' ? 'block' : 'none'; };
         
         window.llenarHorariosDisponiblesCompetitivo = function() {
-            // Lógica simplificada: Muestra 3 horarios fijos (Para implementar full se requiere lectura cruzada de todos los clubes)
             const sel = document.getElementById('comp-hora'); if(sel) sel.innerHTML = '<option value="18:00">18:00 hs</option><option value="19:30">19:30 hs</option>';
         };
         
@@ -1732,7 +1730,7 @@
                 if(typeof window.renderizarTorneosPublicos === 'function') window.renderizarTorneosPublicos(); 
             });
 
-            // Matchmaking y Ranking son globales (no filtrados por club)
+            // Matchmaking y Ranking son globales (no filtrados por club, según requerimiento)
             onSnapshot(collection(db, "matchmaking"), (s) => { 
                 matchmakingGlobal=[]; s.forEach(d=>matchmakingGlobal.push({id:d.id,...d.data()}));
                 if (document.getElementById('tab-unirse-partido') && document.getElementById('tab-unirse-partido').style.display === 'block') renderizarPartidosAbiertos();
