@@ -1658,6 +1658,7 @@
         // --- TORNEOS ADMIN ---
         window.abrirModalAdminTorneos = function() { document.getElementById('modal-admin-torneos').style.display = 'flex'; };
         window.cerrarModalAdminTorneos = function() { document.getElementById('modal-admin-torneos').style.display = 'none'; };
+        
         window.crearTorneoAdmin = async function() {
             const n = document.getElementById('torneo-admin-nombre').value.trim(); const f = document.getElementById('torneo-admin-fecha').value;
             const s = document.getElementById('torneo-admin-sup').value; const hi = document.getElementById('torneo-admin-inicio').value;
@@ -1669,30 +1670,311 @@
             else for(let i=canchasIndoorGlobal+1; i<=maxP; i++) cPos.push(i);
             if(cc > cPos.length) { alert("No hay tantas canchas de ese tipo."); return; }
 
-            await addDoc(collection(db, "torneos_admin"), { clubId: window.clubIdActual, nombre: n, fecha: f, superficie: s, horaInicio: hi, horaFin: hf, canchas: cPos.slice(0,cc), cupo: cu, inscriptos: [], fechaCreacion: serverTimestamp() });
-            // Generar reservas de bloqueo 
+            // Se agregan campos de estado: faseGrupos y bracket
+            await addDoc(collection(db, "torneos_admin"), { 
+                clubId: window.clubIdActual, nombre: n, fecha: f, superficie: s, horaInicio: hi, horaFin: hf, 
+                canchas: cPos.slice(0,cc), cupo: cu, inscriptos: [], faseGrupos: null, bracket: null, fechaCreacion: serverTimestamp() 
+            });
+            
             cPos.slice(0,cc).forEach(async cId => {
                 await addDoc(collection(db, "reservas"), { clubId: window.clubIdActual, fecha: f, hora: hi, cancha: cId.toString(), jugador: `🏆 ${n}`, duracion: (window.aMinutos(hf)-window.aMinutos(hi)), fechaRegistro: serverTimestamp(), fijo: false, consumos: [], tipoEvento: "Torneo" });
             });
             document.getElementById('ac-crear-torneo').classList.remove('abierto');
         };
+
         window.renderizarTorneosAdmin = function() {
             const div = document.getElementById('lista-torneos-admin'); if(!div) return; div.innerHTML = '';
-            torneosAdminGlobal.forEach(t => { div.innerHTML += `<div style="border: 1px solid #44505d; padding: 10px; margin-bottom: 5px;">🏆 ${t.nombre} (${t.fecha}) - Cupos: ${t.cupo - (t.inscriptos||[]).length} libres <button onclick="window.abrirModalTorneoInscriptos('${t.id}')">Ver</button></div>`; });
+            torneosAdminGlobal.sort((a,b) => b.fechaCreacion - a.fechaCreacion).forEach(t => { 
+                let estado = "📝 Inscripciones";
+                if(t.faseGrupos && !t.bracket) estado = "👥 Fase de Grupos";
+                if(t.bracket) estado = "🎾 Cuadro Principal";
+                
+                div.innerHTML += `<div style="border: 1px solid #44505d; border-radius: 6px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #242c36;">
+                    <div><strong style="color:#f59e0b;">🏆 ${t.nombre}</strong> <span style="color:#9ca3af; font-size:0.85em;">(${t.fecha})</span><br>
+                    <small style="color:#d1d5db;">${estado} | Cupos: ${(t.inscriptos||[]).length}/${t.cupo}</small></div>
+                    <button class="btn-modal btn-guardar" style="width: auto; padding: 6px 12px; font-size: 0.85em; background-color: #3b82f6;" onclick="window.abrirModalTorneoInscriptos('${t.id}')">Gestionar</button>
+                </div>`; 
+            });
         };
-        window.abrirModalTorneoInscriptos = function(id) { document.getElementById('torneo-activo-id').value = id; document.getElementById('modal-torneo-inscriptos').style.display = 'flex'; };
+
+        window.abrirModalTorneoInscriptos = function(id) { 
+            document.getElementById('torneo-activo-id').value = id; 
+            const t = torneosAdminGlobal.find(x=>x.id===id);
+            if(t) {
+                document.getElementById('lbl-torneo-titulo').innerText = `🏆 ${t.nombre}`;
+                document.getElementById('lbl-torneo-info').innerText = `Fecha: ${t.fecha} | Cupo: ${t.cupo} parejas`;
+                
+                renderizarInscriptosLista(t);
+                renderizarGrupos(t);
+                renderizarBracket(t);
+                
+                // Control automático de acordeones según el estado
+                if(!t.faseGrupos) {
+                    document.getElementById('ac-lista-inscriptos').classList.add('abierto');
+                    document.getElementById('ac-fase-grupos').classList.remove('abierto');
+                    document.getElementById('ac-cuadro-torneo').classList.remove('abierto');
+                } else if(t.faseGrupos && !t.bracket) {
+                    document.getElementById('ac-lista-inscriptos').classList.remove('abierto');
+                    document.getElementById('ac-fase-grupos').classList.add('abierto');
+                    document.getElementById('ac-cuadro-torneo').classList.remove('abierto');
+                } else {
+                    document.getElementById('ac-lista-inscriptos').classList.remove('abierto');
+                    document.getElementById('ac-fase-grupos').classList.remove('abierto');
+                    document.getElementById('ac-cuadro-torneo').classList.add('abierto');
+                }
+            }
+            document.getElementById('modal-torneo-inscriptos').style.display = 'flex'; 
+        };
+
         window.cerrarModalTorneoInscriptos = function() { document.getElementById('modal-torneo-inscriptos').style.display = 'none'; };
+
         window.agregarInscriptoTorneo = async function() {
             const id = document.getElementById('torneo-activo-id').value; const nom = document.getElementById('torneo-nuevo-inscripto').value.trim();
             const t = torneosAdminGlobal.find(x=>x.id===id); if(!t || !nom) return;
-            let i = t.inscriptos || []; if(i.length >= t.cupo) return; i.push(nom);
+            if(t.faseGrupos) { alert("El torneo ya comenzó (Fase de Grupos generada), no puedes agregar más."); return; }
+            let i = t.inscriptos || []; if(i.length >= t.cupo) { alert("Cupo lleno."); return; } i.push(nom);
             await updateDoc(doc(db, "torneos_admin", id), { inscriptos: i }); document.getElementById('torneo-nuevo-inscripto').value = '';
         };
+
         window.eliminarInscriptoTorneo = async function(id, idx) {
             const t = torneosAdminGlobal.find(x=>x.id===id); if(!t) return;
+            if(t.faseGrupos) { alert("El torneo ya comenzó."); return; }
             let i = t.inscriptos || []; i.splice(idx, 1); await updateDoc(doc(db, "torneos_admin", id), { inscriptos: i });
         };
 
+        function renderizarInscriptosLista(t) {
+            const div = document.getElementById('lista-inscriptos-torneo'); div.innerHTML = '';
+            const btnGenerarGrupos = document.getElementById('btn-generar-grupos');
+            let i = t.inscriptos || [];
+            
+            if(i.length === 0) { div.innerHTML = '<div style="color:#9ca3af; padding:10px; text-align:center;">Sin inscriptos.</div>'; }
+            else {
+                i.forEach((nom, idx) => {
+                    let btnDel = t.faseGrupos ? '' : `<button onclick="window.eliminarInscriptoTorneo('${t.id}', ${idx})" style="background:none;border:none;color:#ef4444;cursor:pointer;">❌</button>`;
+                    div.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #2c3540; color:#d1d5db;"><span>${idx+1}. ${nom}</span>${btnDel}</div>`;
+                });
+            }
+            
+            if(!t.faseGrupos && i.length > 0) { btnGenerarGrupos.style.display = 'block'; } else { btnGenerarGrupos.style.display = 'none'; }
+        }
+
+        // --- LÓGICA DE FASE DE GRUPOS ---
+        window.generarFaseGrupos = async function() {
+            const id = document.getElementById('torneo-activo-id').value;
+            const t = torneosAdminGlobal.find(x=>x.id===id); if(!t) return;
+            if(!confirm("¿Cerrar inscripciones y sortear los grupos?")) return;
+
+            let inscriptos = [...t.inscriptos];
+            // Mezclar aleatoriamente
+            for (let i = inscriptos.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [inscriptos[i], inscriptos[j]] = [inscriptos[j], inscriptos[i]];
+            }
+
+            // Calcular cantidad de grupos de a 4. 
+            let numGroups = Math.ceil(t.cupo / 4);
+            let totalNeeded = numGroups * 4;
+            while(inscriptos.length < totalNeeded) { inscriptos.push("BYE"); }
+
+            let grupos = [];
+            const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            for(let i=0; i<numGroups; i++) {
+                grupos.push({
+                    nombre: `Zona ${letras[i]}`,
+                    equipos: [inscriptos[i*4], inscriptos[i*4+1], inscriptos[i*4+2], inscriptos[i*4+3]]
+                });
+            }
+
+            try {
+                await updateDoc(doc(db, "torneos_admin", id), { faseGrupos: grupos });
+                document.getElementById('ac-lista-inscriptos').classList.remove('abierto');
+                document.getElementById('ac-fase-grupos').classList.add('abierto');
+            } catch(e) { alert("Error al generar grupos."); }
+        };
+
+        function renderizarGrupos(t) {
+            const cont = document.getElementById('contenedor-grupos'); cont.innerHTML = '';
+            const btnGenerarLlaves = document.getElementById('btn-generar-llaves');
+            if(!t.faseGrupos) { 
+                cont.innerHTML = '<div style="color: #9ca3af; text-align: center; width: 100%; grid-column: 1 / -1;">Aún no se han generado los grupos.</div>'; 
+                btnGenerarLlaves.style.display = 'none';
+                return; 
+            }
+
+            t.faseGrupos.forEach((g, index) => {
+                let optionsHtml = `<option value="BYE">Ninguno / BYE</option>`;
+                g.equipos.forEach(eq => { if(eq !== "BYE") optionsHtml += `<option value="${eq}">${eq}</option>`; });
+
+                // Disable select si el bracket ya está generado
+                let disabledAttr = t.bracket ? 'disabled' : '';
+
+                cont.innerHTML += `
+                    <div style="background: #242c36; border: 1px solid #44505d; border-radius: 8px; padding: 12px;">
+                        <h4 style="margin: 0 0 10px 0; color: #3b82f6; text-align: center;">${g.nombre}</h4>
+                        <ul style="list-style: none; padding: 0; margin: 0 0 15px 0; font-size: 0.85em; color: #d1d5db;">
+                            ${g.equipos.map(eq => `<li style="padding: 3px 0; border-bottom: 1px dashed #2c3540;">${eq}</li>`).join('')}
+                        </ul>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <div>
+                                <label style="font-size: 0.75em; color: #10b981;">1º Puesto:</label>
+                                <select id="sel-g${index}-1" class="input-form" style="padding: 5px; font-size: 0.85em;" ${disabledAttr}>
+                                    <option value="" disabled selected>Seleccionar...</option>
+                                    ${optionsHtml}
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75em; color: #9ca3af;">2º Puesto:</label>
+                                <select id="sel-g${index}-2" class="input-form" style="padding: 5px; font-size: 0.85em;" ${disabledAttr}>
+                                    <option value="" disabled selected>Seleccionar...</option>
+                                    ${optionsHtml}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if(!t.bracket) { btnGenerarLlaves.style.display = 'inline-block'; } else { btnGenerarLlaves.style.display = 'none'; }
+        }
+
+        // --- LÓGICA DE LLAVES (ELIMINATORIAS) ---
+        window.avanzarALlaves = async function() {
+            const id = document.getElementById('torneo-activo-id').value;
+            const t = torneosAdminGlobal.find(x=>x.id===id); if(!t || !t.faseGrupos) return;
+            
+            let clasificados = [];
+            let todosSeleccionados = true;
+
+            // Recolectar a los 1º y 2º
+            t.faseGrupos.forEach((g, index) => {
+                let p1 = document.getElementById(`sel-g${index}-1`).value;
+                let p2 = document.getElementById(`sel-g${index}-2`).value;
+                if(!p1 || !p2) todosSeleccionados = false;
+                clasificados.push(p1); clasificados.push(p2); // Intercalamos para mezclar en la llave
+            });
+
+            if(!todosSeleccionados) { alert("Falta seleccionar puestos en algunos grupos."); return; }
+            if(!confirm("¿Generar llaves finales? Ya no podrás cambiar las posiciones de los grupos.")) return;
+
+            // Calcular tamaño de la llave (potencia de 2)
+            let numClasificados = clasificados.length;
+            let tamanoLlave = Math.pow(2, Math.ceil(Math.log2(numClasificados)));
+            
+            // Rellenar con BYEs si la matemática no da exacto (ej: avanzan 12 -> llave de 16 -> 4 BYEs)
+            let byesNeeded = tamanoLlave - numClasificados;
+            for(let i=0; i<byesNeeded; i++) { clasificados.push("BYE"); }
+
+            let rondas = [];
+            let numPartidosRonda1 = tamanoLlave / 2;
+            let ronda1 = [];
+
+            // Armar Ronda 1
+            for(let i=0; i<numPartidosRonda1; i++) {
+                let eq1 = clasificados[i * 2];
+                let eq2 = clasificados[(i * 2) + 1];
+                let ganador = null;
+                if(eq1 === "BYE") ganador = eq2;
+                if(eq2 === "BYE") ganador = eq1;
+                ronda1.push({ id: `R1-P${i}`, equipo1: eq1, equipo2: eq2, ganador: ganador });
+            }
+            rondas.push(ronda1);
+
+            // Crear rondas subsiguientes vacías
+            let totalRondas = Math.log2(tamanoLlave);
+            for(let r=1; r<totalRondas; r++) {
+                let numPartidos = tamanoLlave / Math.pow(2, r + 1);
+                let rondaVacia = [];
+                for(let p=0; p<numPartidos; p++) {
+                    rondaVacia.push({ id: `R${r+1}-P${p}`, equipo1: null, equipo2: null, ganador: null });
+                }
+                rondas.push(rondaVacia);
+            }
+
+            // Aplicar los BYEs a la ronda 2 inmediatamente
+            for (let p = 0; p < rondas[0].length; p++) {
+                if (rondas[0][p].ganador) {
+                    avanzarEquipoEnBracketLocal(rondas, 0, p, rondas[0][p].ganador);
+                }
+            }
+
+            try {
+                await updateDoc(doc(db, "torneos_admin", id), { bracket: rondas });
+                document.getElementById('ac-fase-grupos').classList.remove('abierto');
+                document.getElementById('ac-cuadro-torneo').classList.add('abierto');
+            } catch(e) { alert("Error al generar llaves."); }
+        };
+
+        function avanzarEquipoEnBracketLocal(rondas, indexRonda, indexPartido, nombreGanador) {
+            if(indexRonda + 1 >= rondas.length) return; // Es la final
+            let indexSiguientePartido = Math.floor(indexPartido / 2);
+            let esEquipo1 = indexPartido % 2 === 0;
+            if(esEquipo1) rondas[indexRonda + 1][indexSiguientePartido].equipo1 = nombreGanador;
+            else rondas[indexRonda + 1][indexSiguientePartido].equipo2 = nombreGanador;
+        }
+
+        window.seleccionarGanador = async function(indexRonda, indexPartido, equipoGanador) {
+            const idTorneo = document.getElementById('torneo-activo-id').value;
+            const t = torneosAdminGlobal.find(x=>x.id===idTorneo); if(!t || !t.bracket) return;
+            
+            if(equipoGanador === "BYE" || !equipoGanador || equipoGanador === "???") return;
+            if(!confirm(`¿Avanzar a ${equipoGanador} a la siguiente ronda?`)) return;
+
+            let rondasCopy = JSON.parse(JSON.stringify(t.bracket));
+            rondasCopy[indexRonda][indexPartido].ganador = equipoGanador;
+
+            if (indexRonda + 1 < rondasCopy.length) {
+                avanzarEquipoEnBracketLocal(rondasCopy, indexRonda, indexPartido, equipoGanador);
+            } else {
+                alert(`¡${equipoGanador} es el CAMPEÓN del torneo! 🏆`);
+            }
+
+            try { await updateDoc(doc(db, "torneos_admin", idTorneo), { bracket: rondasCopy }); } 
+            catch(e) { alert("Error guardando el avance."); }
+        }
+
+        function renderizarBracket(t) {
+            const cont = document.getElementById('contenedor-bracket'); cont.innerHTML = '';
+            if(!t.bracket) { cont.innerHTML = '<div style="color: #9ca3af; text-align: center; width: 100%; padding: 20px;">Aún no se han generado los cruces. Termina la fase de grupos primero.</div>'; return; }
+
+            const nombresRondas = ["Dieciseisavos", "Octavos", "Cuartos", "Semis", "Final", "Campeón"];
+            let diff = nombresRondas.length - 1 - t.bracket.length; 
+            let labels = t.bracket.map((r, i) => nombresRondas[diff + i] || `Ronda ${i+1}`);
+
+            t.bracket.forEach((ronda, rIndex) => {
+                let htmlCol = `<div style="display: flex; flex-direction: column; justify-content: space-around; min-width: 180px;">
+                                <div style="text-align:center; color:#f59e0b; font-weight:bold; margin-bottom:15px; border-bottom:1px solid #44505d; padding-bottom:5px;">${labels[rIndex]}</div>`;
+                
+                ronda.forEach((partido, pIndex) => {
+                    let eq1 = partido.equipo1 || "???"; let eq2 = partido.equipo2 || "???";
+                    let isP1Ganador = partido.ganador === eq1; let isP2Ganador = partido.ganador === eq2;
+                    let isDisabled = partido.ganador !== null || eq1 === "???" || eq2 === "???" || eq1 === "BYE" || eq2 === "BYE";
+
+                    htmlCol += `
+                        <div style="border: 1px solid #44505d; border-radius: 6px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                            <div onclick="${!isDisabled ? `window.seleccionarGanador(${rIndex}, ${pIndex}, '${eq1}')` : ''}" 
+                                 style="padding: 10px; background: ${isP1Ganador?'#10b981':'#242c36'}; cursor: ${isDisabled?'default':'pointer'}; border-bottom: 1px solid #44505d; color: ${isP1Ganador?'white':'#d1d5db'}; font-size:0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                ${eq1} ${isP1Ganador ? '👑' : ''}
+                            </div>
+                            <div onclick="${!isDisabled ? `window.seleccionarGanador(${rIndex}, ${pIndex}, '${eq2}')` : ''}" 
+                                 style="padding: 10px; background: ${isP2Ganador?'#10b981':'#242c36'}; cursor: ${isDisabled?'default':'pointer'}; color: ${isP2Ganador?'white':'#d1d5db'}; font-size:0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                ${eq2} ${isP2Ganador ? '👑' : ''}
+                            </div>
+                        </div>`;
+                });
+                htmlCol += `</div>`; cont.innerHTML += htmlCol;
+            });
+
+            let rondaFinal = t.bracket[t.bracket.length - 1];
+            if(rondaFinal && rondaFinal[0] && rondaFinal[0].ganador) {
+                 cont.innerHTML += `<div style="display: flex; flex-direction: column; justify-content: center; min-width: 180px;">
+                                        <div style="text-align:center; color:#fbbf24; font-weight:bold; margin-bottom:15px; border-bottom:1px solid #fbbf24; padding-bottom:5px;">Campeón</div>
+                                        <div style="background: #fbbf24; color: #171d24; font-weight: 900; font-size: 1.2em; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);">
+                                            🏆 ${rondaFinal[0].ganador}
+                                        </div>
+                                    </div>`;
+            }
+        }
+        
         // --- CIRCUITO COMPETITIVO (Global) ---
         window.cambiarSubVistaCompetitiva = function(v) {
             document.getElementById('subvista-ranking').style.display = v === 'ranking' ? 'block' : 'none';
