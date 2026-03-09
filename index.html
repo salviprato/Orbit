@@ -688,22 +688,58 @@
             </div>
         </div>
 
-        <div id="modal-torneo-inscriptos" class="modal-overlay" style="z-index: 1500;">
-            <div class="modal-content scroll-interno" style="max-width: 400px;">
-                <h3 id="lbl-torneo-titulo" style="margin: 0; color: #f59e0b;">Inscriptos</h3>
+       <div id="modal-torneo-inscriptos" class="modal-overlay" style="z-index: 1500;">
+            <div class="modal-content scroll-interno" style="max-width: 650px; max-height: 90vh; overflow-y: auto;">
+                <h3 id="lbl-torneo-titulo" style="margin: 0; color: #f59e0b;">Gestión del Torneo</h3>
                 <p id="lbl-torneo-info" style="color: #9ca3af; font-size: 0.85em; margin-bottom: 10px;"></p>
                 <input type="hidden" id="torneo-activo-id">
                 
-                <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-                    <input type="text" id="torneo-nuevo-inscripto" class="input-form" placeholder="Nombre Jugador/Pareja">
-                    <button class="btn-modal btn-guardar" style="width: auto; padding: 8px 15px;" onclick="window.agregarInscriptoTorneo()">+ Cargar</button>
+                <div class="seccion-acordeon" style="text-align: left; margin-bottom: 15px;">
+                    <div class="header-acordeon" onclick="window.toggleAcordeon('ac-lista-inscriptos')">
+                        <span>1️⃣ Jugadores Inscriptos</span> <span id="flecha-ac-lista-inscriptos">🔽</span>
+                    </div>
+                    <div id="ac-lista-inscriptos" class="contenido-acordeon">
+                        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                            <input type="text" id="torneo-nuevo-inscripto" class="input-form" placeholder="Nombre Jugador/Pareja">
+                            <button class="btn-modal btn-guardar" style="width: auto; padding: 8px 15px;" onclick="window.agregarInscriptoTorneo()">+ Cargar</button>
+                        </div>
+                        <div id="lista-inscriptos-torneo" style="background: #171d24; border: 1px solid #2c3540; border-radius: 8px; padding: 5px; max-height: 200px; overflow-y: auto;"></div>
+                        
+                        <div style="text-align: center; margin-top: 15px;">
+                            <button id="btn-generar-grupos" class="btn-modal" style="background-color: #8b5cf6; display: none;" onclick="window.generarFaseGrupos()">🎲 Cerrar Inscripción y Crear Zonas</button>
+                        </div>
+                    </div>
                 </div>
 
-                <div id="lista-inscriptos-torneo" style="text-align: left; background: #242c36; border: 1px solid #2c3540; border-radius: 8px; padding: 10px; max-height: 200px; overflow-y: auto;"></div>
+                <div class="seccion-acordeon" style="text-align: left; margin-bottom: 15px;">
+                    <div class="header-acordeon" onclick="window.toggleAcordeon('ac-fase-grupos')">
+                        <span>2️⃣ Fase de Grupos (Zonas)</span> <span id="flecha-ac-fase-grupos">🔽</span>
+                    </div>
+                    <div id="ac-fase-grupos" class="contenido-acordeon" style="padding: 15px; background-color: #171d24;">
+                        <div id="contenedor-grupos" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                            <div style="color: #9ca3af; text-align: center; width: 100%; grid-column: 1 / -1;">Aún no se han generado los grupos.</div>
+                        </div>
+                        <div style="text-align: center; margin-top: 20px;">
+                            <button id="btn-generar-llaves" class="btn-modal btn-guardar" style="display: none;" onclick="window.avanzarALlaves()">🏆 Clasificar Seleccionados a Cuadro Principal</button>
+                        </div>
+                    </div>
+                </div>
 
-                <button class="btn-modal btn-cerrar" style="margin-top: 15px;" onclick="window.cerrarModalTorneoInscriptos()">Volver</button>
+                <div class="seccion-acordeon" style="text-align: left;">
+                    <div class="header-acordeon" onclick="window.toggleAcordeon('ac-cuadro-torneo')">
+                        <span>3️⃣ Cuadro Principal (Eliminatorias)</span> <span id="flecha-ac-cuadro-torneo">🔽</span>
+                    </div>
+                    <div id="ac-cuadro-torneo" class="contenido-acordeon" style="padding: 10px; background-color: #171d24; overflow-x: auto;">
+                        <div id="contenedor-bracket" style="display: flex; gap: 20px; min-width: 600px; padding-bottom: 10px;">
+                            <div style="color: #9ca3af; text-align: center; width: 100%; padding: 20px;">Aún no se han generado los cruces.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-modal btn-cerrar" style="margin-top: 15px;" onclick="window.cerrarModalTorneoInscriptos()">Cerrar Gestor</button>
             </div>
         </div>
+        
         <div id="pantalla-ranking" class="vista-club" style="display: none; max-width: 600px;">
             <h2 style="margin: 0; margin-bottom: 15px;">🏆 Circuito Competitivo</h2>
             
