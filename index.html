@@ -307,11 +307,12 @@
             </div>
         </div>
 
-        <div id="modal-finanzas" class="modal-overlay">
+       <div id="modal-finanzas" class="modal-overlay">
             <div class="modal-content scroll-interno"> 
                 <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">Finanzas e Inventario</h3>
                 
                 <div style="text-align: left;">
+                    
                     <div class="seccion-acordeon">
                         <div class="header-acordeon" onclick="window.toggleAcordeon('ac-inv')">
                             <span>📦 Inventario y Stock</span> <span id="flecha-ac-inv">🔽</span>
@@ -344,23 +345,41 @@
 
                     <div class="seccion-acordeon">
                         <div class="header-acordeon" onclick="window.toggleAcordeon('ac-gastos')">
-                            <span>💸 Gastos Externos</span> <span id="flecha-ac-gastos">🔽</span>
+                            <span>🔀 Externos (Manuales)</span> <span id="flecha-ac-gastos">🔽</span>
                         </div>
                         <div id="ac-gastos" class="contenido-acordeon">
-                            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                                <input type="text" id="gasto-titulo" class="input-form" placeholder="Título (Ej: Luz, Alquiler)" style="flex: 1;">
-                                <input type="number" id="gasto-importe" class="input-form" placeholder="Importe Gastado $" style="flex: 1;">
+                            
+                            <div style="border: 1px solid #2c3540; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                                <label style="font-size: 0.85em; color: #ef4444; font-weight: bold;">Registrar Gasto Manual:</label>
+                                <div style="display: flex; gap: 8px; margin-bottom: 10px; margin-top: 5px;">
+                                    <input type="text" id="gasto-titulo" class="input-form" placeholder="Título (Ej: Luz, Alquiler)" style="flex: 1;">
+                                    <input type="number" id="gasto-importe" class="input-form" placeholder="Importe Gastado $" style="flex: 1;">
+                                </div>
+                                <div style="margin-bottom: 10px;">
+                                    <input type="text" id="gasto-desc" class="input-form" placeholder="Descripción corta (Opcional)">
+                                </div>
+                                <button class="btn-modal btn-gasto" onclick="window.agregarGasto()">Registrar Gasto</button>
+                                
+                                <div class="scroll-interno" style="max-height: 150px; overflow-y: auto; border: 1px solid #2c3540; border-radius: 6px; padding: 5px; background: #171d24; margin-top: 10px;">
+                                    <table>
+                                        <thead><tr><th>Detalle del Gasto</th><th style="text-align: right;">Importe</th><th style="text-align: center;">Borrar</th></tr></thead>
+                                        <tbody id="tabla-gastos"></tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div style="margin-bottom: 15px;">
-                                <input type="text" id="gasto-desc" class="input-form" placeholder="Descripción corta (Opcional)">
+
+                            <div style="border: 1px solid #2c3540; padding: 10px; border-radius: 8px;">
+                                <label style="font-size: 0.85em; color: #10b981; font-weight: bold;">Registrar Ingreso Manual Libre:</label>
+                                <div style="display: flex; gap: 8px; margin-top: 5px;">
+                                    <input type="text" id="ingreso-titulo" class="input-form" placeholder="Detalle..." style="flex: 2;">
+                                </div>
+                                <div style="display: flex; gap: 8px; margin-top: 5px;">
+                                    <input type="number" id="ingreso-efectivo" class="input-form" placeholder="Efectivo $" style="flex: 1;">
+                                    <input type="number" id="ingreso-transferencia" class="input-form" placeholder="Transf. $" style="flex: 1;">
+                                </div>
+                                <button class="btn-modal btn-gasto" onclick="window.agregarIngresoLibre()" style="margin-top: 10px; padding: 8px;">Registrar Ingreso</button>
                             </div>
-                            <button class="btn-modal btn-gasto" onclick="window.agregarGasto()" style="margin-bottom: 20px;">Registrar Gasto</button>
-                            <div class="scroll-interno" style="max-height: 150px; overflow-y: auto; border: 1px solid #2c3540; border-radius: 6px; padding: 5px; background: #171d24;">
-                                <table>
-                                    <thead><tr><th>Detalle del Gasto</th><th style="text-align: right;">Importe</th><th style="text-align: center;">Borrar</th></tr></thead>
-                                    <tbody id="tabla-gastos"></tbody>
-                                </table>
-                            </div>
+
                         </div>
                     </div>
 
@@ -381,18 +400,6 @@
                                     <input type="number" id="ingreso-transferencia-prod" class="input-form" placeholder="Transf. $" style="flex: 1;">
                                 </div>
                                 <button class="btn-modal btn-gasto" onclick="window.venderProductoMostrador()" style="margin-top: 10px; padding: 8px;">Vender Producto</button>
-                            </div>
-
-                            <div style="border: 1px solid #2c3540; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
-                                <label style="font-size: 0.85em; color: #d1d5db; font-weight: bold;">Ingreso Manual Libre:</label>
-                                <div style="display: flex; gap: 8px; margin-top: 5px;">
-                                    <input type="text" id="ingreso-titulo" class="input-form" placeholder="Detalle..." style="flex: 2;">
-                                </div>
-                                <div style="display: flex; gap: 8px; margin-top: 5px;">
-                                    <input type="number" id="ingreso-efectivo" class="input-form" placeholder="Efectivo $" style="flex: 1;">
-                                    <input type="number" id="ingreso-transferencia" class="input-form" placeholder="Transf. $" style="flex: 1;">
-                                </div>
-                                <button class="btn-modal btn-gasto" onclick="window.agregarIngresoLibre()" style="margin-top: 10px; padding: 8px;">Registrar Ingreso</button>
                             </div>
 
                             <div class="scroll-interno" style="max-height: 150px; overflow-y: auto; border: 1px solid #2c3540; border-radius: 6px; padding: 5px; background: #171d24;">
@@ -452,7 +459,6 @@
                 <button class="btn-modal btn-cerrar" style="margin-top: 20px;" onclick="window.cerrarModalFinanzas()">Cerrar Finanzas</button>
             </div>
         </div>
-
         <div id="modal-editar-precio" class="modal-overlay" style="z-index: 1100;">
             <div class="modal-content" style="max-width: 300px;">
                 <h3 style="margin: 0; color: #ffffff;">Editar Precio</h3>
