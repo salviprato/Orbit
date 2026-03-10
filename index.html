@@ -759,10 +759,11 @@
         <div id="pantalla-ranking" class="vista-club" style="display: none; max-width: 600px;">
             <h2 style="margin: 0; margin-bottom: 15px;">🏆 Circuito Competitivo</h2>
             
-            <div style="display: flex; gap: 8px; margin-bottom: 20px;">
-                <button class="btn-modal btn-guardar" style="flex: 1; padding: 10px; background-color: #f59e0b;" onclick="window.abrirModalJugarCompetitivo()">🔥 Partidos</button>
-                <button id="btn-sub-ranking" class="btn-modal btn-guardar" style="flex: 1; padding: 10px; background-color: #3b82f6; border: none;" onclick="window.cambiarSubVistaCompetitiva('ranking')">📊 Ranking</button>
-                <button id="btn-sub-torneos" class="btn-modal btn-guardar" style="flex: 1; padding: 10px; background-color: #242c36; border: 1px solid #44505d;" onclick="window.cambiarSubVistaCompetitiva('torneos')">🏆 Torneos</button>
+            <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button class="btn-modal btn-guardar" style="flex: 1; min-width: 80px; padding: 10px; background-color: #f59e0b;" onclick="window.abrirModalJugarCompetitivo()">🔥 Partidos</button>
+                <button id="btn-sub-ranking" class="btn-modal btn-guardar" style="flex: 1; min-width: 80px; padding: 10px; background-color: #3b82f6; border: none;" onclick="window.cambiarSubVistaCompetitiva('ranking')">📊 Ranking</button>
+                <button id="btn-sub-torneos" class="btn-modal btn-guardar" style="flex: 1; min-width: 80px; padding: 10px; background-color: #242c36; border: 1px solid #44505d;" onclick="window.cambiarSubVistaCompetitiva('torneos')">🏆 Torneos</button>
+                <button class="btn-modal btn-guardar" style="flex: 1; min-width: 80px; padding: 10px; background-color: #8b5cf6; border: none;" onclick="window.abrirModalAmigos()">👥 Amigos <span id="btn-amigos-badge" style="font-weight: bold; color: #fbbf24;"></span></button>
             </div>
             
             <div id="subvista-ranking">
