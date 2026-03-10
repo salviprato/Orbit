@@ -2444,10 +2444,27 @@
         window.confirmarResultado = async function(g) { await updateDoc(doc(db, "matchmaking", document.getElementById('resultado-partido-id').value), { estado: 'Finalizado', ganador: g }); window.cerrarModalResultado(); };
         window.renderizarHistorialCompetitivo = function() { const div = document.getElementById('lista-partidos-historial'); if(div) div.innerHTML = matchmakingGlobal.filter(m=>m.estado==='Finalizado').map(m=>`<p>${m.fechaDeseada}: Eq${m.ganador} Gana</p>`).join(''); };
 
-        function renderizarRanking() {
+      window.renderizarRanking = function() {
             const tb = document.getElementById('lista-ranking'); if(!tb) return; tb.innerHTML = '';
-            rankingGlobal.sort((a,b)=>b.puntos-a.puntos).forEach((j, i) => { tb.innerHTML += `<tr><td>${i+1}</td><td>${j.nombre}</td><td>${j.puntos}</td><td>${j.partidosJugados}</td></tr>`; });
-        }
+            
+            // Si la base de datos de ranking está vacía
+            if (!rankingGlobal || rankingGlobal.length === 0) {
+                tb.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #9ca3af; padding: 15px;">Aún no hay jugadores clasificados.</td></tr>';
+                return;
+            }
+
+            // Ordenar de mayor a menor puntaje (con protección contra valores nulos)
+            rankingGlobal.sort((a,b) => (b.puntos || 0) - (a.puntos || 0)).forEach((j, i) => { 
+                let pts = j.puntos || 0;
+                let pj = j.partidosJugados || 0;
+                tb.innerHTML += `<tr>
+                                    <td style="text-align: center;"><strong>${i+1}</strong></td>
+                                    <td>${j.nombre || 'Anónimo'}</td>
+                                    <td style="text-align: center; color: #f59e0b;"><strong>${pts}</strong></td>
+                                    <td style="text-align: center;">${pj}</td>
+                                 </tr>`; 
+            });
+        };
         
         // --- MÉTRICAS Y GRÁFICOS AVANZADOS (CHART.JS) ---
         window.abrirModalMetricas = function() { 
