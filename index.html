@@ -1881,7 +1881,7 @@
             if(!t.bracket) { btnGenerarLlaves.style.display = 'inline-block'; } else { btnGenerarLlaves.style.display = 'none'; }
         }
 
-        // --- LÓGICA DE LLAVES (ELIMINATORIAS) ---
+       // --- LÓGICA DE LLAVES (ELIMINATORIAS) ---
         window.avanzarALlaves = async function() {
             const id = document.getElementById('torneo-activo-id').value;
             const t = torneosAdminGlobal.find(x=>x.id===id); if(!t || !t.faseGrupos) return;
@@ -1921,7 +1921,8 @@
                 if(eq2 === "BYE") ganador = eq1;
                 ronda1.push({ id: `R1-P${i}`, equipo1: eq1, equipo2: eq2, ganador: ganador });
             }
-            rondas.push(ronda1);
+            // AQUÍ ESTÁ LA MAGIA: Lo guardamos como Objeto para que Firebase no lo rechace
+            rondas.push({ partidos: ronda1 }); 
 
             // Crear rondas subsiguientes vacías
             let totalRondas = Math.log2(tamanoLlave);
@@ -1931,13 +1932,13 @@
                 for(let p=0; p<numPartidos; p++) {
                     rondaVacia.push({ id: `R${r+1}-P${p}`, equipo1: null, equipo2: null, ganador: null });
                 }
-                rondas.push(rondaVacia);
+                rondas.push({ partidos: rondaVacia });
             }
 
             // Aplicar los BYEs a la ronda 2 inmediatamente
-            for (let p = 0; p < rondas[0].length; p++) {
-                if (rondas[0][p].ganador) {
-                    avanzarEquipoEnBracketLocal(rondas, 0, p, rondas[0][p].ganador);
+            for (let p = 0; p < rondas[0].partidos.length; p++) {
+                if (rondas[0].partidos[p].ganador) {
+                    avanzarEquipoEnBracketLocal(rondas, 0, p, rondas[0].partidos[p].ganador);
                 }
             }
 
@@ -1945,15 +1946,18 @@
                 await updateDoc(doc(db, "torneos_admin", id), { bracket: rondas });
                 document.getElementById('ac-fase-grupos').classList.remove('abierto');
                 document.getElementById('ac-cuadro-torneo').classList.add('abierto');
-            } catch(e) { alert("Error al generar llaves."); }
+            } catch(e) { 
+                console.error(e);
+                alert("Error al generar llaves de eliminación."); 
+            }
         };
 
         function avanzarEquipoEnBracketLocal(rondas, indexRonda, indexPartido, nombreGanador) {
             if(indexRonda + 1 >= rondas.length) return; // Es la final
             let indexSiguientePartido = Math.floor(indexPartido / 2);
             let esEquipo1 = indexPartido % 2 === 0;
-            if(esEquipo1) rondas[indexRonda + 1][indexSiguientePartido].equipo1 = nombreGanador;
-            else rondas[indexRonda + 1][indexSiguientePartido].equipo2 = nombreGanador;
+            if(esEquipo1) rondas[indexRonda + 1].partidos[indexSiguientePartido].equipo1 = nombreGanador;
+            else rondas[indexRonda + 1].partidos[indexSiguientePartido].equipo2 = nombreGanador;
         }
 
         window.seleccionarGanador = async function(indexRonda, indexPartido, equipoGanador) {
@@ -1964,7 +1968,7 @@
             if(!confirm(`¿Avanzar a ${equipoGanador} a la siguiente ronda?`)) return;
 
             let rondasCopy = JSON.parse(JSON.stringify(t.bracket));
-            rondasCopy[indexRonda][indexPartido].ganador = equipoGanador;
+            rondasCopy[indexRonda].partidos[indexPartido].ganador = equipoGanador;
 
             if (indexRonda + 1 < rondasCopy.length) {
                 avanzarEquipoEnBracketLocal(rondasCopy, indexRonda, indexPartido, equipoGanador);
@@ -1984,11 +1988,11 @@
             let diff = nombresRondas.length - 1 - t.bracket.length; 
             let labels = t.bracket.map((r, i) => nombresRondas[diff + i] || `Ronda ${i+1}`);
 
-            t.bracket.forEach((ronda, rIndex) => {
+            t.bracket.forEach((rondaObj, rIndex) => {
                 let htmlCol = `<div style="display: flex; flex-direction: column; justify-content: space-around; min-width: 180px;">
                                 <div style="text-align:center; color:#f59e0b; font-weight:bold; margin-bottom:15px; border-bottom:1px solid #44505d; padding-bottom:5px;">${labels[rIndex]}</div>`;
                 
-                ronda.forEach((partido, pIndex) => {
+                rondaObj.partidos.forEach((partido, pIndex) => {
                     let eq1 = partido.equipo1 || "???"; let eq2 = partido.equipo2 || "???";
                     let isP1Ganador = partido.ganador === eq1; let isP2Ganador = partido.ganador === eq2;
                     let isDisabled = partido.ganador !== null || eq1 === "???" || eq2 === "???" || eq1 === "BYE" || eq2 === "BYE";
@@ -2009,11 +2013,11 @@
             });
 
             let rondaFinal = t.bracket[t.bracket.length - 1];
-            if(rondaFinal && rondaFinal[0] && rondaFinal[0].ganador) {
+            if(rondaFinal && rondaFinal.partidos[0] && rondaFinal.partidos[0].ganador) {
                  cont.innerHTML += `<div style="display: flex; flex-direction: column; justify-content: center; min-width: 180px;">
                                         <div style="text-align:center; color:#fbbf24; font-weight:bold; margin-bottom:15px; border-bottom:1px solid #fbbf24; padding-bottom:5px;">Campeón</div>
                                         <div style="background: #fbbf24; color: #171d24; font-weight: 900; font-size: 1.2em; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);">
-                                            🏆 ${rondaFinal[0].ganador}
+                                            🏆 ${rondaFinal.partidos[0].ganador}
                                         </div>
                                     </div>`;
             }
