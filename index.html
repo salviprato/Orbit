@@ -976,6 +976,40 @@
                             <input type="tel" id="perfil-telefono" class="input-form" placeholder="Ej: 3511234567" style="margin-top: 4px;">
                         </div>
                     </div>
+                    <div id="modal-amigos" class="modal-overlay" style="z-index: 1600;">
+            <div class="modal-content scroll-interno" style="max-width: 450px; max-height: 80vh; overflow-y: auto;">
+                <h3 style="margin: 0; color: #8b5cf6; border-bottom: 1px solid #44505d; padding-bottom: 10px;">👥 Mis Amigos</h3>
+                
+                <div class="seccion-acordeon" style="text-align: left; margin-top: 15px;">
+                    <div class="header-acordeon" onclick="window.toggleAcordeon('ac-buscar-amigos')">
+                        <span>🔍 Buscar y Agregar</span> <span id="flecha-ac-buscar-amigos">🔽</span>
+                    </div>
+                    <div id="ac-buscar-amigos" class="contenido-acordeon">
+                        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                            <input type="text" id="input-buscar-amigo" class="input-form" placeholder="Ingresa DNI o Nombre Completo...">
+                            <button class="btn-modal" style="width: auto; padding: 8px 15px; background-color: #8b5cf6;" onclick="window.buscarAmigo()">Buscar</button>
+                        </div>
+                        <div id="res-busqueda-amigos" style="margin-top: 10px; font-size: 0.9em;"></div>
+                    </div>
+                </div>
+
+                <div class="seccion-acordeon" style="text-align: left;">
+                    <div class="header-acordeon" onclick="window.toggleAcordeon('ac-solicitudes-amigos')">
+                        <span>🔔 Solicitudes Pendientes</span> <span id="flecha-ac-solicitudes-amigos">🔽</span>
+                    </div>
+                    <div id="ac-solicitudes-amigos" class="contenido-acordeon" style="padding: 10px; background-color: #171d24;">
+                        <div id="lista-solicitudes"></div>
+                    </div>
+                </div>
+
+                <div style="text-align: left; margin-top: 15px;">
+                    <h4 style="color: #9ca3af; margin-bottom: 10px;">🎾 Tu Lista de Amigos</h4>
+                    <div id="lista-mis-amigos" style="background: #242c36; border-radius: 8px; border: 1px solid #2c3540; min-height: 80px; overflow-y: auto; max-height: 200px;"></div>
+                </div>
+
+                <button class="btn-modal btn-cerrar" style="margin-top: 20px;" onclick="window.cerrarModalAmigos()">Cerrar</button>
+            </div>
+        </div>
                 </div>
 
                 <button class="btn-modal btn-guardar" style="margin-top: 20px; background-color: #3b82f6;" onclick="window.guardarPerfilJugador()">Guardar Perfil</button>
