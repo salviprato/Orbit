@@ -1024,43 +1024,55 @@
             const ahora = new Date(); return window.aMinutos(horaStr) <= (ahora.getHours() * 60) + ahora.getMinutes(); 
         }
 
-       // --- SISTEMA DE AUTENTICACIÓN Y REGISTRO ---
+      // --- SISTEMA DE AUTENTICACIÓN Y REGISTRO ---
         window.isLoginMode = true;
+        window.usuarioLogueadoUID = null; // Guardamos el UID para actualizar el perfil luego
+        window.perfilJugador = null; // Guardamos los datos del jugador actual
 
         window.toggleAuthMode = function() {
             window.isLoginMode = !window.isLoginMode;
             document.getElementById('titulo-auth').innerText = window.isLoginMode ? "Iniciar Sesión" : "Crear Cuenta";
             document.getElementById('btn-auth').innerText = window.isLoginMode ? "Ingresar" : "Registrarse";
             document.getElementById('txt-auth-toggle').innerText = window.isLoginMode ? "¿No tienes cuenta? Regístrate aquí" : "¿Ya tienes cuenta? Inicia sesión";
+            document.getElementById('div-registro-extra').style.display = window.isLoginMode ? 'none' : 'block';
             document.getElementById('login-error').style.display = 'none';
         }
 
         window.procesarAuth = async function() {
-            const email = document.getElementById('login-email').value;
+            const email = document.getElementById('login-email').value.trim();
             const pass = document.getElementById('login-pass').value;
+            const dni = document.getElementById('login-dni') ? document.getElementById('login-dni').value.trim() : null;
             const errorDiv = document.getElementById('login-error');
             const btn = document.getElementById('btn-auth');
             
             if(!email || !pass) return;
+            if(!window.isLoginMode && (!dni || dni === "")) {
+                errorDiv.innerText = "Debes ingresar tu DNI para registrarte.";
+                errorDiv.style.display = 'block';
+                return;
+            }
+
             errorDiv.style.display = 'none';
             btn.innerText = "Cargando...";
 
             try {
                 if (window.isLoginMode) {
-                    // Iniciar sesión
                     await signInWithEmailAndPassword(auth, email, pass);
                 } else {
-                    // Crear cuenta nueva
                     const userCred = await createUserWithEmailAndPassword(auth, email, pass);
-                    // Guardar rol "jugador" por defecto en la base de datos
+                    
+                    // Al registrar, creamos el documento con DNI y perfil incompleto
                     await setDoc(doc(db, "usuarios", userCred.user.uid), {
                         rol: "jugador",
                         email: email,
+                        dni: dni,
+                        perfilCompleto: false,
                         fechaRegistro: serverTimestamp()
                     });
                 }
             } catch(error) {
-                errorDiv.innerText = window.isLoginMode ? "Credenciales incorrectas." : "Error al registrar. Intenta otra contraseña.";
+                console.error(error);
+                errorDiv.innerText = window.isLoginMode ? "Credenciales incorrectas." : "Error al registrar. El email ya está en uso o la contraseña es muy débil.";
                 errorDiv.style.display = 'block';
                 btn.innerText = window.isLoginMode ? "Ingresar" : "Registrarse";
             }
@@ -1071,50 +1083,91 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 document.getElementById('pantalla-login').style.display = 'none';
+                window.usuarioLogueadoUID = user.uid;
                 
                 try {
                     const userDoc = await getDoc(doc(db, "usuarios", user.uid));
                     if (userDoc.exists()) {
-                        window.usuarioRol = userDoc.data().rol;
-                        window.clubIdActual = userDoc.data().clubId || null; 
-                        
+                        let data = userDoc.data();
+                        window.usuarioRol = data.rol;
+                        window.clubIdActual = data.clubId || null; 
+                        window.perfilJugador = data;
+
                         document.getElementById('app-content').style.display = 'flex';
                         
-                       // LÓGICA DE ROLES
+                        // LÓGICA DE ROLES INTACTA
                         if(window.usuarioRol === 'admin') {
                             document.getElementById('lbl-nombre-club').innerText = `- ${window.clubIdActual}`;
-                            // Mostrar botones de control, pero ocultar específicamente el de Circuito
-                            document.getElementById('menu-modulos').style.display = 'flex';
-                            if(document.getElementById('btn-ranking')) {
-                                document.getElementById('btn-ranking').style.display = 'none';
-                            }
+                            document.getElementById('menu-modulos').style.display = 'flex'; 
+                            if(document.getElementById('btn-ranking')) document.getElementById('btn-ranking').style.display = 'none';
                             window.cambiarVista('club');
+                            iniciarListenersPrivados();
                         } else {
-                            // ES JUGADOR (Básico)
-                            document.getElementById('menu-modulos').style.display = 'none'; // Oculta botones de club
-                            window.cambiarVista('ranking'); // Lo manda directo al circuito
+                            // ES JUGADOR
+                            document.getElementById('menu-modulos').style.display = 'none'; 
+                            window.cambiarVista('ranking'); 
+                            iniciarListenersPrivados();
+                            
+                            // NUEVO: Verificación de Perfil para Jugadores
+                            if(data.perfilCompleto !== true) {
+                                document.getElementById('perfil-dni').value = data.dni || "Falta DNI";
+                                document.getElementById('modal-perfil-jugador').style.display = 'flex';
+                            }
                         }
-                        
-                        iniciarListenersPrivados();
                     } else {
-                        // Si por algún error no se creó su documento, se lo creamos
-                        await setDoc(doc(db, "usuarios", user.uid), { rol: "jugador", email: user.email });
+                        // Si no existe, creamos un documento básico por seguridad
+                        await setDoc(doc(db, "usuarios", user.uid), { rol: "jugador", email: user.email, perfilCompleto: false });
                         window.usuarioRol = "jugador";
                         document.getElementById('app-content').style.display = 'flex';
                         document.getElementById('menu-modulos').style.display = 'none';
                         window.cambiarVista('ranking');
                         iniciarListenersPrivados();
+                        
+                        document.getElementById('modal-perfil-jugador').style.display = 'flex';
                     }
                 } catch(e) {
-                    console.error(e);
-                    signOut(auth);
+                    console.error(e); signOut(auth);
                 }
             } else {
                 document.getElementById('pantalla-login').style.display = 'flex';
                 document.getElementById('app-content').style.display = 'none';
-                window.clubIdActual = null; window.usuarioRol = null;
+                if(document.getElementById('modal-perfil-jugador')) document.getElementById('modal-perfil-jugador').style.display = 'none';
+                window.clubIdActual = null; window.usuarioRol = null; window.usuarioLogueadoUID = null; window.perfilJugador = null;
             }
         });
+
+        // --- GESTIÓN DE PERFIL DEL JUGADOR ---
+        window.guardarPerfilJugador = async function() {
+            if(!window.usuarioLogueadoUID) return;
+
+            const nombre = document.getElementById('perfil-nombre').value.trim();
+            const genero = document.getElementById('perfil-genero').value;
+            const edad = document.getElementById('perfil-edad').value;
+            const tel = document.getElementById('perfil-telefono').value.trim();
+
+            if(!nombre || !genero || !edad || !tel) {
+                alert("Por favor, completa todos los campos para continuar.");
+                return;
+            }
+
+            try {
+                await updateDoc(doc(db, "usuarios", window.usuarioLogueadoUID), {
+                    nombreCompleto: nombre,
+                    genero: genero,
+                    edad: parseInt(edad),
+                    telefono: tel,
+                    perfilCompleto: true
+                });
+                
+                window.perfilJugador.nombreCompleto = nombre;
+                window.perfilJugador.telefono = tel;
+                
+                alert("¡Perfil guardado exitosamente!");
+                document.getElementById('modal-perfil-jugador').style.display = 'none';
+            } catch(e) {
+                alert("Ocurrió un error al guardar tu información.");
+            }
+        }
         
         // --- MANEJO DE VISTAS E INTERFAZ ---
         window.cambiarVista = function(vista) {
