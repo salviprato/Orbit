@@ -2329,7 +2329,7 @@
             document.getElementById('btn-sub-torneos').style.backgroundColor = v==='torneos'?'#8b5cf6':'#242c36';
         };
 
-        // Renderiza la lista de torneos que ven los JUGADORES
+      // Renderiza la lista de torneos que ven los JUGADORES
         window.renderizarTorneosPublicos = function() {
             const div = document.getElementById('lista-torneos'); if(!div) return; div.innerHTML = '';
             
@@ -2338,37 +2338,39 @@
                 return;
             }
 
+            let torneosMostrados = 0;
+
             torneosAdminGlobal.sort((a,b) => a.fecha > b.fecha ? 1 : -1).forEach(t => { 
                 let inscriptos = t.inscriptos || [];
                 let cuposDisponibles = t.cupo - inscriptos.length;
+                
+                // MAGIA: Si no hay cupos o el admin ya cerró inscripciones (generó fase de grupos), saltar (no dibujar)
+                if (cuposDisponibles <= 0 || t.faseGrupos) return;
+
+                torneosMostrados++;
                 let [y, m, d] = t.fecha.split('-');
                 let fechaLegible = `${d}/${m}/${y}`;
-                
-                let btnHtml = '';
-                // Solo dejar inscribirse si hay cupo Y si el admin no cerró la inscripción (generando la fase de grupos)
-                if(cuposDisponibles > 0 && !t.faseGrupos) {
-                    btnHtml = `<button class="btn-modal btn-guardar" style="width: auto; padding: 8px 15px; font-size: 0.85em; background-color: #10b981;" onclick="window.abrirModalInscripcionTorneo('${t.id}')">Inscribirse</button>`;
-                } else if(t.faseGrupos) {
-                    btnHtml = `<button class="btn-modal" style="width: auto; padding: 8px 15px; font-size: 0.85em; background-color: #4b5563; color: white; cursor: not-allowed;" disabled>En Curso</button>`;
-                } else {
-                    btnHtml = `<button class="btn-modal" style="width: auto; padding: 8px 15px; font-size: 0.85em; background-color: #ef4444; color: white; cursor: not-allowed;" disabled>Completo</button>`;
-                }
 
                 div.innerHTML += `
                     <div style="background: #1e252d; border: 1px solid #44505d; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; text-align: left;">
                         <div>
                             <div style="color: #f59e0b; font-weight: bold; font-size: 1.1em;">🏆 ${t.nombre}</div>
                             <div style="color: #d1d5db; font-size: 0.85em; margin-top: 4px;">📅 ${fechaLegible} | ⌚ ${t.horaInicio} hs</div>
-                            <div style="color: #9ca3af; font-size: 0.8em; margin-top: 2px;">Cupos Disponibles: ${cuposDisponibles} de ${t.cupo}</div>
+                            <div style="color: #10b981; font-size: 0.8em; margin-top: 2px;">Cupos Libres: ${cuposDisponibles}</div>
                         </div>
                         <div>
-                            ${btnHtml}
+                            <button class="btn-modal btn-guardar" style="width: auto; padding: 8px 15px; font-size: 0.85em; background-color: #10b981;" onclick="window.abrirModalInscripcionTorneo('${t.id}')">Inscribirse</button>
                         </div>
                     </div>
                 `; 
             });
-        };
 
+            // Si el bucle terminó y no dibujó nada (porque todos estaban llenos/en curso)
+            if (torneosMostrados === 0) {
+                div.innerHTML = '<div style="padding: 20px; color: #9ca3af;">Por el momento no hay torneos con cupo disponible.</div>';
+            }
+        };
+        
         window.abrirModalInscripcionTorneo = function(id) { 
             const t = torneosAdminGlobal.find(x => x.id === id);
             if(!t) return;
