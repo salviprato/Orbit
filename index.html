@@ -1069,10 +1069,14 @@
                         
                         document.getElementById('app-content').style.display = 'flex';
                         
-                        // LÓGICA DE ROLES
+                       // LÓGICA DE ROLES
                         if(window.usuarioRol === 'admin') {
                             document.getElementById('lbl-nombre-club').innerText = `- ${window.clubIdActual}`;
-                            document.getElementById('menu-modulos').style.display = 'flex'; // Ve todo
+                            // Mostrar botones de control, pero ocultar específicamente el de Circuito
+                            document.getElementById('menu-modulos').style.display = 'flex';
+                            if(document.getElementById('btn-ranking')) {
+                                document.getElementById('btn-ranking').style.display = 'none';
+                            }
                             window.cambiarVista('club');
                         } else {
                             // ES JUGADOR (Básico)
