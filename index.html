@@ -2267,6 +2267,13 @@
             }
         };
 
+       window.abrirModalTorneosPublicos = function() {
+            document.getElementById('modal-torneos-publicos').style.display = 'flex';
+        };
+        window.cerrarModalTorneosPublicos = function() {
+            document.getElementById('modal-torneos-publicos').style.display = 'none';
+        };
+        
         window.abrirModalInscripcionTorneo = function(id) { 
             const t = torneosAdminGlobal.find(x => x.id === id);
             if(!t) return;
