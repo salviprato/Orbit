@@ -2329,20 +2329,6 @@
                 window.cerrarModalInscripcionTorneo();
             } catch(e) { alert("Hubo un error al procesar tu inscripción."); }
         };
-
-        window.abrirModalJugarCompetitivo = function() { 
-            window.cambiarTabCompetitivo('crear'); 
-            document.getElementById('comp-nombre-jugador').value = window.perfilJugador?.nombreCompleto || 'Jugador Anónimo';
-            document.getElementById('comp-pareja').value = 'random';
-            window.toggleAmigoInput('comp-pareja', 'div-amigo-comp');
-            document.getElementById('modal-jugar-competitivo').style.display = 'flex'; 
-        };
-
-        window.cerrarModalJugarCompetitivo = function() { document.getElementById('modal-jugar-competitivo').style.display = 'none'; };
-        
-        window.cambiarTabCompetitivo = function(t) {
-            ['crear','unirse','resultados','historial'].forEach(x => { document.getElementById(`tab-${x}-partido`).style.display = (x===t)?'block':'none'; });
-        };
         
         window.toggleAmigoInput = function(selectId, divAmigoId) { 
             const val = document.getElementById(selectId).value;
