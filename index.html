@@ -2478,32 +2478,79 @@
         
        window.renderizarPartidosAbiertos = function() {
             const div = document.getElementById('lista-partidos-abiertos'); if(!div) return; div.innerHTML = '';
-            let abiertos = matchmakingGlobal.filter(m=>m.estado==='Buscando Rival');
             
-            if(abiertos.length === 0) { 
-                div.innerHTML = '<div style="color:#9ca3af; padding:10px; text-align:center;">No hay partidos buscando jugadores. ¡Crea uno!</div>'; 
-                return; 
-            }
-            
-            abiertos.forEach(m => { 
-                let cuposLibres = 0;
-                if(m.j2 === 'Libre') cuposLibres++;
-                if(m.j3 === 'Libre') cuposLibres++;
-                if(m.j4 === 'Libre') cuposLibres++;
+            let hoy = obtenerFechaHoy();
+            let ahoraH = new Date().getHours().toString().padStart(2, '0') + ":" + new Date().getMinutes().toString().padStart(2, '0');
+            let miNombre = window.perfilJugador?.nombreCompleto || '';
 
-                div.innerHTML += `<div style="border:1px solid #44505d; padding:12px; margin-bottom:8px; border-radius:8px; background:#1e252d;">
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 1.05em;">
-                                        <strong style="color:#3b82f6;">${m.j1} / ${m.j2 !== 'Libre' ? m.j2 : '❓'}</strong>
-                                        <span style="color:#f59e0b; font-weight:bold; margin: 0 10px;">VS</span>
-                                        <strong style="color:#ef4444;">${m.j3 !== 'Libre' ? m.j3 : '❓'} / ${m.j4 !== 'Libre' ? m.j4 : '❓'}</strong>
-                                    </div>
-                                    <div style="color:#9ca3af; font-size:0.85em;">📅 ${m.fechaDeseada} | ⌚ ${m.horaDeseada} hs | Cancha ${m.tipoCancha}</div>
-                                    <div style="color:#10b981; font-size:0.85em; margin-top:2px;">🎟️ Lugares vacantes: ${cuposLibres}</div>
-                                    <button class="btn-modal btn-guardar" style="width:100%; margin-top:10px; padding:8px; font-size:0.9em; background-color:#10b981;" onclick="window.abrirModalUnirseDetalle('${m.id}')">Unirme a este partido</button>
-                                  </div>`; 
+            let html = '';
+
+            // 1. MIS INVITACIONES PENDIENTES
+            let invitaciones = matchmakingGlobal.filter(m => m.estado === 'Esperando Confirmacion Amigo' && m.j2 === miNombre && m.fechaDeseada >= hoy);
+            if(invitaciones.length > 0) {
+                html += '<div style="margin-bottom: 15px;"><strong style="color:#8b5cf6;">🔔 Tienes invitaciones de pareja:</strong></div>';
+                invitaciones.forEach(m => {
+                    html += `<div style="border:1px solid #8b5cf6; padding:12px; margin-bottom:12px; border-radius:8px; background:#2e1065;">
+                                <div style="color:#d1d5db; margin-bottom: 8px;"><strong>${m.j1}</strong> te invitó a jugar en <strong>${m.clubSeleccionado}</strong>.</div>
+                                <div style="color:#9ca3af; font-size:0.85em; margin-bottom: 10px;">📅 ${m.fechaDeseada} | ⌚ ${m.horaDeseada} hs | Cancha ${m.tipoCancha}</div>
+                                <div style="display:flex; gap:10px;">
+                                    <button class="btn-modal btn-guardar" style="flex:1; padding:8px; font-size:0.85em;" onclick="window.responderInvitacion('${m.id}', true)">✅ Aceptar</button>
+                                    <button class="btn-modal btn-eliminar" style="flex:1; padding:8px; font-size:0.85em;" onclick="window.responderInvitacion('${m.id}', false)">❌ Rechazar</button>
+                                </div>
+                             </div>`;
+                });
+            }
+
+            // 2. PARTIDOS ABIERTOS AL PÚBLICO
+            let abiertos = matchmakingGlobal.filter(m => {
+                if (m.estado !== 'Buscando Rival') return false; // Solo los que buscan rival
+                if (m.fechaDeseada < hoy) return false; // El partido es de un día pasado
+                if (m.fechaDeseada === hoy && m.horaDeseada <= ahoraH) return false; // Ya pasó la hora de inicio hoy
+                
+                // NO mostrar si ya soy parte del partido (Evita que te unas contra ti mismo)
+                if (m.j1 === miNombre || m.j2 === miNombre || m.j3 === miNombre || m.j4 === miNombre) return false; 
+                
+                let cupos = 0; if(m.j2==='Libre')cupos++; if(m.j3==='Libre')cupos++; if(m.j4==='Libre')cupos++;
+                if (cupos === 0) return false; // Está lleno
+
+                // Opcional: Filtrar por fecha en el calendario local del modal (Si quieres que el usuario filtre)
+                // if (m.fechaDeseada !== fechaSeleccionada) return false; 
+                return true;
             });
+
+            if(abiertos.length === 0 && invitaciones.length === 0) { 
+                html += '<div style="color:#9ca3af; padding:10px; text-align:center;">No hay partidos disponibles que se ajusten a ti. ¡Anímate a crear uno!</div>'; 
+            } else if (abiertos.length > 0) {
+                html += '<div style="margin-bottom: 10px;"><strong style="color:#10b981;">🎾 Partidos buscando jugadores:</strong></div>';
+                abiertos.forEach(m => { 
+                    let cuposLibres = 0; if(m.j2==='Libre')cuposLibres++; if(m.j3==='Libre')cuposLibres++; if(m.j4==='Libre')cuposLibres++;
+                    html += `<div style="border:1px solid #44505d; padding:12px; margin-bottom:8px; border-radius:8px; background:#1e252d;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 1.05em;">
+                                    <strong style="color:#3b82f6;">${m.j1} / ${m.j2 !== 'Libre' ? m.j2 : '❓'}</strong>
+                                    <span style="color:#f59e0b; font-weight:bold; margin: 0 10px;">VS</span>
+                                    <strong style="color:#ef4444;">${m.j3 !== 'Libre' ? m.j3 : '❓'} / ${m.j4 !== 'Libre' ? m.j4 : '❓'}</strong>
+                                </div>
+                                <div style="color:#d1d5db; font-size:0.9em; margin-bottom:4px;">📍 ${m.clubSeleccionado}</div>
+                                <div style="color:#9ca3af; font-size:0.85em;">📅 ${m.fechaDeseada} | ⌚ ${m.horaDeseada} hs | Cancha ${m.tipoCancha}</div>
+                                <div style="color:#10b981; font-size:0.85em; margin-top:4px;">🎟️ Lugares vacantes: ${cuposLibres}</div>
+                                <button class="btn-modal btn-guardar" style="width:100%; margin-top:10px; padding:8px; font-size:0.9em; background-color:#10b981;" onclick="window.abrirModalUnirseDetalle('${m.id}')">Unirme a este partido</button>
+                             </div>`; 
+                });
+            }
+
+            div.innerHTML = html;
         };
 
+        window.responderInvitacion = async function(id, aceptada) {
+            if(aceptada) {
+                await updateDoc(doc(db, "matchmaking", id), { estado: 'Buscando Rival' });
+                alert("¡Invitación aceptada! El partido ahora es público y busca rivales.");
+            } else {
+                await deleteDoc(doc(db, "matchmaking", id));
+                alert("Invitación rechazada. El partido fue cancelado.");
+            }
+        };
+        
         window.abrirModalUnirseDetalle = function(id) { 
             const m = matchmakingGlobal.find(x => x.id === id);
             if(!m) return;
