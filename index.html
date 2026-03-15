@@ -2360,31 +2360,38 @@
             const sel = document.getElementById('comp-hora'); if(sel) sel.innerHTML = '<option value="18:00">18:00 hs</option><option value="19:30">19:30 hs</option>';
         };
         
-        window.confirmarCrearCompetitivo = async function() {
+       window.confirmarCrearCompetitivo = async function() {
             const miNombre = document.getElementById('comp-nombre-jugador').value;
             const tipoPareja = document.getElementById('comp-pareja').value;
             
-            let nombreCompanero = "Random (Esperando)";
+            // Lógica de cupos: j1 (vos), j2 (tu pareja), j3 (rival 1), j4 (rival 2)
+            let j2 = "Libre";
             if (tipoPareja === 'amigo') {
-                nombreCompanero = document.getElementById('comp-nombre-amigo').value;
-                if(!nombreCompanero) { alert("Selecciona un amigo de tu lista."); return; }
+                j2 = document.getElementById('comp-nombre-amigo').value;
+                if(!j2) { alert("Selecciona un amigo de tu lista."); return; }
             } else if (tipoPareja === 'externo') {
-                nombreCompanero = document.getElementById('comp-nombre-externo').value.trim();
-                if(!nombreCompanero) { alert("Escribe el nombre de tu pareja externa."); return; }
+                j2 = document.getElementById('comp-nombre-externo').value.trim();
+                if(!j2) { alert("Escribe el nombre de tu pareja externa."); return; }
             }
 
             await addDoc(collection(db, "matchmaking"), { 
                 fechaDeseada: fechaSeleccionada, 
-                creadorPrincipal: miNombre, 
-                creadorCompañero: nombreCompanero, 
+                j1: miNombre, 
+                j2: j2, 
+                j3: "Libre", 
+                j4: "Libre",
                 clubSeleccionado: document.getElementById('comp-club').value, 
                 tipoCancha: document.getElementById('comp-cancha').value, 
                 horaDeseada: document.getElementById('comp-hora').value, 
-                estado: 'Buscando Rival' 
+                estado: 'Buscando Rival',
+                fechaCreacion: serverTimestamp()
             });
-            window.cambiarTabCompetitivo('unirse');
+            
+            alert("Partido creado exitosamente. Ya está en la lista de espera.");
+            window.toggleAcordeon('ac-comp-crear'); // Cierra Crear
+            window.toggleAcordeon('ac-comp-unirse'); // Abre Unirse
         };
-
+        
         window.renderizarPartidosAbiertos = function() {
             const div = document.getElementById('lista-partidos-abiertos'); if(!div) return; div.innerHTML = '';
             matchmakingGlobal.filter(m=>m.estado==='Buscando Rival').forEach(m => { 
