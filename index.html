@@ -2501,20 +2501,14 @@
                 });
             }
 
-            // 2. PARTIDOS ABIERTOS AL PÚBLICO
+            // 2. PARTIDOS ABIERTOS AL PÚBLICO (CIEGOS)
             let abiertos = matchmakingGlobal.filter(m => {
-                if (m.estado !== 'Buscando Rival') return false; // Solo los que buscan rival
-                if (m.fechaDeseada < hoy) return false; // El partido es de un día pasado
-                if (m.fechaDeseada === hoy && m.horaDeseada <= ahoraH) return false; // Ya pasó la hora de inicio hoy
-                
-                // NO mostrar si ya soy parte del partido (Evita que te unas contra ti mismo)
+                if (m.estado !== 'Buscando Rival') return false; 
+                if (m.fechaDeseada < hoy) return false; 
+                if (m.fechaDeseada === hoy && m.horaDeseada <= ahoraH) return false; 
                 if (m.j1 === miNombre || m.j2 === miNombre || m.j3 === miNombre || m.j4 === miNombre) return false; 
-                
                 let cupos = 0; if(m.j2==='Libre')cupos++; if(m.j3==='Libre')cupos++; if(m.j4==='Libre')cupos++;
-                if (cupos === 0) return false; // Está lleno
-
-                // Opcional: Filtrar por fecha en el calendario local del modal (Si quieres que el usuario filtre)
-                // if (m.fechaDeseada !== fechaSeleccionada) return false; 
+                if (cupos === 0) return false; 
                 return true;
             });
 
@@ -2524,11 +2518,18 @@
                 html += '<div style="margin-bottom: 10px;"><strong style="color:#10b981;">🎾 Partidos buscando jugadores:</strong></div>';
                 abiertos.forEach(m => { 
                     let cuposLibres = 0; if(m.j2==='Libre')cuposLibres++; if(m.j3==='Libre')cuposLibres++; if(m.j4==='Libre')cuposLibres++;
+                    
+                    // Ocultamos los nombres reales para evitar elegir rivales
+                    let dJ1 = m.j1 !== 'Libre' ? '👤 Oculto' : 'Libre';
+                    let dJ2 = m.j2 !== 'Libre' ? '👤 Oculto' : 'Libre';
+                    let dJ3 = m.j3 !== 'Libre' ? '👤 Oculto' : 'Libre';
+                    let dJ4 = m.j4 !== 'Libre' ? '👤 Oculto' : 'Libre';
+
                     html += `<div style="border:1px solid #44505d; padding:12px; margin-bottom:8px; border-radius:8px; background:#1e252d;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 1.05em;">
-                                    <strong style="color:#3b82f6;">${m.j1} / ${m.j2 !== 'Libre' ? m.j2 : '❓'}</strong>
+                                    <strong style="color:#3b82f6;">${dJ1} / ${dJ2}</strong>
                                     <span style="color:#f59e0b; font-weight:bold; margin: 0 10px;">VS</span>
-                                    <strong style="color:#ef4444;">${m.j3 !== 'Libre' ? m.j3 : '❓'} / ${m.j4 !== 'Libre' ? m.j4 : '❓'}</strong>
+                                    <strong style="color:#ef4444;">${dJ3} / ${dJ4}</strong>
                                 </div>
                                 <div style="color:#d1d5db; font-size:0.9em; margin-bottom:4px;">📍 ${m.clubSeleccionado}</div>
                                 <div style="color:#9ca3af; font-size:0.85em;">📅 ${m.fechaDeseada} | ⌚ ${m.horaDeseada} hs | Cancha ${m.tipoCancha}</div>
@@ -2537,7 +2538,6 @@
                              </div>`; 
                 });
             }
-
             div.innerHTML = html;
         };
 
@@ -2550,14 +2550,14 @@
                 alert("Invitación rechazada. El partido fue cancelado.");
             }
         };
-        
+
         window.abrirModalUnirseDetalle = function(id) { 
             const m = matchmakingGlobal.find(x => x.id === id);
             if(!m) return;
             document.getElementById('unirse-partido-id').value = id; 
             
-            let anotados = [m.j1, m.j2, m.j3, m.j4].filter(j => j !== 'Libre').join(', ');
-            document.getElementById('lbl-unirse-info').innerHTML = `Fecha: ${m.fechaDeseada} - ${m.horaDeseada} hs<br>Ya anotados: <strong>${anotados}</strong>`;
+            let anotados = [m.j1, m.j2, m.j3, m.j4].filter(j => j !== 'Libre').length;
+            document.getElementById('lbl-unirse-info').innerHTML = `Fecha: ${m.fechaDeseada} - ${m.horaDeseada} hs<br>Ya anotados: <strong>${anotados} Jugadores Ocultos</strong>`;
             
             document.getElementById('unirse-nombre').value = window.perfilJugador?.nombreCompleto || 'Jugador Anónimo';
             document.getElementById('unirse-pareja').value = 'random';
@@ -2586,8 +2586,47 @@
                 } else if (tipoPareja === 'externo') {
                     nombreCompanero = document.getElementById('unirse-nombre-externo').value.trim();
                     if(!nombreCompanero) { alert("Escribe el nombre de tu pareja externa."); return; }
+                    nombreCompanero += " (Ext)"; // MARCAMOS AL EXTERNO
                 }
             }
+
+            let cuposLibres = 0;
+            if(m.j2 === 'Libre') cuposLibres++;
+            if(m.j3 === 'Libre') cuposLibres++;
+            if(m.j4 === 'Libre') cuposLibres++;
+
+            let cuposNecesarios = vieneSolo ? 1 : 2;
+            if (cuposLibres < cuposNecesarios) { alert(`No hay suficientes lugares vacantes.`); return; }
+
+            let nuevosDatos = { ...m };
+            let jugadoresAInsertar = vieneSolo ? [miNombre] : [miNombre, nombreCompanero];
+
+            jugadoresAInsertar.forEach(jug => {
+                if(nuevosDatos.j2 === 'Libre') nuevosDatos.j2 = jug;
+                else if(nuevosDatos.j3 === 'Libre') nuevosDatos.j3 = jug;
+                else if(nuevosDatos.j4 === 'Libre') nuevosDatos.j4 = jug;
+            });
+
+            if(nuevosDatos.j1 !== 'Libre' && nuevosDatos.j2 !== 'Libre' && nuevosDatos.j3 !== 'Libre' && nuevosDatos.j4 !== 'Libre') {
+                nuevosDatos.estado = 'Partido Confirmado';
+                try {
+                    await addDoc(collection(db, "reservas"), { 
+                        clubId: m.clubSeleccionado, 
+                        fecha: m.fechaDeseada, hora: m.horaDeseada, cancha: "1", 
+                        jugador: `🎮 Partido: ${nuevosDatos.j1}/${nuevosDatos.j2} vs ${nuevosDatos.j3}/${nuevosDatos.j4}`, 
+                        duracion: duracionGlobal, fechaRegistro: serverTimestamp(), asistencia: false, fijo: false, fechasCanceladas: [], pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: [], tipoEvento: "Normal", esClase: false, profe: null, matchmakingId: id
+                    });
+                    alert("¡Partido completado! La reserva se agendó automáticamente en la grilla del club.");
+                } catch(e) { console.error(e); }
+            } else {
+                alert("Te anotaste exitosamente. Faltan jugadores para completar la reserva.");
+            }
+
+            await updateDoc(doc(db, "matchmaking", id), { 
+                j2: nuevosDatos.j2, j3: nuevosDatos.j3, j4: nuevosDatos.j4, estado: nuevosDatos.estado
+            }); 
+            window.cerrarModalUnirseDetalle(); 
+        };
 
             // Validar cupos
             let cuposLibres = 0;
