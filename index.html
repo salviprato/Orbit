@@ -2392,13 +2392,30 @@
             window.toggleAcordeon('ac-comp-unirse'); // Abre Unirse
         };
         
-        window.renderizarPartidosAbiertos = function() {
+       window.renderizarPartidosAbiertos = function() {
             const div = document.getElementById('lista-partidos-abiertos'); if(!div) return; div.innerHTML = '';
-            matchmakingGlobal.filter(m=>m.estado==='Buscando Rival').forEach(m => { 
-                div.innerHTML += `<div style="border:1px solid #44505d; padding:10px; margin-bottom:5px; border-radius:6px; background:#1e252d;">
-                                    <strong style="color:#d1d5db;">${m.creadorPrincipal} / ${m.creadorCompañero}</strong><br>
-                                    <small style="color:#9ca3af;">${m.horaDeseada} hs en Cancha ${m.tipoCancha}</small>
-                                    <button class="btn-modal btn-guardar" style="width:100%; margin-top:5px; padding:6px; font-size:0.85em;" onclick="window.abrirModalUnirseDetalle('${m.id}')">Unirme al Partido</button>
+            let abiertos = matchmakingGlobal.filter(m=>m.estado==='Buscando Rival');
+            
+            if(abiertos.length === 0) { 
+                div.innerHTML = '<div style="color:#9ca3af; padding:10px; text-align:center;">No hay partidos buscando jugadores. ¡Crea uno!</div>'; 
+                return; 
+            }
+            
+            abiertos.forEach(m => { 
+                let cuposLibres = 0;
+                if(m.j2 === 'Libre') cuposLibres++;
+                if(m.j3 === 'Libre') cuposLibres++;
+                if(m.j4 === 'Libre') cuposLibres++;
+
+                div.innerHTML += `<div style="border:1px solid #44505d; padding:12px; margin-bottom:8px; border-radius:8px; background:#1e252d;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 1.05em;">
+                                        <strong style="color:#3b82f6;">${m.j1} / ${m.j2 !== 'Libre' ? m.j2 : '❓'}</strong>
+                                        <span style="color:#f59e0b; font-weight:bold; margin: 0 10px;">VS</span>
+                                        <strong style="color:#ef4444;">${m.j3 !== 'Libre' ? m.j3 : '❓'} / ${m.j4 !== 'Libre' ? m.j4 : '❓'}</strong>
+                                    </div>
+                                    <div style="color:#9ca3af; font-size:0.85em;">📅 ${m.fechaDeseada} | ⌚ ${m.horaDeseada} hs | Cancha ${m.tipoCancha}</div>
+                                    <div style="color:#10b981; font-size:0.85em; margin-top:2px;">🎟️ Lugares vacantes: ${cuposLibres}</div>
+                                    <button class="btn-modal btn-guardar" style="width:100%; margin-top:10px; padding:8px; font-size:0.9em; background-color:#10b981;" onclick="window.abrirModalUnirseDetalle('${m.id}')">Unirme a este partido</button>
                                   </div>`; 
             });
         };
@@ -2407,7 +2424,9 @@
             const m = matchmakingGlobal.find(x => x.id === id);
             if(!m) return;
             document.getElementById('unirse-partido-id').value = id; 
-            document.getElementById('lbl-unirse-info').innerHTML = `Rivales: <strong>${m.creadorPrincipal} y ${m.creadorCompañero}</strong>`;
+            
+            let anotados = [m.j1, m.j2, m.j3, m.j4].filter(j => j !== 'Libre').join(', ');
+            document.getElementById('lbl-unirse-info').innerHTML = `Fecha: ${m.fechaDeseada} - ${m.horaDeseada} hs<br>Ya anotados: <strong>${anotados}</strong>`;
             
             document.getElementById('unirse-nombre').value = window.perfilJugador?.nombreCompleto || 'Jugador Anónimo';
             document.getElementById('unirse-pareja').value = 'random';
@@ -2420,23 +2439,92 @@
         
         window.confirmarUnirsePartido = async function() { 
             const id = document.getElementById('unirse-partido-id').value;
+            const m = matchmakingGlobal.find(x => x.id === id);
+            if(!m) return;
+
             const miNombre = document.getElementById('unirse-nombre').value;
             const tipoPareja = document.getElementById('unirse-pareja').value;
             
-            let nombreCompanero = "Random (Esperando)";
-            if (tipoPareja === 'amigo') {
-                nombreCompanero = document.getElementById('unirse-nombre-amigo').value;
-                if(!nombreCompanero) { alert("Selecciona un amigo de tu lista."); return; }
-            } else if (tipoPareja === 'externo') {
-                nombreCompanero = document.getElementById('unirse-nombre-externo').value.trim();
-                if(!nombreCompanero) { alert("Escribe el nombre de tu pareja externa."); return; }
+            let vieneSolo = (tipoPareja === 'random');
+            let nombreCompanero = "";
+            
+            if (!vieneSolo) {
+                if (tipoPareja === 'amigo') {
+                    nombreCompanero = document.getElementById('unirse-nombre-amigo').value;
+                    if(!nombreCompanero) { alert("Selecciona un amigo de tu lista."); return; }
+                } else if (tipoPareja === 'externo') {
+                    nombreCompanero = document.getElementById('unirse-nombre-externo').value.trim();
+                    if(!nombreCompanero) { alert("Escribe el nombre de tu pareja externa."); return; }
+                }
             }
 
-            const rivalFinal = `${miNombre} / ${nombreCompanero}`;
-            await updateDoc(doc(db, "matchmaking", id), { rivalPrincipal: rivalFinal, estado: 'Partido Confirmado' }); 
+            // Validar cupos
+            let cuposLibres = 0;
+            if(m.j2 === 'Libre') cuposLibres++;
+            if(m.j3 === 'Libre') cuposLibres++;
+            if(m.j4 === 'Libre') cuposLibres++;
+
+            let cuposNecesarios = vieneSolo ? 1 : 2;
+            if (cuposLibres < cuposNecesarios) {
+                alert(`No hay suficientes lugares vacantes. Necesitas ${cuposNecesarios} pero solo quedan ${cuposLibres}.`);
+                return;
+            }
+
+            // Asignar jugadores a los primeros slots libres que encuentre
+            let nuevosDatos = { ...m };
+            let jugadoresAInsertar = vieneSolo ? [miNombre] : [miNombre, nombreCompanero];
+
+            jugadoresAInsertar.forEach(jug => {
+                if(nuevosDatos.j2 === 'Libre') nuevosDatos.j2 = jug;
+                else if(nuevosDatos.j3 === 'Libre') nuevosDatos.j3 = jug;
+                else if(nuevosDatos.j4 === 'Libre') nuevosDatos.j4 = jug;
+            });
+
+            // Comprobar si se llenaron los 4 lugares
+            if(nuevosDatos.j1 !== 'Libre' && nuevosDatos.j2 !== 'Libre' && nuevosDatos.j3 !== 'Libre' && nuevosDatos.j4 !== 'Libre') {
+                nuevosDatos.estado = 'Partido Confirmado';
+                
+                // CREACIÓN DE LA RESERVA AUTOMÁTICA EN LA GRILLA
+                try {
+                    await addDoc(collection(db, "reservas"), { 
+                        clubId: "Orbit", // Se asigna automáticamente a Orbit
+                        fecha: m.fechaDeseada, 
+                        hora: m.horaDeseada, 
+                        cancha: "1", // Por defecto a Cancha 1 (el admin puede moverla)
+                        jugador: `🎮 Partido: ${nuevosDatos.j1}/${nuevosDatos.j2} vs ${nuevosDatos.j3}/${nuevosDatos.j4}`, 
+                        duracion: duracionGlobal, 
+                        fechaRegistro: serverTimestamp(), 
+                        asistencia: false, 
+                        fijo: false, 
+                        fechasCanceladas: [],
+                        pagoEfectivo: 0, 
+                        pagoTransferencia: 0, 
+                        descuento: 0, 
+                        consumos: [],
+                        tipoEvento: "Normal", 
+                        esClase: false, 
+                        profe: null,
+                        matchmakingId: id
+                    });
+                    alert("¡Partido completado! La reserva se agendó automáticamente en la grilla del club.");
+                } catch(e) {
+                    console.error(e);
+                    alert("Error al intentar crear la reserva en la grilla del club.");
+                }
+            } else {
+                alert("Te anotaste exitosamente. Aún faltan jugadores para completar la reserva.");
+            }
+
+            await updateDoc(doc(db, "matchmaking", id), { 
+                j2: nuevosDatos.j2, 
+                j3: nuevosDatos.j3, 
+                j4: nuevosDatos.j4,
+                estado: nuevosDatos.estado
+            }); 
+
             window.cerrarModalUnirseDetalle(); 
         };
-
+        
         window.renderizarPartidosResultados = function() {
             const div = document.getElementById('lista-partidos-resultados'); if(!div) return; div.innerHTML = '';
             matchmakingGlobal.filter(m=>m.estado==='Partido Confirmado').forEach(m => { 
