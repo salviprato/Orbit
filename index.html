@@ -947,21 +947,70 @@
         </div>
 
         <div id="modal-cargar-resultado" class="modal-overlay" style="z-index: 1300;">
-            <div class="modal-content" style="max-width: 350px;">
-                <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px; color: #10b981;">Cargar Resultado</h3>
+            <div class="modal-content" style="max-width: 400px;">
+                <h3 style="margin: 0; border-bottom: 1px solid #44505d; padding-bottom: 10px; color: #10b981;">Cargar Resultado (Sets)</h3>
                 <input type="hidden" id="resultado-partido-id">
                 
-                <p style="font-size: 0.9em; color: #d1d5db; margin-bottom: 15px;">¿Qué equipo resultó ganador?</p>
-                
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button id="btn-ganador-eq1" class="btn-modal btn-vista" style="background-color: #242c36; border-color: #3b82f6;" onclick="window.confirmarResultado(1)"></button>
-                    <button id="btn-ganador-eq2" class="btn-modal btn-vista" style="background-color: #242c36; border-color: #ef4444;" onclick="window.confirmarResultado(2)"></button>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85em; font-weight: bold; margin-top: 10px; color: #3b82f6;">
+                    <span id="lbl-res-eq1" style="flex: 1; text-align: left;">Eq 1</span>
+                    <span style="color: #f59e0b; margin: 0 10px;">VS</span>
+                    <span id="lbl-res-eq2" style="flex: 1; text-align: right; color: #ef4444;">Eq 2</span>
                 </div>
 
-                <button class="btn-modal btn-cerrar" style="margin-top: 20px;" onclick="window.cerrarModalResultado()">Cancelar</button>
+                <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: center;">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                        <label style="font-size: 0.8em; color: #d1d5db;">Set 1</label>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <input type="number" id="s1-e1" class="input-form" style="width: 45px; padding: 5px; text-align: center;" min="0" max="7"> -
+                            <input type="number" id="s1-e2" class="input-form" style="width: 45px; padding: 5px; text-align: center;" min="0" max="7">
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                        <label style="font-size: 0.8em; color: #d1d5db;">Set 2</label>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <input type="number" id="s2-e1" class="input-form" style="width: 45px; padding: 5px; text-align: center;" min="0" max="7"> -
+                            <input type="number" id="s2-e2" class="input-form" style="width: 45px; padding: 5px; text-align: center;" min="0" max="7">
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                        <label style="font-size: 0.8em; color: #d1d5db;">Set 3</label>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <input type="number" id="s3-e1" class="input-form" style="width: 45px; padding: 5px; text-align: center;" min="0" max="7"> -
+                            <input type="number" id="s3-e2" class="input-form" style="width: 45px; padding: 5px; text-align: center;" min="0" max="7">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-modal btn-guardar" style="margin-top: 20px;" onclick="window.confirmarResultado()">Guardar Resultado</button>
+                <button class="btn-modal btn-cerrar" style="margin-top: 5px;" onclick="window.cerrarModalResultado()">Cancelar</button>
             </div>
         </div>
 
+        <div id="modal-detalle-ranking" class="modal-overlay" style="z-index: 1550;">
+            <div class="modal-content" style="max-width: 320px; text-align: left;">
+                <h3 id="det-rank-nombre" style="margin: 0; color: #f59e0b; border-bottom: 1px solid #44505d; padding-bottom: 8px;">Jugador</h3>
+                <p style="margin: 10px 0; color: #d1d5db; font-size: 1.1em; text-align: center;">Total Puntos: <strong id="det-rank-pts" style="color: #3b82f6;">0</strong></p>
+                
+                <div style="background: #242c36; padding: 10px; border-radius: 6px; border: 1px solid #2c3540; font-size: 0.9em; margin-bottom: 10px;">
+                    <div style="color: #10b981; font-weight: bold; margin-bottom: 5px;">📊 Partidos</div>
+                    <div style="display: flex; justify-content: space-between;"><span>Jugados:</span> <span id="det-rank-pj" class="text-neutral-main">0</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Ganados:</span> <span id="det-rank-pg" style="color: #10b981;">0</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Perdidos:</span> <span id="det-rank-pp" style="color: #ef4444;">0</span></div>
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; margin-top: 5px; border-top: 1px dashed #44505d; padding-top: 5px;"><span>Win Rate:</span> <span id="det-rank-prom-p" class="text-neutral-main">0%</span></div>
+                </div>
+
+                <div style="background: #242c36; padding: 10px; border-radius: 6px; border: 1px solid #2c3540; font-size: 0.9em;">
+                    <div style="color: #8b5cf6; font-weight: bold; margin-bottom: 5px;">🎾 Sets</div>
+                    <div style="display: flex; justify-content: space-between;"><span>Jugados:</span> <span id="det-rank-sj" class="text-neutral-main">0</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Ganados:</span> <span id="det-rank-sg" style="color: #10b981;">0</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Perdidos:</span> <span id="det-rank-sp" style="color: #ef4444;">0</span></div>
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; margin-top: 5px; border-top: 1px dashed #44505d; padding-top: 5px;"><span>Win Rate:</span> <span id="det-rank-prom-s" class="text-neutral-main">0%</span></div>
+                </div>
+
+                <button class="btn-modal btn-cerrar" onclick="document.getElementById('modal-detalle-ranking').style.display='none'">Cerrar Detalles</button>
+            </div>
+        </div>
+        
         <div id="modal-inscribirse-torneo" class="modal-overlay" style="z-index: 1500;">
             <div class="modal-content" style="max-width: 350px;">
                 <h3 style="margin: 0; margin-bottom: 5px; color: #f59e0b;">Inscripción al Torneo</h3>
