@@ -2399,6 +2399,32 @@ window.cerrarModalUnirseDetalle = function() {
             if (metricasChart) { metricasChart.destroy(); }
             metricasChart = new Chart(ctx, { type: 'bar', data: { labels: etiquetas, datasets: [ { label: labelBarras, data: datosBarras, backgroundColor: categoria === 'gastos' ? '#ef4444' : '#3b82f6', borderRadius: 4, order: 2 }, { label: labelLinea, data: datosLinea, type: 'line', borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 3, fill: true, tension: 0.3, order: 1 } ] }, options: { responsive: true, maintainAspectRatio: false, color: '#d1d5db', plugins: { legend: { labels: { color: '#d1d5db', font: { family: "'Segoe UI', sans-serif" } } }, tooltip: { mode: 'index', intersect: false, callbacks: { label: function(context) { let label = context.dataset.label || ''; let value = context.parsed.y; if (label) { label += ': '; } if (esDinero && context.datasetIndex === 0) { label += '$' + value.toLocaleString('es-AR'); } else { label += value; } return label; } } } }, scales: { y: { beginAtZero: true, grid: { color: '#2c3540' }, ticks: { color: '#9ca3af', callback: function(value) { return esDinero ? '$' + value.toLocaleString('es-AR') : value; } } }, x: { grid: { display: false }, ticks: { color: '#9ca3af' } } } } });
         }
+        
+        window.verificarPartidosExpirados = async function() {
+    let ahora = new Date();
+    
+    for (let m of matchmakingGlobal) {
+        // Ignoramos los partidos que ya están confirmados, finalizados o en conflicto
+        if (m.estado === 'Partido Confirmado' || m.estado === 'Finalizado' || m.estado.includes('Conflicto')) continue;
+        
+        let [y, mo, d] = m.fechaDeseada.split('-');
+        let [h, min] = m.horaDeseada.split(':');
+        let fechaPartido = new Date(y, mo - 1, d, h, min, 0);
+        
+        // Límite crítico: 12 horas ANTES de la fecha y hora del partido
+        let limiteCancelacion = new Date(fechaPartido.getTime() - 12 * 60 * 60 * 1000);
+        
+        // Si el tiempo "ahora" superó el límite y sigue incompleto...
+        if (ahora >= limiteCancelacion) {
+            try {
+                // 1. Borramos el partido del circuito
+                await deleteDoc(doc(db, "matchmaking", m.id));
+                // 2. Liberamos la cancha en la grilla del club
+                await window.eliminarReservaMatchmaking(m.id);
+            } catch(e) { console.error("Error limpiando partido expirado", e); }
+        }
+    }
+};
 
         // --- LISTENERS GLOBALES Y PRIVADOS ---
         function iniciarListenersPrivados() {
