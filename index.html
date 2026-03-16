@@ -1791,14 +1791,12 @@
         sel.innerHTML = '<option value="" disabled selected>Elige un club...</option>';
         let count = 0;
         snap.forEach(doc => { 
-            // Ignoramos el club fantasma 'Orbit' para que solo quede 'club'
-            if (doc.id.toLowerCase() !== 'orbit') {
-                sel.innerHTML += `<option value="${doc.id}">${doc.id.toUpperCase()}</option>`; 
-                count++; 
-            }
+            // Cargamos todos los clubes reales sin ocultar ninguno
+            sel.innerHTML += `<option value="${doc.id}">${doc.id.toUpperCase()}</option>`; 
+            count++; 
         });
-        if(count === 0) sel.innerHTML = '<option value="club">CLUB</option>';
-    } catch(e) { sel.innerHTML = '<option value="club">CLUB</option>'; }
+        if(count === 0) sel.innerHTML = '<option value="Orbit">ORBIT</option>';
+    } catch(e) { sel.innerHTML = '<option value="Orbit">ORBIT</option>'; }
 };
         
         window.renderizarTorneosPublicos = function() {
