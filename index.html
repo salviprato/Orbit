@@ -1858,41 +1858,51 @@
         };
         
         window.llenarHorariosDisponiblesCompetitivo = async function() {
-            const sel = document.getElementById('comp-hora'); const clubId = document.getElementById('comp-club').value; const superficie = document.getElementById('comp-cancha').value;
-            if(!clubId) return; sel.innerHTML = '<option value="" disabled selected>Calculando libres...</option>';
-            try {
-                const confDoc = await getDoc(doc(db, "configuracion", clubId));
-                if(!confDoc.exists()) { sel.innerHTML = '<option value="" disabled selected>Club sin horarios configurados</option>'; return; }
-                const conf = confDoc.data();
-                
-                let pTurno = conf.primerTurno || "08:00"; let uTurno = conf.ultimoTurno || "21:30"; let dur = parseInt(conf.duracionTurno) || 90;
-                let cIn = parseInt(conf.canchasIndoor) || 0; let cOut = parseInt(conf.canchasOutdoor) || 0; let canchasDisp = superficie === 'Indoor' ? cIn : cOut;
-                
-                if(canchasDisp <= 0) { sel.innerHTML = '<option value="" disabled selected>Sin canchas</option>'; return; }
+    const sel = document.getElementById('comp-hora'); const clubId = document.getElementById('comp-club').value; const superficie = document.getElementById('comp-cancha').value;
+    if(!clubId) return; sel.innerHTML = '<option value="" disabled selected>Calculando libres...</option>';
+    try {
+        const confDoc = await getDoc(doc(db, "configuracion", clubId));
+        if(!confDoc.exists()) { sel.innerHTML = '<option value="" disabled selected>Club sin horarios configurados</option>'; return; }
+        const conf = confDoc.data();
+        
+        let pTurno = conf.primerTurno || "08:00"; let uTurno = conf.ultimoTurno || "21:30"; let dur = parseInt(conf.duracionTurno) || 90;
+        let cIn = parseInt(conf.canchasIndoor) || 0; let cOut = parseInt(conf.canchasOutdoor) || 0; let canchasDisp = superficie === 'Indoor' ? cIn : cOut;
+        
+        if(canchasDisp <= 0) { sel.innerHTML = '<option value="" disabled selected>Sin canchas</option>'; return; }
 
-                const qRes = query(collection(db, "reservas"), where("clubId", "==", clubId), where("fecha", "==", fechaSeleccionada));
-                const resSnap = await getDocs(qRes); let reservasDia = []; resSnap.forEach(d => reservasDia.push(d.data()));
+        const qRes = query(collection(db, "reservas"), where("clubId", "==", clubId), where("fecha", "==", fechaSeleccionada));
+        const resSnap = await getDocs(qRes); let reservasDia = []; resSnap.forEach(d => reservasDia.push(d.data()));
 
-                let minIni = window.aMinutos(pTurno); let minFin = window.aMinutos(uTurno);
-                let hoy = obtenerFechaHoy(); let ahora = new Date(); let minActuales = ahora.getHours() * 60 + ahora.getMinutes();
-                let opciones = '<option value="" disabled selected>Elige horario libre</option>'; let hayLibres = false;
+        let minIni = window.aMinutos(pTurno); let minFin = window.aMinutos(uTurno);
+        
+        // --- LÓGICA DE 12 HORAS ---
+        let ahora = new Date();
+        let limiteCreacion = new Date(ahora.getTime() + 12 * 60 * 60 * 1000); // 12 horas desde este instante
+        let [selY, selM, selD] = fechaSeleccionada.split('-');
+        // --------------------------
 
-                for(let m = minIni; m <= minFin; m += 30) {
-                    if(fechaSeleccionada === hoy && m <= minActuales) continue;
-                    let hStr = `${Math.floor(m/60).toString().padStart(2,'0')}:${(m%60).toString().padStart(2,'0')}`;
-                    let ocupadas = 0;
-                    reservasDia.forEach(r => {
-                        if(r.fechasCanceladas && r.fechasCanceladas.includes(fechaSeleccionada)) return;
-                        let tRes = window.aMinutos(r.hora); let dRes = r.duracion || dur; let numC = parseInt(r.cancha) || 1;
-                        let rSup = numC <= cIn ? 'Indoor' : 'Outdoor'; 
-                        if (rSup === superficie && m >= tRes && m < (tRes + dRes)) ocupadas++;
-                    });
-                    if(ocupadas < canchasDisp) { opciones += `<option value="${hStr}">${hStr} hs</option>`; hayLibres = true; }
-                }
-                sel.innerHTML = hayLibres ? opciones : '<option value="" disabled selected>Sin horarios libres</option>';
-            } catch(e) { sel.innerHTML = '<option value="" disabled selected>Error de conexión</option>'; }
-        };
+        let opciones = '<option value="" disabled selected>Elige horario libre</option>'; let hayLibres = false;
 
+        for(let m = minIni; m <= minFin; m += 30) {
+            
+            // Comprobamos si el horario evaluado supera las 12 horas de anticipación
+            let fechaSlot = new Date(selY, selM - 1, selD, Math.floor(m/60), m%60, 0);
+            if (fechaSlot <= limiteCreacion) continue; // Si es menor a 12h, lo salta y no lo muestra
+
+            let hStr = `${Math.floor(m/60).toString().padStart(2,'0')}:${(m%60).toString().padStart(2,'0')}`;
+            let ocupadas = 0;
+            reservasDia.forEach(r => {
+                if(r.fechasCanceladas && r.fechasCanceladas.includes(fechaSeleccionada)) return;
+                let tRes = window.aMinutos(r.hora); let dRes = r.duracion || dur; let numC = parseInt(r.cancha) || 1;
+                let rSup = numC <= cIn ? 'Indoor' : 'Outdoor'; 
+                if (rSup === superficie && m >= tRes && m < (tRes + dRes)) ocupadas++;
+            });
+            if(ocupadas < canchasDisp) { opciones += `<option value="${hStr}">${hStr} hs</option>`; hayLibres = true; }
+        }
+        sel.innerHTML = hayLibres ? opciones : '<option value="" disabled selected>Sin turnos con >12h anticipación</option>';
+    } catch(e) { sel.innerHTML = '<option value="" disabled selected>Error de conexión</option>'; }
+};
+        
         window.confirmarCrearCompetitivo = async function() {
     const miNombre = document.getElementById('comp-nombre-jugador').value; const tipoPareja = document.getElementById('comp-pareja').value;
     let j2 = "Libre";
