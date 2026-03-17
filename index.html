@@ -1829,20 +1829,29 @@
             document.getElementById('modal-inscribirse-torneo').style.display='flex'; 
         };
         window.cerrarModalInscripcionTorneo = function() { document.getElementById('modal-inscribirse-torneo').style.display='none'; };
+        
         window.confirmarInscripcionTorneo = async function() {
-            const id = document.getElementById('inscripcion-torneo-id').value; const miNombre = document.getElementById('inscripcion-nombre-propio').value;
-            const tipoPareja = document.getElementById('inscripcion-tipo-pareja').value; let nombreCompanero = "";
-            if (tipoPareja === 'amigo') {
-                nombreCompanero = document.getElementById('inscripcion-nombre-amigo').value; if(!nombreCompanero) { alert("Selecciona un amigo."); return; }
-            } else if (tipoPareja === 'externo') {
-                nombreCompanero = document.getElementById('inscripcion-nombre-externo').value.trim(); if(!nombreCompanero) { alert("Escribe el nombre."); return; }
-            }
-            const nombreInscripcion = `${miNombre} / ${nombreCompanero}`;
-            const t = torneosAdminGlobal.find(x=>x.id===id); if(!t) return; let i = t.inscriptos || []; 
-            if(i.length >= t.cupo) { alert("¡Ups! El torneo ya alcanzó su cupo máximo."); window.cerrarModalInscripcionTorneo(); return; } 
-            i.push(nombreInscripcion);
-            try { await updateDoc(doc(db, "torneos_admin", id), { inscriptos: i }); alert("¡Inscripción exitosa!"); window.cerrarModalInscripcionTorneo(); } catch(e) { alert("Hubo un error."); }
-        };
+    const id = document.getElementById('inscripcion-torneo-id').value; 
+    const miNombre = document.getElementById('inscripcion-nombre-propio').value;
+    const tipoPareja = document.getElementById('inscripcion-tipo-pareja').value; 
+    let nombreCompanero = "";
+    
+    if (tipoPareja === 'amigo') {
+        nombreCompanero = document.getElementById('inscripcion-nombre-amigo').value; 
+        if(!nombreCompanero) { alert("Selecciona un amigo."); return; }
+    }
+    
+    const nombreInscripcion = `${miNombre} / ${nombreCompanero}`;
+    const t = torneosAdminGlobal.find(x=>x.id===id); if(!t) return; 
+    let i = t.inscriptos || []; 
+    if(i.length >= t.cupo) { alert("¡Ups! El torneo ya alcanzó su cupo máximo."); window.cerrarModalInscripcionTorneo(); return; } 
+    i.push(nombreInscripcion);
+    try { 
+        await updateDoc(doc(db, "torneos_admin", id), { inscriptos: i }); 
+        alert("¡Inscripción exitosa!"); 
+        window.cerrarModalInscripcionTorneo(); 
+    } catch(e) { alert("Hubo un error."); }
+};
         
        window.toggleAmigoInput = function(selectId, divAmigoId) { 
     const val = document.getElementById(selectId).value;
