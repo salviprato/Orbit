@@ -2507,6 +2507,102 @@ window.cerrarModalUnirseDetalle = function() {
         }
     }
 };
+        window.renderizarPartidosPendientes = function() {
+    const div = document.getElementById('lista-partidos-pendientes'); 
+    if(!div) return; 
+    div.innerHTML = '';
+    let miNombre = window.perfilJugador?.nombreCompleto || '';
+
+    // Filtramos los partidos en los que el usuario está anotado y que AÚN NO estén confirmados
+    let pendientes = matchmakingGlobal.filter(m => {
+        let participa = (m.j1 === miNombre || m.j2 === miNombre || m.j3 === miNombre || m.j4 === miNombre);
+        let noConfirmado = (m.estado === 'Buscando Rival' || m.estado.includes('Esperando Confirmacion'));
+        return participa && noConfirmado;
+    });
+
+    if(pendientes.length === 0) { 
+        div.innerHTML = '<div style="color:#9ca3af; padding:10px; text-align:center;">No tienes partidos incompletos pendientes.</div>'; 
+        return; 
+    }
+
+    let misAmigos = window.perfilJugador?.amigos || [];
+    let optionsAmigos = '<option value="" disabled selected>Elegir amigo...</option>';
+    misAmigos.forEach(a => { optionsAmigos += `<option value="${a.nombre}">${a.nombre}</option>`; });
+
+    pendientes.forEach(m => {
+        let miEquipo = (m.j1 === miNombre || m.j2 === miNombre) ? 1 : 2;
+        let miCompañero = miEquipo === 1 ? (m.j1 === miNombre ? m.j2 : m.j1) : (m.j3 === miNombre ? m.j4 : m.j3);
+        let rival1 = miEquipo === 1 ? m.j3 : m.j1;
+        let rival2 = miEquipo === 1 ? m.j4 : m.j2;
+        
+        let estadoRival1 = rival1 === 'Libre' ? 'Libre 🟢' : 'Ocupado 👤';
+        let estadoRival2 = rival2 === 'Libre' ? 'Libre 🟢' : 'Ocupado 👤';
+
+        let htmlPartner = '';
+        if (miCompañero === 'Libre') {
+            let selectId = `sel-invitar-${m.id}`;
+            htmlPartner = `
+                <div style="display:flex; gap:5px; margin-top:5px;">
+                    <select id="${selectId}" class="input-form" style="padding: 5px; flex: 2; font-size: 0.85em;">
+                        ${misAmigos.length > 0 ? optionsAmigos : '<option value="" disabled selected>Sin amigos</option>'}
+                    </select>
+                    <button class="btn-modal btn-guardar" style="flex: 1; padding: 5px; font-size: 0.85em;" onclick="window.invitarAmigoPendiente('${m.id}', ${miEquipo}, '${selectId}')">Invitar</button>
+                </div>`;
+        } else {
+            let estadoS = m.estado.includes('Esperando Confirmacion') ? '<span style="color:#f59e0b; font-size: 0.85em;">(Esperando confirmación ⏳)</span>' : '<span style="color:#10b981; font-size: 0.85em;">(Confirmado ✅)</span>';
+            htmlPartner = `<div style="color:#d1d5db; font-size: 0.9em; margin-top: 5px;">Tu pareja: <strong>${miCompañero}</strong><br>${estadoS}</div>`;
+        }
+
+        div.innerHTML += `
+            <div style="border:1px solid #44505d; padding:12px; margin-bottom:8px; border-radius:8px; background:#1e252d;">
+                <div style="color:#3b82f6; font-size:1.05em; font-weight:bold; margin-bottom: 5px;">📍 ${m.clubSeleccionado}</div>
+                <div style="color:#9ca3af; font-size:0.85em; margin-bottom:8px;">📅 ${m.fechaDeseada} | ⌚ ${m.horaDeseada} hs | Cancha ${m.tipoCancha}</div>
+                
+                <div style="background: #242c36; padding: 8px; border-radius: 6px; margin-bottom: 8px;">
+                    <div style="color:#10b981; font-weight:bold; font-size:0.85em; margin-bottom:4px;">Equipo Rival:</div>
+                    <div style="font-size:0.85em; color:#d1d5db;">Posición 1: ${estadoRival1} <br> Posición 2: ${estadoRival2}</div>
+                </div>
+                
+                <div style="border-top: 1px dashed #44505d; padding-top: 8px;">
+                    <div style="color:#d1d5db; font-weight:bold; font-size:0.85em;">Tu Equipo:</div>
+                    ${htmlPartner}
+                </div>
+            </div>
+        `;
+    });
+};
+
+window.invitarAmigoPendiente = async function(matchId, miEquipo, selectId) {
+    const selectEl = document.getElementById(selectId);
+    const amigoElegido = selectEl?.value;
+    if(!amigoElegido) { alert('Selecciona un amigo de la lista.'); return; }
+    
+    const m = matchmakingGlobal.find(x => x.id === matchId);
+    if(!m) return;
+
+    let nuevosDatos = { ...m };
+    if (miEquipo === 1) {
+        if (nuevosDatos.j1 === 'Libre') nuevosDatos.j1 = amigoElegido;
+        else nuevosDatos.j2 = amigoElegido;
+    } else {
+        if (nuevosDatos.j3 === 'Libre') nuevosDatos.j3 = amigoElegido;
+        else nuevosDatos.j4 = amigoElegido;
+    }
+    
+    nuevosDatos.estado = 'Esperando Confirmacion Amigo Unirse'; 
+    
+    try {
+        const docRef = doc(db, "matchmaking", matchId);
+        await updateDoc(docRef, {
+            j1: nuevosDatos.j1, j2: nuevosDatos.j2, j3: nuevosDatos.j3, j4: nuevosDatos.j4,
+            estado: nuevosDatos.estado
+        });
+        alert('¡Invitación enviada! Tu compañero debe aceptarla desde su panel.');
+    } catch(e) {
+        console.error(e);
+        alert('Error al enviar la invitación.');
+    }
+};
 
         // --- LISTENERS GLOBALES Y PRIVADOS ---
         function iniciarListenersPrivados() {
