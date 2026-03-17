@@ -2151,59 +2151,34 @@ window.cerrarModalUnirseDetalle = function() {
 };
         
        window.responderInvitacion = async function(id, aceptada) {
-    const m = matchmakingGlobal.find(x => x.id === id); 
-    if(!m) return;
+    const m = matchmakingGlobal.find(x => x.id === id); if(!m) return;
     
     let miNombre = window.perfilJugador?.nombreCompleto;
     
     if(aceptada) { 
         let nuevoEst = 'Buscando Rival';
-        
-        // Si al aceptar, resulta que los 4 lugares están llenos, el partido se confirma
         if(m.j1 !== 'Libre' && m.j2 !== 'Libre' && m.j3 !== 'Libre' && m.j4 !== 'Libre') {
             nuevoEst = 'Partido Confirmado';
-            
-            // Verificamos si ya existía una reserva para este partido.
-            // Si era un partido que se estaba creando desde cero, no tiene reserva aún.
-            // Si era un partido al que se estaban uniendo, tampoco tiene reserva hasta que se completen los 4.
             await reservarCanchaParaMatchmaking(m);
-            
             alert("¡Invitación aceptada! Partido completado y cancha reservada.");
         } else { 
             alert("¡Invitación aceptada! El partido sigue buscando rivales."); 
-            // Si el partido ya tenía una reserva en la grilla del admin (ej: partido con 3 cupos),
-            // actualizamos el nombre del jugador en la grilla.
+            // Actualizamos grilla por si existe
             await window.actualizarNombresEnReserva(m);
         }
         await updateDoc(doc(db, "matchmaking", id), { estado: nuevoEst }); 
     } else { 
         let nuevosDatos = {...m};
         
-        // El jugador que rechaza queda "Libre"
+        // Simplemente liberamos el lugar del amigo que rechazó
         if(nuevosDatos.j2 === miNombre) nuevosDatos.j2 = 'Libre';
         if(nuevosDatos.j3 === miNombre) nuevosDatos.j3 = 'Libre';
         if(nuevosDatos.j4 === miNombre) nuevosDatos.j4 = 'Libre';
         
-        // Si la invitación era la creación original de un partido, lo borramos todo
         if(m.estado === 'Esperando Confirmacion Amigo') {
+            // Fue la creación original del partido y rechazó, se cancela todo.
             await deleteDoc(doc(db, "matchmaking", id)); 
             alert("Partido cancelado porque rechazaste.");
-        } 
-        // Si la invitación era para UNIRSE a un partido ya existente...
-        else if (m.estado === 'Esperando Confirmacion Amigo Unirse') {
-            nuevosDatos.estado = 'Buscando Rival';
-            
-            // También tenemos que sacar al jugador que intentó meter al amigo, 
-            // ya que venían en "pack". Si el amigo no juega, él tampoco puede ocupar el cupo en pareja.
-            // Como sabemos que entraron en J3 y J4:
-            if (m.j4 === miNombre) {
-                nuevosDatos.j3 = 'Libre'; // Sacamos al amigo que invitó
-            } else if (m.j3 === miNombre) {
-                nuevosDatos.j4 = 'Libre';
-            }
-            
-            await updateDoc(doc(db, "matchmaking", id), nuevosDatos); 
-            alert("Rechazaste la invitación.");
         } else {
             nuevosDatos.estado = 'Buscando Rival';
             await updateDoc(doc(db, "matchmaking", id), nuevosDatos); 
