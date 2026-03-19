@@ -2562,14 +2562,46 @@ window.cerrarModalUnirseDetalle = function() {
             try { await addDoc(collection(db, "solicitudes_amistad"), { solicitanteId: window.usuarioLogueadoUID, solicitanteNombre: window.perfilJugador.nombreCompleto, receptorId: receptorUid, receptorNombre: receptorNombre, fecha: serverTimestamp() }); alert(`¡Solicitud enviada a ${receptorNombre}!`); document.getElementById('res-busqueda-amigos').innerHTML = ''; } catch(e) { alert("Error al enviar la solicitud."); }
         };
         window.renderizarAmigos = function() {
-            const div = document.getElementById('lista-mis-amigos'); if(!div) return; div.innerHTML = ''; if(!window.perfilJugador) window.perfilJugador = {};
-            let misAmigos = window.perfilJugador.amigos || [];
-            if(misAmigos.length === 0) { div.innerHTML = '<div style="color:#9ca3af; text-align:center; padding:15px; font-size:0.9em;">Aún no tienes amigos agregados.</div>'; } 
-            else { misAmigos.forEach(a => { div.innerHTML += `<div style="padding:10px; border-bottom:1px solid #2c3540; color:#d1d5db;">🎾 <strong>${a.nombre}</strong></div>`; }); }
-            let options = '<option value="" disabled selected>Elige a tu compañero...</option>';
-            if(misAmigos.length > 0) { misAmigos.forEach(a => { options += `<option value="${a.nombre}">${a.nombre}</option>`; }); } else { options = '<option value="" disabled selected>No tienes amigos agregados</option>'; }
-            if(document.getElementById('comp-nombre-amigo')) document.getElementById('comp-nombre-amigo').innerHTML = options; if(document.getElementById('unirse-nombre-amigo')) document.getElementById('unirse-nombre-amigo').innerHTML = options; if(document.getElementById('inscripcion-nombre-amigo')) document.getElementById('inscripcion-nombre-amigo').innerHTML = options;
+            const div = document.getElementById('lista-mis-amigos'); if(!div) return; div.innerHTML = ''; if(!window.perfilJugador) window.perfilJugador = {};
+            let misAmigos = window.perfilJugador.amigos || [];
+            if(misAmigos.length === 0) { div.innerHTML = '<div style="color:#9ca3af; text-align:center; padding:15px; font-size:0.9em;">Aún no tienes amigos agregados.</div>'; } 
+            else { 
+                // AQUI AGREGAMOS EL BOTON DE ELIMINAR AMIGO (X roja)
+                misAmigos.forEach(a => { 
+                    div.innerHTML += `<div style="padding:10px; border-bottom:1px solid #2c3540; color:#d1d5db; display:flex; justify-content:space-between; align-items:center;"><span>🎾 <strong>${a.nombre}</strong></span><button onclick="window.eliminarAmigo('${a.uid}')" style="background:none;border:none;color:#ef4444;cursor:pointer;" title="Eliminar amigo">❌</button></div>`; 
+                }); 
+            }
+            let options = '<option value="" disabled selected>Elige a tu compañero...</option>';
+            if(misAmigos.length > 0) { misAmigos.forEach(a => { options += `<option value="${a.nombre}">${a.nombre}</option>`; }); } else { options = '<option value="" disabled selected>No tienes amigos agregados</option>'; }
+            if(document.getElementById('comp-nombre-amigo')) document.getElementById('comp-nombre-amigo').innerHTML = options; if(document.getElementById('unirse-nombre-amigo')) document.getElementById('unirse-nombre-amigo').innerHTML = options; if(document.getElementById('inscripcion-nombre-amigo')) document.getElementById('inscripcion-nombre-amigo').innerHTML = options;
+        
         };
+        window.eliminarAmigo = async function(amigoUid) {
+            if(!confirm("¿Seguro que deseas eliminar a este jugador de tu lista de amigos?")) return;
+            try {
+                // 1. Eliminarlo de mi lista
+                const miDocRef = doc(db, "usuarios", window.usuarioLogueadoUID);
+                let misAmigosActuales = window.perfilJugador.amigos.filter(a => a.uid !== amigoUid);
+                await updateDoc(miDocRef, { amigos: misAmigosActuales });
+                window.perfilJugador.amigos = misAmigosActuales;
+
+                // 2. Eliminarme de su lista
+                const suDocRef = doc(db, "usuarios", amigoUid);
+                let suSnap = await getDoc(suDocRef);
+                if(suSnap.exists()) {
+                    let susAmigos = suSnap.data().amigos || [];
+                    susAmigos = susAmigos.filter(a => a.uid !== window.usuarioLogueadoUID);
+                    await updateDoc(suDocRef, { amigos: susAmigos });
+                }
+
+                alert("Amigo eliminado exitosamente.");
+                window.renderizarAmigos(); // Refresca la vista
+            } catch(e) {
+                console.error(e);
+                alert("Hubo un error al eliminar el amigo.");
+            }
+        };
+        
         window.renderizarSolicitudes = function() {
             const div = document.getElementById('lista-solicitudes'); if(!div) return; div.innerHTML = '';
             if(window.solicitudesPendientes.length === 0) { div.innerHTML = '<div style="color:#9ca3af; text-align:center; padding:10px; font-size:0.85em;">No hay solicitudes pendientes.</div>'; return; }
