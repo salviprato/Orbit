@@ -2747,6 +2747,118 @@ window.invitarAmigoPendiente = async function(matchId, miEquipo, selectId) {
         alert('Error al enviar la invitación.');
     }
 };
+        // --- MENÚ LATERAL Y MI PERFIL ---
+        window.abrirMenuLateral = function() {
+            const menu = document.getElementById('modal-menu-lateral');
+            const content = document.getElementById('menu-lateral-content');
+            menu.style.display = 'flex';
+            setTimeout(() => { content.style.transform = 'translateX(0)'; }, 10); // Animación deslizante
+        }
+
+        window.cerrarMenuLateral = function(e) {
+            // Cierra el menú al presionar la sombra negra
+            const menu = document.getElementById('modal-menu-lateral');
+            if (e && e.target !== menu) return;
+            document.getElementById('menu-lateral-content').style.transform = 'translateX(-100%)';
+            setTimeout(() => { menu.style.display = 'none'; }, 300);
+        }
+
+        window.abrirMiPerfil = function() {
+            window.cerrarMenuLateral();
+            document.getElementById('edit-perfil-nombre').value = window.perfilJugador?.nombreCompleto || '';
+            document.getElementById('edit-perfil-tel').value = window.perfilJugador?.telefono || '';
+            document.getElementById('edit-perfil-pass').value = '';
+            document.getElementById('modal-editar-perfil').style.display = 'flex';
+        }
+
+        window.guardarMiPerfil = async function() {
+            if(!window.usuarioLogueadoUID) return;
+            const btn = document.querySelector('#modal-editar-perfil .btn-guardar');
+            const nNombre = document.getElementById('edit-perfil-nombre').value.trim();
+            const nTel = document.getElementById('edit-perfil-tel').value.trim();
+            const nPass = document.getElementById('edit-perfil-pass').value;
+
+            if(!nNombre || !nTel) { alert("El nombre y teléfono no pueden estar vacíos."); return; }
+
+            btn.innerText = 'Guardando...';
+            btn.disabled = true;
+
+            try {
+                // 1. Guardar datos en Firestore
+                await updateDoc(doc(db, "usuarios", window.usuarioLogueadoUID), {
+                    nombreCompleto: nNombre,
+                    telefono: nTel
+                });
+                
+                // Actualizar caché local
+                window.perfilJugador.nombreCompleto = nNombre;
+                window.perfilJugador.telefono = nTel;
+
+                // 2. Cambiar contraseña si se ingresó alguna
+                if (nPass) {
+                    if (nPass.length >= 6) {
+                        const user = auth.currentUser;
+                        if(user) {
+                            await updatePassword(user, nPass);
+                            alert('Perfil y contraseña actualizados correctamente.');
+                        }
+                    } else {
+                        alert('El perfil se guardó. Sin embargo, la contraseña NO se cambió porque debe tener al menos 6 caracteres.');
+                    }
+                } else {
+                    alert('Perfil actualizado correctamente.');
+                }
+                
+                document.getElementById('modal-editar-perfil').style.display = 'none';
+            } catch (e) {
+                console.error(e);
+                if (e.code === 'auth/requires-recent-login') {
+                    alert('Perfil actualizado. Para cambiar la contraseña, por seguridad, debes cerrar sesión e ingresar nuevamente.');
+                } else {
+                    alert('Ocurrió un error al actualizar los datos.');
+                }
+            } finally {
+                btn.innerText = 'Guardar Cambios';
+                btn.disabled = false;
+            }
+        }
+
+        // --- LISTA DE CLUBES PÚBLICA ---
+        window.abrirListaClubes = async function() {
+            window.cerrarMenuLateral();
+            const div = document.getElementById('contenedor-lista-clubes');
+            div.innerHTML = '<div style="color:#9ca3af; text-align:center;">Cargando lista de clubes...</div>';
+            document.getElementById('modal-lista-clubes').style.display = 'flex';
+
+            try {
+                const snap = await getDocs(collection(db, "configuracion"));
+                div.innerHTML = '';
+                
+                if(snap.empty) {
+                    div.innerHTML = '<div style="color:#9ca3af; text-align:center;">Aún no hay clubes en el circuito.</div>';
+                    return;
+                }
+
+                snap.forEach(docSnap => {
+                    let dataClub = docSnap.data();
+                    let tel = dataClub.telefonoClub || "";
+                    let wBtn = tel ? `<button class="btn-modal btn-whatsapp" style="width:auto; padding:6px 12px; font-size:0.85em; font-weight:bold; color:#171d24; border-radius:6px;" onclick="window.open('https://wa.me/${tel.replace(/\D/g,'')}', '_blank')">💬 Contactar</button>` : `<span style="font-size:0.8em; color:#9ca3af; font-style:italic;">Sin WhatsApp</span>`;
+                    
+                    div.innerHTML += `
+                        <div style="background: #242c36; border: 1px solid #44505d; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <div style="flex: 1;">
+                                <strong style="color: #3b82f6; font-size: 1.1em; text-transform: uppercase;">${docSnap.id}</strong>
+                                <div style="color: #d1d5db; font-size: 0.85em; margin-top: 6px;">📍 ${dataClub.ubicacion || 'Ubicación no especificada'}</div>
+                            </div>
+                            <div style="margin-left: 10px;">${wBtn}</div>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                console.error(e);
+                div.innerHTML = '<div style="color:#ef4444; text-align:center;">Error al cargar la lista de clubes.</div>';
+            }
+        }
 
         // --- LISTENERS GLOBALES Y PRIVADOS ---
         function iniciarListenersPrivados() {
