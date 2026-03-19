@@ -2770,8 +2770,11 @@ window.invitarAmigoPendiente = async function(matchId, miEquipo, selectId) {
                         document.getElementById('input-canchas-out').value = canchasOutdoorGlobal; document.getElementById('input-precio-out').value = precioOutdoorGlobal;
                         document.getElementById('input-canchas-tenis').value = canchasTenisGlobal; document.getElementById('input-precio-tenis').value = precioTenisGlobal; document.getElementById('input-telefono-club').value = telefonoClubGlobal; 
                         [0,1,2,3,4,5,6].forEach(d => { const cb = document.getElementById('dia-'+d); if(cb) cb.checked = diasAbiertosGlobal.includes(d); });
+                        let ubicacionC = data.ubicacion || "";
+                        if(document.getElementById('input-ubicacion-club')) document.getElementById('input-ubicacion-club').value = ubicacionC;
                     }
                     if(typeof window.renderizarPantallas === 'function') window.renderizarPantallas(); 
+                    
                 });
                 onSnapshot(query(collection(db, "reservas"), where("clubId", "==", window.clubIdActual)), (s) => { reservasGlobales=[]; s.forEach(d=>reservasGlobales.push({id:d.id,...d.data()})); if(typeof window.renderizarPantallas === 'function') window.renderizarPantallas(); if(typeof window.renderizarIngresos === 'function') window.renderizarIngresos(); if(typeof window.renderizarClasesPendientes === 'function') window.renderizarClasesPendientes(); if(typeof window.renderizarHistorial === 'function') window.renderizarHistorial(); });
                 onSnapshot(query(collection(db, "inventario"), where("clubId", "==", window.clubIdActual)), (s) => { inventarioGlobal=[]; s.forEach(d=>inventarioGlobal.push({id:d.id,...d.data()})); if(typeof window.renderizarInventario === 'function') window.renderizarInventario(); });
