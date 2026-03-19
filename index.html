@@ -596,10 +596,12 @@
             <div class="modal-content">
                 <h3 style="margin: 0; margin-bottom: 15px; border-bottom: 1px solid #44505d; padding-bottom: 10px;">⚙️ Configuración del Club</h3>
                 <div class="scroll-interno" style="text-align: left; display: flex; flex-direction: column; gap: 15px; max-height: 70vh; overflow-y: auto; padding-right: 5px;">
+                    
                     <div style="display: flex; gap: 10px; justify-content: space-between;">
                         <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Primer Turno:</label><input type="time" id="input-primer-turno" class="input-form" style="margin-top: 4px;"></div>
                         <div style="flex: 1;"><label style="font-size: 0.85em; color: #d1d5db;">Último Turno:</label><input type="time" id="input-ultimo-turno" class="input-form" style="margin-top: 4px;"></div>
                     </div>
+                    
                     <div style="border-top: 1px solid #2c3540; padding-top: 10px;">
                         <label style="font-size: 0.85em; color: #d1d5db;">Días que abre el club:</label>
                         <div class="checkbox-dias" style="display: flex; gap: 8px; margin-top: 5px; flex-wrap: wrap; color: #d1d5db; font-size: 0.9em;">
@@ -639,18 +641,16 @@
                         <label style="font-size: 0.85em; color: #d1d5db;">Teléfono de WhatsApp del Club (Con código, ej: 549...):</label>
                         <input type="tel" id="input-telefono-club" class="input-form" placeholder="Ej: 5493511234567" style="margin-top: 4px;">
                     </div>
+                    
+                    <div>
+                        <label style="font-size: 0.85em; color: #d1d5db;">Ubicación / Dirección del Club:</label>
+                        <input type="text" id="input-ubicacion-club" class="input-form" placeholder="Ej: Av. Siempreviva 123" style="margin-top: 4px;">
+                    </div>
+
                 </div>
                 <button class="btn-modal btn-guardar" style="margin-top: 20px;" onclick="window.guardarConfiguracion()">Guardar Todo</button>
                 <button class="btn-modal btn-cerrar" style="margin-top: 0;" onclick="window.cerrarModalConfig()">Cancelar</button>
             </div>
-            <div style="border-top: 1px solid #2c3540; padding-top: 10px; margin-top: 10px;">
-                        <label style="font-size: 0.85em; color: #d1d5db;">Teléfono de WhatsApp del Club (Con código, ej: 549...):</label>
-                        <input type="tel" id="input-telefono-club" class="input-form" placeholder="Ej: 5493511234567" style="margin-top: 4px;">
-                    </div>
-                    <div style="margin-top: 10px;">
-                        <label style="font-size: 0.85em; color: #d1d5db;">Ubicación / Dirección del Club:</label>
-                        <input type="text" id="input-ubicacion-club" class="input-form" placeholder="Ej: Av. Siempreviva 123" style="margin-top: 4px;">
-                    </div>
         </div>
         
 
