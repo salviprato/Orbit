@@ -1919,19 +1919,21 @@
 
         // --- CIRCUITO COMPETITIVO (Global) ---
         window.cambiarSubVistaCompetitiva = function(v) {
-            document.getElementById('subvista-ranking').style.display = v === 'ranking' ? 'block' : 'none';
-            document.getElementById('subvista-partidos').style.display = v === 'partidos' ? 'block' : 'none';
-            document.getElementById('btn-sub-ranking').classList.toggle('activo', v === 'ranking');
-            document.getElementById('btn-sub-partidos').classList.toggle('activo', v === 'partidos');
+            document.getElementById('subvista-ranking').style.display = v === 'ranking' ? 'block' : 'none';
+            document.getElementById('subvista-partidos').style.display = v === 'partidos' ? 'block' : 'none';
+            document.getElementById('btn-sub-ranking').classList.toggle('activo', v === 'ranking');
+            document.getElementById('btn-sub-partidos').classList.toggle('activo', v === 'partidos');
 
-            if(v === 'partidos') {
-                document.getElementById('comp-nombre-jugador').value = window.perfilJugador?.nombreCompleto || 'Jugador Anónimo';
-                document.getElementById('comp-pareja').value = 'random';
-                window.toggleAmigoInput('comp-pareja', 'div-amigo-comp');
-                window.cargarClubesDisponibles(); 
-            }
-        };
-
+            if(v === 'partidos') {
+                // Ya no buscamos la casilla de nombre porque la eliminamos del diseño
+                if(document.getElementById('comp-pareja')) {
+                    document.getElementById('comp-pareja').value = 'random';
+                }
+                window.toggleAmigoInput('comp-pareja', 'div-amigo-comp');
+                window.cargarClubesDisponibles(); 
+            }
+        };
+        
         window.cambiarSubVistaAccion = function(accion) {
             document.getElementById('contenedor-crear').style.display = accion === 'crear' ? 'block' : 'none';
             document.getElementById('contenedor-unirse').style.display = accion === 'unirse' ? 'block' : 'none';
