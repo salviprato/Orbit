@@ -2420,36 +2420,38 @@ window.cerrarModalUnirseDetalle = function() {
 };
         
         window.renderizarPartidosResultados = function() {
-            const div = document.getElementById('lista-partidos-resultados'); if(!div) return; div.innerHTML = '';
-            let confirmados = matchmakingGlobal.filter(m=>m.estado==='Partido Confirmado' || m.estado==='Conflicto de Resultado');
-            if(confirmados.length === 0) { div.innerHTML = '<div style="color:#9ca3af; padding:10px; text-align:center;">No hay partidos pendientes.</div>'; return; }
-            let miNombre = window.perfilJugador?.nombreCompleto || '';
-            let ahora = new Date(); // Obtenemos la fecha y hora actual
+            const div = document.getElementById('lista-partidos-resultados'); if(!div) return; div.innerHTML = '';
+            let confirmados = matchmakingGlobal.filter(m=>m.estado==='Partido Confirmado' || m.estado==='Conflicto de Resultado');
+            if(confirmados.length === 0) { div.innerHTML = '<div style="color:#9ca3af; padding:10px; text-align:center;">No hay partidos pendientes.</div>'; return; }
+            let miNombre = window.perfilJugador?.nombreCompleto || '';
+            let ahora = new Date();
 
-            confirmados.forEach(m => { 
-                let soyEq1 = (m.j1 === miNombre || m.j2 === miNombre); let soyEq2 = (m.j3 === miNombre || m.j4 === miNombre);
-                let miVoto = soyEq1 ? m.votoEq1 : m.votoEq2; let htmlBoton = '';
+            confirmados.forEach(m => { 
+                let soyEq1 = (m.j1 === miNombre || m.j2 === miNombre); let soyEq2 = (m.j3 === miNombre || m.j4 === miNombre);
+                // Leemos los votos del partido
+                let misVotos = m.votos || {};
+                let miVoto = misVotos[miNombre];
+                let htmlBoton = '';
 
-                // Comprobación de hora del partido
-                let [y, mo, d] = m.fechaDeseada.split('-');
-                let [h, min] = m.horaDeseada.split(':');
-                let fechaPartido = new Date(y, mo - 1, d, h, min, 0);
+                let [y, mo, d] = m.fechaDeseada.split('-');
+                let [h, min] = m.horaDeseada.split(':');
+                let fechaPartido = new Date(y, mo - 1, d, h, min, 0);
 
-                if (fechaPartido > ahora) {
-                    // Si el partido es en el futuro, mostramos la info en lugar del botón
-                    htmlBoton = `<div style="text-align:center; color:#9ca3af; font-size:0.85em; margin-top:10px; padding: 10px; background: #242c36; border-radius: 6px;">El partido se juega el <strong>${m.fechaDeseada}</strong> a las <strong>${m.horaDeseada}hs</strong> en <strong>${m.clubSeleccionado}</strong>.<br>Podrás cargar el resultado una vez pasada la hora.</div>`;
-                } else {
-                    // Si ya pasó la hora, mostramos los botones normales
-                    if (m.estado === 'Conflicto de Resultado') htmlBoton = `<div style="text-align:center; color:#ef4444; font-size:0.85em; margin-top:10px; font-weight:bold;">⚠️ Conflicto de resultados.</div>`;
-                    else if (miVoto) htmlBoton = `<div style="text-align:center; color:#f59e0b; font-size:0.85em; margin-top:10px; font-weight:bold;">⏳ Esperando confirmación rival...</div>`;
-                    else if (soyEq1 || soyEq2) htmlBoton = `<button class="btn-modal btn-guardar" style="width:100%; padding:8px; font-size:0.9em; background-color:#10b981;" onclick="window.abrirModalResultado('${m.id}')">Cargar Ganador</button>`;
-                    else htmlBoton = `<div style="text-align:center; color:#9ca3af; font-size:0.85em; margin-top:10px;">(Solo jugadores pueden cargar)</div>`;
-                }
+                if (fechaPartido > ahora) {
+                    // Si el partido todavía no se jugó
+                    htmlBoton = `<div style="text-align:center; color:#9ca3af; font-size:0.85em; margin-top:10px; padding: 10px; background: #242c36; border-radius: 6px;">El partido se juega el <strong>${m.fechaDeseada}</strong> a las <strong>${m.horaDeseada}hs</strong> en <strong>${m.clubSeleccionado}</strong>.<br>Podrás cargar el resultado una vez terminada la hora.</div>`;
+                } else {
+                    // Si ya pasó la hora, validamos los estados
+                    if (m.estado === 'Conflicto de Resultado') htmlBoton = `<div style="text-align:center; color:#ef4444; font-size:0.85em; margin-top:10px; font-weight:bold;">⚠️ Conflicto de resultados. Hablen entre ustedes para cargar los mismos sets.</div><button class="btn-modal btn-guardar" style="width:100%; margin-top:10px; padding:8px; font-size:0.9em; background-color:#10b981;" onclick="window.abrirModalResultado('${m.id}')">Corregir Resultado</button>`;
+                    else if (miVoto) htmlBoton = `<div style="text-align:center; color:#f59e0b; font-size:0.85em; margin-top:10px; font-weight:bold;">⏳ Tu resultado fue cargado. Esperando coincidencia del rival...</div>`;
+                    else if (soyEq1 || soyEq2) htmlBoton = `<button class="btn-modal btn-guardar" style="width:100%; padding:8px; font-size:0.9em; background-color:#10b981;" onclick="window.abrirModalResultado('${m.id}')">Cargar Resultado</button>`;
+                    else htmlBoton = `<div style="text-align:center; color:#9ca3af; font-size:0.85em; margin-top:10px;">(Solo jugadores pueden cargar)</div>`;
+                }
 
-                div.innerHTML += `<div style="border:1px solid ${m.estado==='Conflicto de Resultado'?'#ef4444':'#44505d'}; padding:12px; margin-bottom:8px; border-radius:8px; background:#1e252d;"><div style="color:#d1d5db; font-size:1em; text-align:center; margin-bottom:10px;"><span style="color:#3b82f6;">Eq 1:</span> ${m.j1} y ${m.j2} <br><strong style="color:#f59e0b; margin: 5px 0; display:block;">VS</strong><span style="color:#ef4444;">Eq 2:</span> ${m.j3} y ${m.j4}</div><div style="text-align:center; margin-bottom:12px;"><small style="background:#8b5cf6; padding:4px 8px; border-radius:4px; color:white; font-weight:bold;">📌 ${m.fechaDeseada} ${m.horaDeseada}hs</small></div>${htmlBoton}</div>`; 
-            });
-        };
-
+                div.innerHTML += `<div style="border:1px solid ${m.estado==='Conflicto de Resultado'?'#ef4444':'#44505d'}; padding:12px; margin-bottom:8px; border-radius:8px; background:#1e252d;"><div style="color:#d1d5db; font-size:1em; text-align:center; margin-bottom:10px;"><span style="color:#3b82f6;">Eq 1:</span> ${m.j1} y ${m.j2} <br><strong style="color:#f59e0b; margin: 5px 0; display:block;">VS</strong><span style="color:#ef4444;">Eq 2:</span> ${m.j3} y ${m.j4}</div><div style="text-align:center; margin-bottom:12px;"><small style="background:#8b5cf6; padding:4px 8px; border-radius:4px; color:white; font-weight:bold;">📌 ${m.fechaDeseada} ${m.horaDeseada}hs</small></div>${htmlBoton}</div>`; 
+            });
+        };
+        
        window.abrirModalResultado = function(id) { 
             const m = matchmakingGlobal.find(x => x.id === id); if(!m) return;
             document.getElementById('resultado-partido-id').value = id; 
