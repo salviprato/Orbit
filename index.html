@@ -2277,7 +2277,8 @@ window.cerrarModalUnirseDetalle = function() {
             const m = matchmakingGlobal.find(x => x.id === id); 
             if(!m) return;
             
-            const miNombre = document.getElementById('unirse-nombre').value; 
+            // Sacamos tu nombre del perfil
+            const miNombre = window.perfilJugador?.nombreCompleto || 'Jugador Anónimo'; 
             const miGenero = window.perfilJugador?.genero;
             const tipoPareja = document.getElementById('unirse-pareja').value;
             const modalidad = m.modalidad || 'Libre';
@@ -2293,7 +2294,6 @@ window.cerrarModalUnirseDetalle = function() {
                 amigoGenero = snapAmigo.empty ? 'Otro' : snapAmigo.docs[0].data().genero;
             }
 
-            // VALIDACIONES ESTRICTAS DE MODALIDAD
             if (modalidad === 'Masculino') {
                 if (miGenero !== 'Masculino') { alert("Modalidad Masculina: Solo hombres."); return; }
                 if (!vieneSolo && amigoGenero !== 'Masculino') { alert("Tu amigo debe ser hombre."); return; }
