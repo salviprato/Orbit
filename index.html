@@ -2593,31 +2593,35 @@ window.cerrarModalUnirseDetalle = function() {
         };
 
         window.renderizarRanking = function() {
-            const tb = document.getElementById('lista-ranking'); if(!tb) return; tb.innerHTML = '';
-            if (!rankingGlobal || rankingGlobal.length === 0) { tb.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #9ca3af; padding: 15px;">Sin jugadores.</td></tr>'; return; }
-            
-            let rankingCalculado = rankingGlobal.map(j => {
-                let promPartidos = (j.partidosJugados && j.partidosJugados > 0) ? (j.partidosGanados || 0) / j.partidosJugados : 0;
-                let promSets = (j.setsJugados && j.setsJugados > 0) ? (j.setsGanados || 0) / j.setsJugados : 0;
-                return { ...j, promPartidos, promSets };
-            });
+            const tb = document.getElementById('lista-ranking'); if(!tb) return; tb.innerHTML = '';
+            
+            // 1. Filtramos los jugadores según la modalidad seleccionada
+            let rankingFiltrado = rankingGlobal.filter(r => (r.modalidad || 'Masculino') === window.categoriaRankingSeleccionada);
 
-            rankingCalculado.sort((a,b) => {
-                if((b.puntos || 0) !== (a.puntos || 0)) return (b.puntos || 0) - (a.puntos || 0);
-                if(b.promPartidos !== a.promPartidos) return b.promPartidos - a.promPartidos;
-                return b.promSets - a.promSets;
-            });
+            if (!rankingFiltrado || rankingFiltrado.length === 0) { tb.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #9ca3af; padding: 15px;">Aún no hay jugadores en el ranking ${window.categoriaRankingSeleccionada}.</td></tr>`; return; }
+            
+            let rankingCalculado = rankingFiltrado.map(j => {
+                let promPartidos = (j.partidosJugados && j.partidosJugados > 0) ? (j.partidosGanados || 0) / j.partidosJugados : 0;
+                let promSets = (j.setsJugados && j.setsJugados > 0) ? (j.setsGanados || 0) / j.setsJugados : 0;
+                return { ...j, promPartidos, promSets };
+            });
 
-            rankingCalculado.forEach((j, i) => { 
-                let winRateStr = j.partidosJugados > 0 ? `${(j.promPartidos * 100).toFixed(0)}% WR` : '0%';
-                tb.innerHTML += `<tr style="cursor: pointer; border-bottom: 1px solid #2c3540;" onclick="window.abrirDetalleRanking('${j.id}')" onmouseover="this.style.backgroundColor='#2c3540'" onmouseout="this.style.backgroundColor='transparent'">
-                    <td style="text-align: center;"><strong>${i+1}</strong></td>
-                    <td style="padding: 8px 0;">${j.nombre || 'Anónimo'}<br><small style="color:#9ca3af;">${winRateStr}</small></td>
-                    <td style="text-align: center; color: #f59e0b; font-size: 1.1em;"><strong>${j.puntos || 0}</strong></td>
-                    <td style="text-align: center;">${j.partidosJugados || 0}</td>
-                </tr>`; 
-            });
-        };
+            rankingCalculado.sort((a,b) => {
+                if((b.puntos || 0) !== (a.puntos || 0)) return (b.puntos || 0) - (a.puntos || 0);
+                if(b.promPartidos !== a.promPartidos) return b.promPartidos - a.promPartidos;
+                return b.promSets - a.promSets;
+            });
+
+            rankingCalculado.forEach((j, i) => { 
+                let winRateStr = j.partidosJugados > 0 ? `${(j.promPartidos * 100).toFixed(0)}% WR` : '0%';
+                tb.innerHTML += `<tr style="cursor: pointer; border-bottom: 1px solid #2c3540;" onclick="window.abrirDetalleRanking('${j.id}')" onmouseover="this.style.backgroundColor='#2c3540'" onmouseout="this.style.backgroundColor='transparent'">
+                    <td style="text-align: center;"><strong>${i+1}</strong></td>
+                    <td style="padding: 8px 0;">${j.nombre || 'Anónimo'}<br><small style="color:#9ca3af;">${winRateStr}</small></td>
+                    <td style="text-align: center; color: #f59e0b; font-size: 1.1em;"><strong>${j.puntos || 0}</strong></td>
+                    <td style="text-align: center;">${j.partidosJugados || 0}</td>
+                </tr>`; 
+            });
+        };
         
         // --- SISTEMA DE AMIGOS ---
         window.abrirModalAmigos = function() { document.getElementById('modal-amigos').style.display = 'flex'; window.renderizarAmigos(); window.renderizarSolicitudes(); };
