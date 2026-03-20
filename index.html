@@ -819,7 +819,93 @@
 
            <div id="subvista-partidos" style="display: none; text-align: left;">
                 
-                
+                <div class="seccion-acordeon" style="margin-bottom: 15px;">
+                    <div class="header-acordeon" onclick="window.toggleAcordeon('ac-comp-resultados')">
+                        <span>Resultados</span> <span id="flecha-ac-comp-resultados">🔽</span>
+                    </div>
+                    <div id="ac-comp-resultados" class="contenido-acordeon">
+                        <p style="font-size: 0.85em; color: #9ca3af; margin-top: 0; margin-bottom: 10px;">Partidos confirmados por jugar / jugados:</p>
+                        <div id="lista-partidos-resultados" class="scroll-interno" style="max-height: 250px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+
+                <div class="toggle-container" style="margin-bottom: 15px; background-color: #1e252d; border: 1px solid #44505d;">
+                    <button id="btn-comp-crear" class="toggle-btn-elegante activo" onclick="window.cambiarSubVistaAccion('crear')">Crear Partido</button>
+                    <button id="btn-comp-unirse" class="toggle-btn-elegante" onclick="window.cambiarSubVistaAccion('unirse')">Unirse a Partido</button>
+                </div>
+
+                <div id="contenedor-crear" style="background: #171d24; border: 1px solid #2c3540; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 0.85em; color: #d1d5db; font-weight: bold;">Elige la fecha del partido:</label>
+                        <div id="calendario-competitivo" class="calendario-strip" style="margin-bottom: 0; padding-bottom: 5px;"></div>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 0.85em; color: #d1d5db; font-weight: bold;">Modalidad:</label>
+                        <select id="comp-modalidad" class="input-form" style="margin-top: 4px;">
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                            <option value="Mixto">Mixto</option>
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 0.85em; color: #d1d5db; font-weight: bold;">1. ¿En qué Club querés jugar?</label>
+                        <select id="comp-club" class="input-form" style="margin-top: 4px;" onchange="window.llenarHorariosDisponiblesCompetitivo()">
+                            <option value="" disabled selected>Cargando clubes...</option>
+                        </select>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.85em; color: #d1d5db; font-weight: bold;">2. Superficie:</label>
+                            <select id="comp-cancha" class="input-form" style="margin-top: 4px;" onchange="window.llenarHorariosDisponiblesCompetitivo()">
+                                <option value="Indoor">Indoor</option>
+                                <option value="Outdoor">Outdoor</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.85em; color: #d1d5db; font-weight: bold;">3. Horario (Libres):</label>
+                            <select id="comp-hora" class="input-form" style="margin-top: 4px;">
+                                <option value="" disabled selected>Elige fecha y tipo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 0.85em; color: #d1d5db; font-weight: bold;">4. Tu Pareja:</label>
+                        <select id="comp-pareja" class="input-form" style="margin-top: 4px;" onchange="window.toggleAmigoInput('comp-pareja', 'div-amigo-comp')">
+                            <option value="random" selected>Anotarme solo</option>
+                            <option value="amigo">Invitar a un amigo</option>
+                        </select>
+                    </div>
+
+                    <div id="div-amigo-comp" style="display: none; padding-top: 5px; border-top: 1px dashed #44505d;">
+                        <label style="font-size: 0.85em; color: #d1d5db; font-weight: bold;">Selecciona tu compañero/a:</label>
+                        <select id="comp-nombre-amigo" class="input-form" style="margin-top: 4px;"><option value="" disabled selected>No tienes amigos agregados</option></select>
+                    </div>
+
+                    <button class="btn-modal btn-guardar" style="margin-top: 15px; background-color: #f59e0b;" onclick="window.confirmarCrearCompetitivo()">Crear e ir a Lista de Espera</button>
+                </div>
+
+                <div id="contenedor-unirse" style="display: none; background: #171d24; border: 1px solid #2c3540; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 0.85em; color: #d1d5db; font-weight: bold;">Filtrar por fecha:</label>
+                        <div id="calendario-competitivo-unirse" class="calendario-strip" style="margin-bottom: 10px; padding-bottom: 5px;"></div>
+
+                        <label style="font-size: 0.85em; color: #d1d5db; font-weight: bold;">Filtrar por modalidad:</label>
+                        <select id="filtro-modalidad-unirse" class="input-form" style="margin-top: 4px;" onchange="window.renderizarPartidosAbiertos()">
+                            <option value="Todos">Todas las modalidades</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                            <option value="Mixto">Mixto</option>
+                        </select>
+                    </div>
+                    
+                    <p style="font-size: 0.85em; color: #9ca3af; margin-top: 0; margin-bottom: 10px;">Partidos buscando rivales:</p>
+                    <div id="lista-partidos-abiertos" class="scroll-interno" style="max-height: 250px; overflow-y: auto;"></div>
+                </div>
+
                 <div class="seccion-acordeon" style="margin-bottom: 15px;">
                     <div class="header-acordeon" onclick="window.toggleAcordeon('ac-comp-pendientes')">
                         <span>Pendientes</span> <span id="flecha-ac-comp-pendientes">🔽</span>
