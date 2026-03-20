@@ -1935,6 +1935,13 @@
             }
         };
 
+        window.cambiarSubVistaAccion = function(accion) {
+            document.getElementById('contenedor-crear').style.display = accion === 'crear' ? 'block' : 'none';
+            document.getElementById('contenedor-unirse').style.display = accion === 'unirse' ? 'block' : 'none';
+            document.getElementById('btn-comp-crear').classList.toggle('activo', accion === 'crear');
+            document.getElementById('btn-comp-unirse').classList.toggle('activo', accion === 'unirse');
+        };
+
         window.categoriaRankingSeleccionada = 'Masculino';
         
         window.cambiarCategoriaRanking = function(cat) {
