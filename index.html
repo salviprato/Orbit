@@ -1949,20 +1949,24 @@
         };
 
         window.cargarClubesDisponibles = async function() {
-    const sel = document.getElementById('comp-club');
-    sel.innerHTML = '<option value="" disabled selected>Cargando clubes...</option>';
-    try {
-        const snap = await getDocs(collection(db, "configuracion"));
-        sel.innerHTML = '<option value="" disabled selected>Elige un club...</option>';
-        let count = 0;
-        snap.forEach(doc => { 
-            // Cargamos todos los clubes reales sin ocultar ninguno
-            sel.innerHTML += `<option value="${doc.id}">${doc.id.toUpperCase()}</option>`; 
-            count++; 
-        });
-        if(count === 0) sel.innerHTML = '<option value="Orbit">ORBIT</option>';
-    } catch(e) { sel.innerHTML = '<option value="Orbit">ORBIT</option>'; }
-};
+            const sel = document.getElementById('comp-club');
+            sel.innerHTML = '<option value="" disabled selected>Cargando clubes...</option>';
+            try {
+                const snap = await getDocs(collection(db, "configuracion"));
+                if (snap.empty) {
+                    sel.innerHTML = '<option value="" disabled selected>No hay clubes configurados aún</option>';
+                    return;
+                }
+                
+                sel.innerHTML = '<option value="" disabled selected>Elige un club...</option>';
+                snap.forEach(doc => { 
+                    sel.innerHTML += `<option value="${doc.id}">${doc.id.toUpperCase()}</option>`; 
+                });
+            } catch(e) { 
+                console.error("Error cargando clubes:", e);
+                sel.innerHTML = '<option value="" disabled selected>Error al cargar clubes</option>'; 
+            }
+        };
         
         window.renderizarTorneosPublicos = function() {
             const div = document.getElementById('lista-torneos'); if(!div) return; div.innerHTML = '';
