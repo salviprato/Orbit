@@ -946,11 +946,12 @@
                 
                 <input type="hidden" id="unirse-partido-id">
 
+                <div style="text-align: left; display: flex; flex-direction: column; gap: 10px;">
                     <div>
                         <label style="font-size: 0.85em; color: #d1d5db; font-weight: bold;">Tu Pareja:</label>
                         <select id="unirse-pareja" class="input-form" style="margin-top: 4px;" onchange="window.toggleAmigoInput('unirse-pareja', 'div-amigo-unirse')">
-                            <option value="random" selected>🎲 Pareja Random (Me anoto solo)</option>
-                            <option value="amigo">🤝 Invitar a un amigo de mi lista</option>
+                            <option value="random" selected>Anotarme solo</option>
+                            <option value="amigo">Invitar a un amigo</option>
                         </select>
                     </div>
                     <div id="div-amigo-unirse" style="display: none;">
