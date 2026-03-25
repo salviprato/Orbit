@@ -1607,14 +1607,34 @@
         };
         
         window.accionEliminar = async function() { 
-            if(!reservaSeleccionadaId) return; const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId); if(!res) return;
-            if (res.fijo && res.grupoFijoId) {
-                if (confirm("Este es un TURNO FIJO.\n\n[ACEPTAR] para borrar TODO en adelante.\n[CANCELAR] para borrar SOLO este.")) {
-                    let futuros = reservasGlobales.filter(r => r.grupoFijoId === res.grupoFijoId && r.fecha >= res.fecha);
-                    if (confirm(`Se borrarán ${futuros.length} partidos. ¿Seguro?`)) { await Promise.all(futuros.map(f => deleteDoc(doc(db, "reservas", f.id)))); window.cerrarModalAcciones(); }
-                } else { await deleteDoc(doc(db, "reservas", reservaSeleccionadaId)); window.cerrarModalAcciones(); }
-            } else { if(confirm("¿Cancelar evento?")) { await deleteDoc(doc(db, "reservas", reservaSeleccionadaId)); window.cerrarModalAcciones(); } }
-        }
+            if(!reservaSeleccionadaId) return; 
+            const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId); 
+            if(!res) return;
+            
+            if (res.fijo || res.grupoFijoId) {
+                if (confirm("⚠️ Este turno es FIJO INDEFINIDO.\n\nAl borrarlo, se eliminará de TODOS los días para siempre.\n(Si solo quieres quitarlo por hoy, usa el botón '🚫 Cancelar Hoy').\n\n¿Seguro que deseas eliminarlo POR COMPLETO?")) {
+                    try {
+                        // Borramos el registro principal que se propaga
+                        await deleteDoc(doc(db, "reservas", reservaSeleccionadaId)); 
+                        
+                        // Si quedó basura del código viejo de los clones (52 semanas), la limpiamos para que no queden fantasmas
+                        if(res.grupoFijoId) {
+                            let futuros = reservasGlobales.filter(r => r.grupoFijoId === res.grupoFijoId);
+                            await Promise.all(futuros.map(f => deleteDoc(doc(db, "reservas", f.id))));
+                        }
+                        
+                        window.cerrarModalAcciones(); 
+                        alert("Turno fijo eliminado por completo.");
+                    } catch(e) { alert("Error al eliminar."); }
+                }
+            } else { 
+                if(confirm("¿Seguro que deseas eliminar este turno?")) { 
+                    await deleteDoc(doc(db, "reservas", reservaSeleccionadaId)); 
+                    window.cerrarModalAcciones(); 
+                } 
+            }
+        };
+        
         window.accionWhatsApp = function() {
             if(reservaSeleccionadaId) {
                 const r = reservasGlobales.find(x => x.id === reservaSeleccionadaId);
@@ -1628,13 +1648,20 @@
             }
         }
         window.accionCancelarExcepcion = async function() {
-            if(reservaSeleccionadaId && confirm(`¿Cancelar fijo SOLO para ${fechaSeleccionada}?`)) {
-                const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId); let canceladas = res.fechasCanceladas || [];
-                if (!canceladas.includes(fechaSeleccionada)) { canceladas.push(fechaSeleccionada); await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fechasCanceladas: canceladas }); }
+            if(!reservaSeleccionadaId) return;
+            const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId); 
+            
+            if(confirm(`¿Deseas cancelar el turno fijo ÚNICAMENTE para la fecha ${fechaSeleccionada}?`)) {
+                let canceladas = res.fechasCanceladas || [];
+                if (!canceladas.includes(fechaSeleccionada)) { 
+                    canceladas.push(fechaSeleccionada); 
+                    await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fechasCanceladas: canceladas }); 
+                }
                 window.cerrarModalAcciones();
+                alert(`Turno cancelado exitosamente para el ${fechaSeleccionada}. Las demás semanas se mantienen.`);
             }
-        }
-
+        };
+        
         // --- PROFESORES ---
         window.abrirModalProfesores = function() { document.getElementById('modal-profesores').style.display = 'flex'; }
         window.cerrarModalProfesores = function() { document.getElementById('modal-profesores').style.display = 'none'; }
