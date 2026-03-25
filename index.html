@@ -1401,12 +1401,21 @@
 
                 const contenedorClub = document.getElementById('lista-reservas-club'); if(!contenedorClub) return; contenedorClub.innerHTML = '';
                 const dowNumSelectedClub = window.getDayOfWeekFromDate(fechaSeleccionada);
-                let reservasAMostrar = reservasGlobales.filter(r => {
-                    let canceladas = r.fechasCanceladas || []; let fechaReserva = r.fecha || fechasValidas[0];
-                    return (fechaReserva === fechaSeleccionada && !canceladas.includes(fechaSeleccionada)) || 
-                           (r.fijo === true && window.getDayOfWeekFromDate(r.fecha) === dowNumSelectedClub && !canceladas.includes(fechaSeleccionada));
-                });
+                let reservasAMostrar = [];
+                reservasGlobales.forEach(r => {
+                    let canceladas = r.fechasCanceladas || []; 
+                    if (canceladas.includes(fechaSeleccionada)) return; // Si fue cancelada por excepcion, no la mostramos
 
+                    let fechaReserva = r.fecha || fechasValidas[0];
+                    if (fechaReserva === fechaSeleccionada) {
+                        // Es un turno normal de esta fecha exacta
+                        reservasAMostrar.push(r);
+                    } else if (r.fijo === true && window.getDayOfWeekFromDate(r.fecha) === dowNumSelectedClub && fechaSeleccionada > r.fecha) {
+                        // Es un turno fijo que se propaga indefinidamente (solo hacia fechas futuras)
+                        reservasAMostrar.push(r);
+                    }
+                });
+                
                 let minActual = window.aMinutos(primerTurno); let minFin = window.aMinutos(ultimoTurno) + duracionGlobal; 
                 if (minFin <= minActual) minFin += 1440; 
                 let htmlGrilla = `<div class="contenedor-grilla">`; const celdaH = 40; 
