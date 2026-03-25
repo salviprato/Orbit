@@ -1581,30 +1581,30 @@
             try { await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { pagoEfectivo: parseFloat(document.getElementById('pago-efectivo').value) || 0, pagoTransferencia: parseFloat(document.getElementById('pago-transferencia').value) || 0, descuento: parseFloat(document.getElementById('pago-descuento').value) || 0 }); window.cerrarModalAcciones(); } catch(e) { alert("Error al registrar pago."); }
         }
         
-        window.hacerTurnoFijo = async function() { 
-            if(!reservaSeleccionadaId) return; const resO = reservasGlobales.find(r => r.id === reservaSeleccionadaId); if(!resO) return;
-            if (resO.fijo) { await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fijo: false }); window.cerrarModalAcciones(); return; }
-            if (!confirm("¿Convertir en TURNO FIJO por 1 año?")) return;
-            try {
-                let idG = "FIJO-" + Date.now(); 
-                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fijo: true, grupoFijoId: idG });
-                let p = []; let fB = new Date(`${resO.fecha}T12:00:00`); 
-                for(let i=1; i<=52; i++) {
-                    let fT = new Date(fB); fT.setDate(fT.getDate() + (i * 7));
-                    // Creamos el clon exacto del turno
-                    let nuevaReserva = { ...resO, clubId: window.clubIdActual, fecha: `${fT.getFullYear()}-${(fT.getMonth()+1).toString().padStart(2,'0')}-${fT.getDate().toString().padStart(2,'0')}`, fechaRegistro: serverTimestamp(), fijo: true, grupoFijoId: idG, pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: [] };
-                    // Eliminamos el ID correctamente para que Firebase no de error
-                    delete nuevaReserva.id; 
-                    p.push(addDoc(collection(db, "reservas"), nuevaReserva));
-                }
-                await Promise.all(p); 
-                window.cerrarModalAcciones();
-                alert("Turno fijo creado exitosamente.");
-            } catch (e) { 
-                console.error(e);
-                alert("Hubo un problema de conexión al crear los turnos."); 
+       window.hacerTurnoFijo = async function() { 
+            if(!reservaSeleccionadaId) return; 
+            const resO = reservasGlobales.find(r => r.id === reservaSeleccionadaId); 
+            if(!resO) return;
+            
+            if (resO.fijo) { 
+                if(confirm("¿Quitar la propiedad de TURNO FIJO?\n\nVolverá a ser un turno normal únicamente para su fecha original.")) {
+                    await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fijo: false }); 
+                    window.cerrarModalAcciones(); 
+                }
+                return; 
             }
-        };
+            
+            if (!confirm("¿Convertir en TURNO FIJO INDEFINIDAMENTE?\n\nEl turno se repetirá automáticamente todos los mismos días de la semana.")) return;
+            
+            try {
+                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fijo: true });
+                window.cerrarModalAcciones();
+                alert("¡Turno fijo creado exitosamente de forma indefinida!");
+            } catch (e) { 
+                console.error(e);
+                alert("Hubo un problema de conexión al crear el turno fijo."); 
+            }
+        };
         
         window.accionEliminar = async function() { 
             if(!reservaSeleccionadaId) return; const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId); if(!res) return;
