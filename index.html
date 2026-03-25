@@ -1581,7 +1581,8 @@
             try { await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { pagoEfectivo: parseFloat(document.getElementById('pago-efectivo').value) || 0, pagoTransferencia: parseFloat(document.getElementById('pago-transferencia').value) || 0, descuento: parseFloat(document.getElementById('pago-descuento').value) || 0 }); window.cerrarModalAcciones(); } catch(e) { alert("Error al registrar pago."); }
         }
         
-       window.hacerTurnoFijo = async function() { 
+       
+        window.hacerTurnoFijo = async function() { 
             if(!reservaSeleccionadaId) return; 
             const resO = reservasGlobales.find(r => r.id === reservaSeleccionadaId); 
             if(!resO) return;
@@ -1593,6 +1594,33 @@
                 }
                 return; 
             }
+
+            // --- NUEVA VALIDACIÓN DE SUPERPOSICIÓN DE TURNOS FIJOS ---
+            const dowO = window.getDayOfWeekFromDate(resO.fecha);
+            const minInicioO = window.aMinutos(resO.hora);
+            const minFinO = minInicioO + (resO.duracion || duracionGlobal);
+
+            // Buscamos si hay otro turno fijo que choque en el mismo día de la semana y cancha
+            const conflicto = reservasGlobales.find(r => {
+                // Si es la misma reserva, no es fijo, o es otra cancha, lo ignoramos
+                if (r.id === resO.id || !r.fijo || r.cancha !== resO.cancha) return false;
+                
+                // Verificamos si caen en el mismo día de la semana (Ej: Los dos son Martes)
+                if (window.getDayOfWeekFromDate(r.fecha) !== dowO) return false;
+
+                // Calculamos los bloques de tiempo para ver si se cruzan
+                const minInicioR = window.aMinutos(r.hora);
+                const minFinR = minInicioR + (r.duracion || duracionGlobal);
+
+                // Lógica de superposición de horarios (si el inicio de uno es antes del fin del otro y viceversa)
+                return (minInicioO < minFinR && minFinO > minInicioR);
+            });
+
+            if (conflicto) {
+                alert(`❌ No puedes hacer fijo este turno.\nYa existe un turno fijo de "${conflicto.jugador}" a las ${conflicto.hora}hs que ocupa este espacio los mismos días de la semana.`);
+                return;
+            }
+            // --- FIN DE VALIDACIÓN ---
             
             if (!confirm("¿Convertir en TURNO FIJO INDEFINIDAMENTE?\n\nEl turno se repetirá automáticamente todos los mismos días de la semana.")) return;
             
@@ -1605,7 +1633,7 @@
                 alert("Hubo un problema de conexión al crear el turno fijo."); 
             }
         };
-        
+                
         window.accionEliminar = async function() { 
             if(!reservaSeleccionadaId) return; 
             const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId); 
