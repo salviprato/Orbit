@@ -1216,7 +1216,7 @@
 
         let fechasValidas = [];
         let fechaActual = new Date();
-        for (let i = 0; i <= 7; i++) {
+        for (let i = 0; i <= 360; i++) {
             let f = new Date(fechaActual); f.setDate(f.getDate() + i);
             fechasValidas.push(`${f.getFullYear()}-${(f.getMonth() + 1).toString().padStart(2, '0')}-${f.getDate().toString().padStart(2, '0')}`); 
         }
