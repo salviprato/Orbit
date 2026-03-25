@@ -1556,6 +1556,7 @@
                 if(prodId && prodId !== 'undefined') { const prod = inventarioGlobal.find(p => p.id === prodId); if(prod) await updateDoc(doc(db, "inventario", prodId), { stock: (parseInt(prod.stock) || 0) + 1 }); }
             } catch(e) { alert("Error al quitar consumo."); }
         }
+        
         window.calcularFaltante = function() {
             if(!reservaSeleccionadaId) return; const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId); if(!res) return;
             let cNum = parseInt(res.cancha || "1"); let pCancha = cNum <= canchasIndoorGlobal ? parseInt(precioIndoorGlobal) : (cNum <= (canchasIndoorGlobal + canchasOutdoorGlobal) ? parseInt(precioOutdoorGlobal) : parseInt(precioTenisGlobal));
@@ -1565,24 +1566,37 @@
             let txt = document.getElementById('txt-faltante'); document.getElementById('res-precio-total').innerText = `$${window.formatearDinero(tGen)}`;
             if(faltante <= 0 && tGen > 0) { txt.innerText = `Pagado ✅`; txt.style.color = "#d1d5db"; } else { txt.innerText = `Falta cobrar: $${window.formatearDinero(faltante)}`; txt.style.color = "#ef4444"; }
         }
+        
         window.cobrarTurno = async function() {
             if(!reservaSeleccionadaId) return;
             try { await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { pagoEfectivo: parseFloat(document.getElementById('pago-efectivo').value) || 0, pagoTransferencia: parseFloat(document.getElementById('pago-transferencia').value) || 0, descuento: parseFloat(document.getElementById('pago-descuento').value) || 0 }); window.cerrarModalAcciones(); } catch(e) { alert("Error al registrar pago."); }
         }
-        window.hacerTurnoFijo = async function() { 
-            if(!reservaSeleccionadaId) return; const resO = reservasGlobales.find(r => r.id === reservaSeleccionadaId); if(!resO) return;
-            if (resO.fijo) { await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fijo: false }); window.cerrarModalAcciones(); return; }
-            if (!confirm("¿Convertir en TURNO FIJO?")) return;
-            try {
-                let idG = "FIJO-" + Date.now(); await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fijo: true, grupoFijoId: idG });
-                let p = []; let fB = new Date(`${resO.fecha}T12:00:00`); 
-                for(let i=1; i<=52; i++) {
-                    let fT = new Date(fB); fT.setDate(fT.getDate() + (i * 7));
-                    p.push(addDoc(collection(db, "reservas"), { ...resO, id: undefined, clubId: window.clubIdActual, fecha: `${fT.getFullYear()}-${(fT.getMonth()+1).toString().padStart(2,'0')}-${fT.getDate().toString().padStart(2,'0')}`, fechaRegistro: serverTimestamp(), fijo: true, grupoFijoId: idG, pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: [] }));
-                }
-                await Promise.all(p); window.cerrarModalAcciones();
-            } catch (e) { alert("Error."); }
-        }
+        
+        window.hacerTurnoFijo = async function() { 
+            if(!reservaSeleccionadaId) return; const resO = reservasGlobales.find(r => r.id === reservaSeleccionadaId); if(!resO) return;
+            if (resO.fijo) { await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fijo: false }); window.cerrarModalAcciones(); return; }
+            if (!confirm("¿Convertir en TURNO FIJO por 1 año?")) return;
+            try {
+                let idG = "FIJO-" + Date.now(); 
+                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { fijo: true, grupoFijoId: idG });
+                let p = []; let fB = new Date(`${resO.fecha}T12:00:00`); 
+                for(let i=1; i<=52; i++) {
+                    let fT = new Date(fB); fT.setDate(fT.getDate() + (i * 7));
+                    // Creamos el clon exacto del turno
+                    let nuevaReserva = { ...resO, clubId: window.clubIdActual, fecha: `${fT.getFullYear()}-${(fT.getMonth()+1).toString().padStart(2,'0')}-${fT.getDate().toString().padStart(2,'0')}`, fechaRegistro: serverTimestamp(), fijo: true, grupoFijoId: idG, pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: [] };
+                    // Eliminamos el ID correctamente para que Firebase no de error
+                    delete nuevaReserva.id; 
+                    p.push(addDoc(collection(db, "reservas"), nuevaReserva));
+                }
+                await Promise.all(p); 
+                window.cerrarModalAcciones();
+                alert("Turno fijo creado exitosamente.");
+            } catch (e) { 
+                console.error(e);
+                alert("Hubo un problema de conexión al crear los turnos."); 
+            }
+        };
+        
         window.accionEliminar = async function() { 
             if(!reservaSeleccionadaId) return; const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId); if(!res) return;
             if (res.fijo && res.grupoFijoId) {
