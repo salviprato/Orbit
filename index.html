@@ -1378,18 +1378,60 @@
         }
 
         function renderizarCalendarios() {
-            const calClub = document.getElementById('calendario-club'); const calComp = document.getElementById('calendario-competitivo'); const calCompUnirse = document.getElementById('calendario-competitivo-unirse');
-            if(calClub) calClub.innerHTML = ''; if(calComp) calComp.innerHTML = ''; if(calCompUnirse) calCompUnirse.innerHTML = '';
+            const calComp = document.getElementById('calendario-competitivo'); const calCompUnirse = document.getElementById('calendario-competitivo-unirse');
+            if(calComp) calComp.innerHTML = ''; if(calCompUnirse) calCompUnirse.innerHTML = '';
             const diasCortos = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-            fechasValidas.forEach((fechaISO, index) => {
+            // A los jugadores solo les mostramos los próximos 30 días en tira para no saturar la pantalla
+            fechasValidas.slice(0, 30).forEach((fechaISO, index) => {
                 const partes = fechaISO.split('-'); const f = new Date(partes[0], partes[1] - 1, partes[2]);
-                const nombreDia = index === 0 ? 'HOY' : diasCortos[f.getDay()];
+                const nombreDia = (fechaISO === obtenerFechaHoy()) ? 'HOY' : diasCortos[f.getDay()];
                 const esActivo = fechaISO === fechaSeleccionada ? 'activo' : '';
                 const htmlDia = `<div class="dia-item ${esActivo}" onclick="window.seleccionarFecha('${fechaISO}')"><span class="dia-nombre">${nombreDia}</span><span class="dia-numero">${f.getDate().toString().padStart(2, '0')}</span></div>`;
-                if(calClub) calClub.innerHTML += htmlDia; if(calComp) calComp.innerHTML += htmlDia; if(calCompUnirse) calCompUnirse.innerHTML += htmlDia;
+                if(calComp) calComp.innerHTML += htmlDia; if(calCompUnirse) calCompUnirse.innerHTML += htmlDia;
             });
+
+            // Actualizar el texto del medio del administrador (< Jue 26 >)
+            const lblClub = document.getElementById('lbl-fecha-club');
+            if(lblClub) {
+                if(fechaSeleccionada === obtenerFechaHoy()) {
+                    lblClub.innerText = "HOY";
+                } else {
+                    const partes = fechaSeleccionada.split('-');
+                    const fObj = new Date(partes[0], partes[1] - 1, partes[2]);
+                    lblClub.innerText = `${diasCortos[fObj.getDay()]} ${fObj.getDate()}/${fObj.getMonth() + 1}`;
+                }
+            }
+            
+            // Sincronizar el input invisible del calendario
+            const picker = document.getElementById('picker-fecha-club');
+            if (picker) {
+                picker.value = fechaSeleccionada;
+                picker.min = obtenerFechaHoy(); // Impide elegir fechas en el pasado
+            }
         }
+
+        // --- NUEVAS FUNCIONES PARA EL CALENDARIO ADMIN ---
+        window.cambiarDiaClub = function(delta) {
+            let idx = fechasValidas.indexOf(fechaSeleccionada);
+            if (idx === -1) { 
+                window.seleccionarFecha(obtenerFechaHoy()); 
+                return; 
+            }
+            
+            let newIdx = idx + delta;
+            if (newIdx >= 0 && newIdx < fechasValidas.length) {
+                window.seleccionarFecha(fechasValidas[newIdx]);
+            } else if (newIdx < 0) {
+                alert("No puedes navegar a fechas pasadas.");
+            } else {
+                alert("Límite de 5 meses alcanzado.");
+            }
+        };
+
+        window.irAHoyClub = function() {
+            window.seleccionarFecha(obtenerFechaHoy());
+        };
 
         window.seleccionarFecha = function(fechaISO) {
             fechaSeleccionada = fechaISO; renderizarCalendarios(); 
