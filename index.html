@@ -1764,7 +1764,7 @@
             });
         };
         
-        Winfow.renderizarClasesPendientes = function() {
+        Window.renderizarClasesPendientes = function() {
             const tb = document.getElementById('tabla-clases-pendientes'); if(!tb) return; tb.innerHTML = '';
             reservasGlobales.filter(r => r.esClase).forEach(c => {
                 let cNum = parseInt(c.cancha || "1"); let maxP = canchasIndoorGlobal + canchasOutdoorGlobal;
