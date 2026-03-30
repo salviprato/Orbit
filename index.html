@@ -1528,30 +1528,43 @@
 
                     reservasCancha.forEach(res => {
                         let minRes = window.aMinutos(res.hora); if (minRes < minActual && minFin > 1440) minRes += 1440;
-                        let offsetTop = ((minRes - minActual) / 30) * celdaH + 50; let height = ((res.duracion || duracionGlobal) / 30) * celdaH; 
-                        let textoFijo = res.fijo === true ? ' 📌' : ''; let iconEvento = res.tipoEvento === "Torneo" ? "🏆 " : (res.tipoEvento === "Especial" ? "⭐ " : (res.esClase ? "🧑‍🏫 " : ""));
-                        let textoSecundario = res.esClase ? `<br><span style="font-size:0.85em; color:#d1d5db;">Profe: ${res.profe}</span>` : '';
-                        let factorPrecio = (res.duracion || duracionGlobal) / duracionGlobal;
+                        let dur = parseInt(res.duracion) || duracionGlobal;
+                        
+                        let offsetTop = ((minRes - minActual) / 30) * celdaH + 50; 
+                        let calcHeight = (dur / 30) * celdaH; 
+                        
+                        // Protecciones matemáticas anti-bugs (evita que se vayan al fondo si hay error de datos)
+                        let safeTop = Math.max(50, Number(offsetTop) || 50);
+                        let safeHeight = Math.max(20, (Number(calcHeight) || 40) - 2);
+
+                        let textoFijo = res.fijo === true ? ' 📌' : ''; 
+                        let iconEvento = res.tipoEvento === "Torneo" ? "🏆 " : (res.tipoEvento === "Especial" ? "⭐ " : (res.esClase ? "🧑‍🏫 " : ""));
+                        let textoSecundario = res.esClase ? `<br><span style="font-size:0.85em; opacity:0.8;">Profe: ${res.profe}</span>` : '';
+                        
+                        let factorPrecio = dur / duracionGlobal;
                         let pCancha = c <= canchasIndoorGlobal ? parseInt(precioIndoorGlobal) : (c <= maxPadel ? parseInt(precioOutdoorGlobal) : parseInt(precioTenisGlobal));
-                        pCancha = pCancha * factorPrecio; let tGen = pCancha + (res.consumos || []).reduce((acc, curr) => acc + parseFloat(curr.precio), 0) - (parseFloat(res.descuento) || 0);
-                        if(tGen < 0) tGen = 0; let tAbonado = (parseFloat(res.pagoEfectivo) || 0) + (parseFloat(res.pagoTransferencia) || 0);
-                        let textoSaldo = (tAbonado >= tGen && tGen > 0) ? "✅" : "Pend"; let cTxt = res.fijo ? "#2e1065" : "#171d24";
+                        pCancha = pCancha * factorPrecio; 
+                        let totalConsumos = (res.consumos || []).reduce((acc, curr) => acc + parseFloat(curr.precio), 0) - (parseFloat(res.descuento) || 0);
+                        let tGen = pCancha + totalConsumos; if(tGen < 0) tGen = 0; 
+                        let tAbonado = (parseFloat(res.pagoEfectivo) || 0) + (parseFloat(res.pagoTransferencia) || 0);
+                        let textoSaldo = (tAbonado >= tGen && tGen > 0) ? "✅" : "Pend"; 
 
-                        // Validar estado para los colores de la tarjeta
-                        let claseColor = "";
-                        if (res.asistencia) claseColor = "confirmado";
-                        else if (res.fijo) claseColor = "fijo";
+                        // Asignar colores directos sin depender de clases externas
+                        let bgCol = "#f6a74b"; let borderCol = "#d97706"; let txtCol = "#171d24";
+                        if (res.asistencia) { bgCol = "#34d399"; borderCol = "#059669"; txtCol = "#064e3b"; }
+                        else if (res.fijo) { bgCol = "#c4b5fd"; borderCol = "#8b5cf6"; txtCol = "#2e1065"; }
 
-                        htmlGrilla += `
-                            <div class="tarjeta-reserva-grilla ${claseColor}" onclick="window.abrirModal('${res.id}')" 
-                                 style="position: absolute; top: ${offsetTop}px; left: 0; height: ${height - 4}px; 
-                                        padding: 6px; font-size: 0.85em; overflow: hidden; border-radius: 6px; cursor: pointer; 
-                                        box-shadow: 0 2px 5px rgba(0,0,0,0.4); display: flex; flex-direction: column; z-index: 10;">
+                        htmlGrilla += `
+                            <div onclick="window.abrirModal('${res.id}')" 
+                                 style="position: absolute; top: ${safeTop + 1}px; left: 4px; right: 4px; height: ${safeHeight}px; 
+                                        background-color: ${bgCol}; border-left: 5px solid ${borderCol}; color: ${txtCol};
+                                        padding: 6px; font-size: 0.85em; overflow: hidden; border-radius: 6px; cursor: pointer; 
+                                        box-shadow: 0 2px 5px rgba(0,0,0,0.4); display: flex; flex-direction: column; z-index: 10; box-sizing: border-box;">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start; line-height: 1;">
-                                    <span style="font-weight: 900; font-size: 1.1em; color: ${cTxt}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${iconEvento}${res.jugador}${textoFijo}${textoSecundario}</span>
+                                    <span style="font-weight: 900; font-size: 1.1em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${iconEvento}${res.jugador}${textoFijo}${textoSecundario}</span>
                                 </div>
-                                <span style="margin-top: 4px; color: ${cTxt}; opacity: 0.8; font-weight: 700;">${res.hora} hs</span>
-                                <span style="margin-top: auto; font-weight: bold; color: ${cTxt};">Pago: ${textoSaldo}</span>
+                                <span style="margin-top: 4px; opacity: 0.9; font-weight: 700;">${res.hora} hs</span>
+                                <span style="margin-top: auto; font-weight: bold;">Pago: ${textoSaldo}</span>
                             </div>`;
                     });
                     htmlGrilla += `</div>`; 
