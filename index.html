@@ -1704,7 +1704,21 @@
                 alert("Hubo un problema de conexión al crear el turno fijo."); 
             }
         };
-                
+
+        window.toggleConfirmarTurno = async function() {
+            if(!reservaSeleccionadaId) return;
+            const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
+            if(!res) return;
+
+            let nuevoEstado = !(res.asistencia === true); // Invierte el estado actual
+            try {
+                await updateDoc(doc(db, "reservas", reservaSeleccionadaId), { asistencia: nuevoEstado });
+                window.cerrarModalAcciones();
+            } catch(e) {
+                alert("Error al confirmar turno.");
+            }
+        };
+        
         window.accionEliminar = async function() { 
             if(!reservaSeleccionadaId) return; 
             const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId); 
