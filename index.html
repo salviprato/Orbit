@@ -53,11 +53,16 @@
         .contenedor-grilla::-webkit-scrollbar { height: 8px; }
         .contenedor-grilla::-webkit-scrollbar-thumb { background: #44505d; border-radius: 4px; }
         
-        .tarjeta-reserva-grilla {
-            background-color: #f6a74b; color: #171d24; border-left: 5px solid #d97706; transition: 0.1s;
-        }
-        .tarjeta-reserva-grilla:hover { filter: brightness(1.1); }
-        .tarjeta-reserva-grilla.fijo { background-color: #c4b5fd; border-left: 5px solid #8b5cf6; color: #2e1065;}
+       /* Tarjetas de Reserva */
+        .tarjeta-reserva-grilla {
+            background-color: #f6a74b; color: #171d24; border-left: 5px solid #d97706; transition: 0.1s;
+            margin: 2px 4px; /* Separación vertical y horizontal */
+            width: calc(100% - 8px); /* Para que respete el margen */
+            box-sizing: border-box;
+        }
+        .tarjeta-reserva-grilla:hover { filter: brightness(1.1); }
+        .tarjeta-reserva-grilla.fijo { background-color: #c4b5fd; border-left: 5px solid #8b5cf6; color: #2e1065;}
+        .tarjeta-reserva-grilla.confirmado { background-color: #34d399; border-left: 5px solid #059669; color: #064e3b;}
         
         .celda-vacia-hover { transition: background-color 0.1s; }
         .celda-vacia-hover:hover { background-color: rgba(59, 130, 246, 0.15); }
