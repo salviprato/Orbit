@@ -1597,25 +1597,38 @@
             document.getElementById('pago-descuento').value = res.descuento || ""; renderizarModalTurnoAcciones();
             document.getElementById('modal-acciones').style.display = 'flex'; 
         }
-        window.renderizarModalTurnoAcciones = function() {
+       window.renderizarModalTurnoAcciones = function() {
             if(!reservaSeleccionadaId) return; const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId); if(!res) return;
             let txtE = (res.tipoEvento && res.tipoEvento !== 'Normal') ? `[${res.tipoEvento}]` : '';
             document.getElementById('titulo-modal-acciones').innerText = `Gestión: ${res.jugador} ${txtE} (${res.hora}hs)`;
+            
             const btnFijar = document.getElementById('btn-toggle-fijo');
             if(res.fijo) { btnFijar.innerHTML = "📌 Quitar Turno Fijo"; btnFijar.style.backgroundColor = "#4b5563"; } else { btnFijar.innerHTML = "📌 Fijar Turno"; btnFijar.style.backgroundColor = "#374151"; }
+            
             document.getElementById('btn-whatsapp').style.display = (res.telefono && res.telefono.trim() !== "") ? 'block' : 'none';
             document.getElementById('btn-excepcion').style.display = res.fijo ? 'block' : 'none';
+            
             let factorPrecio = (res.duracion || duracionGlobal) / duracionGlobal;
             let cNum = parseInt(res.cancha || "1"); let pCancha = cNum <= canchasIndoorGlobal ? parseInt(precioIndoorGlobal) : (cNum <= (canchasIndoorGlobal + canchasOutdoorGlobal) ? parseInt(precioOutdoorGlobal) : parseInt(precioTenisGlobal));
             pCancha = pCancha * factorPrecio; let totalConsumos = (res.consumos || []).reduce((acc, curr) => acc + (parseFloat(curr.precio) || 0), 0);
             let desc = parseFloat(res.descuento) || 0; let totalGeneral = pCancha + totalConsumos - desc; if(totalGeneral < 0) totalGeneral = 0;
+            
             document.getElementById('res-precio-cancha').innerText = `$${window.formatearDinero(pCancha)}`; document.getElementById('res-precio-consumos').innerText = `$${window.formatearDinero(totalConsumos)}`; document.getElementById('res-precio-total').innerText = `$${window.formatearDinero(totalGeneral)}`;
+            
             let sel = document.getElementById('select-consumo-turno'); sel.innerHTML = '<option value="" disabled selected>Elegir producto...</option>';
             inventarioGlobal.forEach(p => { if((parseInt(p.stock) || 0) > 0) sel.innerHTML += `<option value="${p.id}">${p.nombre} - $${window.formatearDinero(p.precio)}</option>`; });
+            
             let ul = document.getElementById('lista-consumos-turno'); ul.innerHTML = '';
-            if(!res.consumos || res.consumos.length === 0) { ul.innerHTML = '<li style="color: #9ca3af; font-style: italic;">Sin consumos adicionales.</li>'; } else {
-                res.consumos.forEach((c, index) => { ul.innerHTML += `<li style="display: flex; justify-content: space-between; border-bottom: 1px solid #2c3540; padding: 5px 0;"><span class="text-neutral-main">${c.nombre}</span><span><span class="text-neutral-bold" style="margin-right: 10px;">$${window.formatearDinero(c.precio)}</span><button onclick="window.eliminarConsumoTurno(${index}, '${c.prodId}')" style="background:none;border:none;cursor:pointer;">❌</button></span></li>`; });
-            // Logica del botón Confirmar Turno
+            
+            if(!res.consumos || res.consumos.length === 0) { 
+                ul.innerHTML = '<li style="color: #9ca3af; font-style: italic;">Sin consumos adicionales.</li>'; 
+            } else {
+                res.consumos.forEach((c, index) => { 
+                    ul.innerHTML += `<li style="display: flex; justify-content: space-between; border-bottom: 1px solid #2c3540; padding: 5px 0;"><span class="text-neutral-main">${c.nombre}</span><span><span class="text-neutral-bold" style="margin-right: 10px;">$${window.formatearDinero(c.precio)}</span><button onclick="window.eliminarConsumoTurno(${index}, '${c.prodId}')" style="background:none;border:none;cursor:pointer;">❌</button></span></li>`; 
+                });
+            } // <--- ESTA ERA LA BENDITA LLAVE QUE FALTABA
+
+            // Lógica del botón Confirmar Turno
             const btnConf = document.getElementById('btn-confirmar-asistencia');
             if (res.asistencia) {
                 btnConf.innerHTML = "❌ Quitar Confirmación";
@@ -1625,8 +1638,9 @@
                 btnConf.style.backgroundColor = "#10b981";
             }
             
-                window.calcularFaltante(); 
+            window.calcularFaltante(); 
         }
+        
         window.cerrarModalAcciones = function() { reservaSeleccionadaId = null; document.getElementById('modal-acciones').style.display = 'none'; }
         window.agregarConsumoTurno = async function() {
             if(!reservaSeleccionadaId) return; const res = reservasGlobales.find(r => r.id === reservaSeleccionadaId);
