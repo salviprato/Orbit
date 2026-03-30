@@ -1615,8 +1615,17 @@
             let ul = document.getElementById('lista-consumos-turno'); ul.innerHTML = '';
             if(!res.consumos || res.consumos.length === 0) { ul.innerHTML = '<li style="color: #9ca3af; font-style: italic;">Sin consumos adicionales.</li>'; } else {
                 res.consumos.forEach((c, index) => { ul.innerHTML += `<li style="display: flex; justify-content: space-between; border-bottom: 1px solid #2c3540; padding: 5px 0;"><span class="text-neutral-main">${c.nombre}</span><span><span class="text-neutral-bold" style="margin-right: 10px;">$${window.formatearDinero(c.precio)}</span><button onclick="window.eliminarConsumoTurno(${index}, '${c.prodId}')" style="background:none;border:none;cursor:pointer;">❌</button></span></li>`; });
+            // Logica del botón Confirmar Turno
+            const btnConf = document.getElementById('btn-confirmar-asistencia');
+            if (res.asistencia) {
+                btnConf.innerHTML = "❌ Quitar Confirmación";
+                btnConf.style.backgroundColor = "#4b5563";
+            } else {
+                btnConf.innerHTML = "✅ Confirmar Turno";
+                btnConf.style.backgroundColor = "#10b981";
             }
-            window.calcularFaltante(); 
+            
+                window.calcularFaltante(); 
         }
         window.cerrarModalAcciones = function() { reservaSeleccionadaId = null; document.getElementById('modal-acciones').style.display = 'none'; }
         window.agregarConsumoTurno = async function() {
