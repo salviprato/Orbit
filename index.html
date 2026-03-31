@@ -1827,14 +1827,36 @@
         
         window.renderizarClasesPendientes = function() {
             const tb = document.getElementById('tabla-clases-pendientes'); if(!tb) return; tb.innerHTML = '';
+            let ahora = new Date(); // Obtenemos el instante exacto actual
+
             reservasGlobales.filter(r => r.esClase).forEach(c => {
+                // 1. Si la clase fue cancelada por excepción, la ignoramos
+                if(c.fechasCanceladas && c.fechasCanceladas.includes(c.fecha)) return;
+
+                // 2. Comprobamos la fecha y hora de la clase
+                let [y, mo, d] = (c.fecha || obtenerFechaHoy()).split('-');
+                let [h, min] = (c.hora || "00:00").split(':');
+                let fechaClase = new Date(y, mo - 1, d, h, min, 0);
+
+                // 3. SI LA CLASE ES EN EL FUTURO, LA SALTAMOS (No aparece)
+                if (fechaClase > ahora) return;
+
+                // Si ya pasó, calculamos la deuda
                 let cNum = parseInt(c.cancha || "1"); let maxP = canchasIndoorGlobal + canchasOutdoorGlobal;
                 let pCancha = (cNum<=canchasIndoorGlobal ? parseInt(precioIndoorGlobal) : (cNum<=maxP ? parseInt(precioOutdoorGlobal) : parseInt(precioTenisGlobal))) * ((c.duracion||duracionGlobal)/duracionGlobal);
                 let tGen = pCancha + (c.consumos||[]).reduce((acc, x) => acc + parseFloat(x.precio), 0) - (parseFloat(c.descuento)||0);
                 let ab = (parseFloat(c.pagoEfectivo)||0) + (parseFloat(c.pagoTransferencia)||0);
-                if(tGen > 0 && ab < tGen) { tb.innerHTML += `<tr><td>${c.profe}<br><small>${c.jugador}</small></td><td style="color:#ef4444;">$${window.formatearDinero(tGen-ab)}</td><td><button onclick="window.abrirModalCobrarClase('${c.id}', '${c.profe}', '${c.jugador}', ${tGen-ab})">Cobrar</button></td></tr>`; }
+                
+                if(tGen > 0 && ab < tGen) { 
+                    tb.innerHTML += `<tr style="border-bottom: 1px solid #2c3540;">
+                        <td style="padding: 8px 0;">${c.profe}<br><small style="color:#9ca3af;">${c.jugador} (${c.fecha})</small></td>
+                        <td style="color:#ef4444; text-align: center; vertical-align: middle; font-weight: bold;">$${window.formatearDinero(tGen-ab)}</td>
+                        <td style="text-align: right; vertical-align: middle;"><button class="btn-modal btn-cobrar-clase" style="width: auto; padding: 6px 12px; font-size: 0.85em; background-color: #10b981;" onclick="window.abrirModalCobrarClase('${c.id}', '${c.profe}', '${c.jugador}', ${tGen-ab})">Cobrar</button></td>
+                    </tr>`; 
+                }
             });
-        }
+        };
+        
         window.abrirModalCobrarClase = function(id, p, a, f) { document.getElementById('cobrar-clase-id').value = id; document.getElementById('lbl-cobrar-clase').innerText = `${p} | ${a}`; document.getElementById('cobrar-clase-total').innerText = `$${window.formatearDinero(f)}`; document.getElementById('modal-cobrar-clase').style.display = 'flex'; }
         window.cerrarModalCobrarClase = function() { document.getElementById('modal-cobrar-clase').style.display = 'none'; }
         window.confirmarCobroClase = async function() {
