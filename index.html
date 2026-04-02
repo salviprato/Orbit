@@ -1506,9 +1506,19 @@
                     
                     let reservasCancha = reservasAMostrar.filter(r => (r.cancha || "1") == c);
                     let bloquesOcupadosCancha = new Set();
+                    
                     reservasCancha.forEach(res => {
-                        let numBloques = (res.duracion || duracionGlobal) / 30;
-                        for(let b=0; b < numBloques; b++) { bloquesOcupadosCancha.add(window.sumarMinutos(res.hora, b * 30)); }
+                        let minInicio = window.aMinutos(res.hora);
+                        let dur = parseInt(res.duracion) || duracionGlobal;
+                        let minFin = minInicio + dur;
+
+                        // Iteramos cada 30 minutos desde el inicio hasta el final del turno, sumando al Set
+                        for(let m = minInicio; m < minFin; m += 30) {
+                            let hLabel = Math.floor(m / 60) % 24; 
+                            let mLabel = m % 60;
+                            let horaMarcada = `${hLabel.toString().padStart(2, '0')}:${mLabel.toString().padStart(2, '0')}`;
+                            bloquesOcupadosCancha.add(horaMarcada); 
+                        }
                     });
 
                     for (let m = minActual; m < minFin; m += 30) {
