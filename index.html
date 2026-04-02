@@ -1601,12 +1601,35 @@
             document.getElementById('modal-reserva-admin').style.display = 'flex';
         }
         window.cerrarModalReservaAdmin = function() { reservaEnProcesoHora = null; document.getElementById('modal-reserva-admin').style.display = 'none'; }
+        
         window.confirmarReservaAdmin = async function() {
             const inputNombre = document.getElementById('admin-input-jugador').value; const inputTelefono = document.getElementById('admin-input-telefono').value;
             const canchaAsignada = document.getElementById('admin-cancha-id').value; const tipoEvento = document.getElementById('admin-tipo-evento').value;
             const duracionSel = parseInt(document.getElementById('admin-duracion').value) || duracionGlobal;
             let profeSel = null; if(tipoEvento === 'Clases') { profeSel = document.getElementById('admin-select-profe').value; if(!profeSel) { alert("Selecciona un profesor."); return; } }
             if (!inputNombre) { alert("Ingresa el Nombre."); return; }
+            // --- VALIDACIÓN ANTI-SUPERPOSICIÓN ---
+            const minNuevoInicio = window.aMinutos(reservaEnProcesoHora);
+            const minNuevoFin = minNuevoInicio + duracionSel;
+            
+            const colision = reservasGlobales.find(r => {
+                if (r.fecha !== fechaSeleccionada || r.cancha !== canchaAsignada) return false;
+                
+                // Si la reserva fue cancelada ese día, no hay colisión
+                if (r.fechasCanceladas && r.fechasCanceladas.includes(fechaSeleccionada)) return false;
+
+                const minInicioExt = window.aMinutos(r.hora);
+                const minFinExt = minInicioExt + (parseInt(r.duracion) || duracionGlobal);
+
+                // Lógica de colisión
+                return (minNuevoInicio < minFinExt && minNuevoFin > minInicioExt);
+            });
+
+            if (colision) {
+                alert(`❌ No se puede agendar aquí. El turno de ${reservaEnProcesoHora} se pisa con "${colision.jugador}" que va de ${colision.hora} a ${window.sumarMinutos(colision.hora, colision.duracion || duracionGlobal)}.`);
+                return;
+            }
+            // --- FIN VALIDACIÓN ---
             const btn = document.getElementById('btn-guardar-reserva-admin'); btn.innerText = "Guardando..."; btn.disabled = true;
             try {
                 await addDoc(collection(db, "reservas"), { clubId: window.clubIdActual, fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: canchaAsignada, jugador: inputNombre, telefono: inputTelefono, duracion: duracionSel, fechaRegistro: serverTimestamp(), asistencia: false, fijo: false, fechasCanceladas: [], pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: [], tipoEvento: tipoEvento, esClase: (tipoEvento === 'Clases'), profe: profeSel });
