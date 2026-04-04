@@ -1999,20 +1999,87 @@
         window.abrirModalAdminTorneos = function() { document.getElementById('modal-admin-torneos').style.display = 'flex'; };
         window.cerrarModalAdminTorneos = function() { document.getElementById('modal-admin-torneos').style.display = 'none'; };
         window.crearTorneoAdmin = async function() {
-            const n = document.getElementById('torneo-admin-nombre').value.trim(); const f = document.getElementById('torneo-admin-fecha').value; const s = document.getElementById('torneo-admin-sup').value; const hi = document.getElementById('torneo-admin-inicio').value; const hf = document.getElementById('torneo-admin-fin').value; const cc = parseInt(document.getElementById('torneo-admin-canchas').value); const cu = parseInt(document.getElementById('torneo-admin-cupo').value);
-            if(!n || !f || !hi || !hf || isNaN(cc) || isNaN(cu)) return;
-            let cPos = []; let maxP = canchasIndoorGlobal + canchasOutdoorGlobal;
-            if(s === 'Indoor') for(let i=1; i<=canchasIndoorGlobal; i++) cPos.push(i); else for(let i=canchasIndoorGlobal+1; i<=maxP; i++) cPos.push(i);
-            if(cc > cPos.length) { alert("No hay tantas canchas de ese tipo."); return; }
-            await addDoc(collection(db, "torneos_admin"), { clubId: window.clubIdActual, nombre: n, fecha: f, superficie: s, horaInicio: hi, horaFin: hf, canchas: cPos.slice(0,cc), cupo: cu, inscriptos: [], faseGrupos: null, bracket: null, fechaCreacion: serverTimestamp() });
-            cPos.slice(0,cc).forEach(async cId => { await addDoc(collection(db, "reservas"), { clubId: window.clubIdActual, fecha: f, hora: hi, cancha: cId.toString(), jugador: `🏆 ${n}`, duracion: (window.aMinutos(hf)-window.aMinutos(hi)), fechaRegistro: serverTimestamp(), fijo: false, consumos: [], tipoEvento: "Torneo" }); });
-            document.getElementById('ac-crear-torneo').classList.remove('abierto');
-        };
+    const n = document.getElementById('torneo-admin-nombre').value.trim(); 
+    const f = document.getElementById('torneo-admin-fecha').value; 
+    const s = document.getElementById('torneo-admin-sup').value; 
+    const hi = document.getElementById('torneo-admin-inicio').value; 
+    const hf = document.getElementById('torneo-admin-fin').value; 
+    const cc = parseInt(document.getElementById('torneo-admin-canchas').value); 
+    const cu = parseInt(document.getElementById('torneo-admin-cupo').value);
+    
+    // Nuevos campos
+    const cat = document.getElementById('torneo-admin-categoria').value;
+    const precio = parseFloat(document.getElementById('torneo-admin-precio').value) || 0;
+    const premio = document.getElementById('torneo-admin-premio').value.trim();
+
+    if(!n || !f || !hi || !hf || isNaN(cc) || isNaN(cu)) {
+        alert("Completa todos los datos requeridos.");
+        return;
+    }
+    
+    let cPos = []; let maxP = canchasIndoorGlobal + canchasOutdoorGlobal;
+    if(s === 'Indoor') for(let i=1; i<=canchasIndoorGlobal; i++) cPos.push(i); else for(let i=canchasIndoorGlobal+1; i<=maxP; i++) cPos.push(i);
+    if(cc > cPos.length) { alert("No hay tantas canchas de ese tipo."); return; }
+    
+    // Guardar torneo en base de datos
+    await addDoc(collection(db, "torneos_admin"), { 
+        clubId: window.clubIdActual, 
+        nombre: n, 
+        categoria: cat, // Guardamos la categoría
+        precioInscripcion: precio, // Guardamos el precio
+        premio: premio, // Guardamos el premio
+        fecha: f, 
+        superficie: s, 
+        horaInicio: hi, 
+        horaFin: hf, 
+        canchas: cPos.slice(0,cc), 
+        cupo: cu, 
+        inscriptos: [], 
+        faseGrupos: null, 
+        bracket: null, 
+        fechaCreacion: serverTimestamp() 
+    });
+    
+    // Bloquear canchas en la grilla
+    cPos.slice(0,cc).forEach(async cId => { 
+        await addDoc(collection(db, "reservas"), { 
+            clubId: window.clubIdActual, 
+            fecha: f, 
+            hora: hi, 
+            cancha: cId.toString(), 
+            jugador: `🏆 ${n} (${cat})`, // Mostramos la categoría en la grilla
+            duracion: (window.aMinutos(hf)-window.aMinutos(hi)), 
+            fechaRegistro: serverTimestamp(), 
+            fijo: false, 
+            consumos: [], 
+            tipoEvento: "Torneo" 
+        }); 
+    });
+    
+    document.getElementById('ac-crear-torneo').classList.remove('abierto');
+    // Limpiar campos después de crear
+    document.getElementById('torneo-admin-nombre').value = '';
+    document.getElementById('torneo-admin-precio').value = '';
+    document.getElementById('torneo-admin-premio').value = '';
+};
         window.renderizarTorneosAdmin = function() {
             const div = document.getElementById('lista-torneos-admin'); if(!div) return; div.innerHTML = '';
             torneosAdminGlobal.sort((a,b) => b.fechaCreacion - a.fechaCreacion).forEach(t => { 
                 let estado = "📝 Inscripciones"; if(t.faseGrupos && !t.bracket) estado = "👥 Fase de Grupos"; if(t.bracket) estado = "🎾 Cuadro Principal";
-                div.innerHTML += `<div style="border: 1px solid #44505d; border-radius: 6px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #242c36;"><div style="flex: 1;"><strong style="color:#f59e0b;">🏆 ${t.nombre}</strong> <span style="color:#9ca3af; font-size:0.85em;">(${t.fecha})</span><br><small style="color:#d1d5db;">${estado} | Cupos: ${(t.inscriptos||[]).length}/${t.cupo}</small></div><div style="display: flex; gap: 8px;"><button class="btn-modal btn-guardar" style="width: auto; padding: 6px 12px; font-size: 0.85em; background-color: #3b82f6;" onclick="window.abrirModalTorneoInscriptos('${t.id}')">Gestionar</button><button class="btn-modal" style="width: auto; padding: 6px 10px; font-size: 0.85em; background-color: transparent; border: 1px solid #ef4444; color: #ef4444;" onclick="window.eliminarTorneoAdmin('${t.id}')" title="Borrar Torneo">🗑️</button></div></div>`; 
+                let precioFormateado = t.precioInscripcion ? window.formatearDinero(t.precioInscripcion) : "0";
+let premioTxt = t.premio ? t.premio : "Sin premio cargado";
+
+div.innerHTML += `<div style="border: 1px solid #44505d; border-radius: 6px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #242c36;">
+    <div style="flex: 1;">
+        <strong style="color:#f59e0b;">🏆 ${t.nombre} - ${t.categoria || 'Libre'}</strong> <span style="color:#9ca3af; font-size:0.85em;">(${t.fecha})</span><br>
+        <small style="color:#10b981; font-weight:bold;">Inscripción: $${precioFormateado} | Premio: ${premioTxt}</small><br>
+        <small style="color:#d1d5db;">${estado} | Cupos: ${(t.inscriptos||[]).length}/${t.cupo}</small>
+    </div>
+    <div style="display: flex; gap: 8px;">
+        <button class="btn-modal btn-guardar" style="width: auto; padding: 6px 12px; font-size: 0.85em; background-color: #3b82f6;" onclick="window.abrirModalTorneoInscriptos('${t.id}')">Gestionar</button>
+        <button class="btn-modal" style="width: auto; padding: 6px 10px; font-size: 0.85em; background-color: transparent; border: 1px solid #ef4444; color: #ef4444;" onclick="window.eliminarTorneoAdmin('${t.id}')" title="Borrar Torneo">🗑️</button>
+    </div>
+</div>`;
             });
         };
         window.eliminarTorneoAdmin = async function(idTorneo) {
