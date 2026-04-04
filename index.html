@@ -2020,19 +2020,57 @@
     let cPos = []; let maxP = canchasIndoorGlobal + canchasOutdoorGlobal;
     if(s === 'Indoor') for(let i=1; i<=canchasIndoorGlobal; i++) cPos.push(i); else for(let i=canchasIndoorGlobal+1; i<=maxP; i++) cPos.push(i);
     if(cc > cPos.length) { alert("No hay tantas canchas de ese tipo."); return; }
+
+    const canchasAUsar = cPos.slice(0, cc);
+
+    // --- NUEVA VALIDACIÓN ANTI-SUPERPOSICIÓN ---
+    const minTorneoInicio = window.aMinutos(hi);
+    const minTorneoFin = window.aMinutos(hf);
+    let conflicto = null;
+
+    // Revisamos cada cancha que el torneo quiere ocupar
+    for (let c of canchasAUsar) {
+        const canchaId = c.toString();
+        
+        const colision = reservasGlobales.find(r => {
+            // Solo nos importan las reservas del mismo día y en esta cancha específica
+            if (r.fecha !== f || r.cancha !== canchaId) return false;
+            
+            // Si la reserva fue cancelada (excepción), no choca
+            if (r.fechasCanceladas && r.fechasCanceladas.includes(f)) return false;
+
+            const minInicioExt = window.aMinutos(r.hora);
+            const minFinExt = minInicioExt + (parseInt(r.duracion) || duracionGlobal);
+
+            // Fórmula matemática de superposición de intervalos de tiempo
+            return (minTorneoInicio < minFinExt && minTorneoFin > minInicioExt);
+        });
+
+        if (colision) {
+            conflicto = colision;
+            break; // Si encontramos al menos un choque, dejamos de buscar
+        }
+    }
+
+    if (conflicto) {
+        let horaFinConflicto = window.sumarMinutos(conflicto.hora, conflicto.duracion || duracionGlobal);
+        alert(`❌ No se puede crear el torneo.\nLa Cancha ${conflicto.cancha} ya está ocupada por "${conflicto.jugador}" de ${conflicto.hora}hs a ${horaFinConflicto}hs.`);
+        return; // Abortamos la creación
+    }
+    // --- FIN DE LA VALIDACIÓN ---
     
     // Guardar torneo en base de datos
     await addDoc(collection(db, "torneos_admin"), { 
         clubId: window.clubIdActual, 
         nombre: n, 
-        categoria: cat, // Guardamos la categoría
-        precioInscripcion: precio, // Guardamos el precio
-        premio: premio, // Guardamos el premio
+        categoria: cat, 
+        precioInscripcion: precio, 
+        premio: premio, 
         fecha: f, 
         superficie: s, 
         horaInicio: hi, 
         horaFin: hf, 
-        canchas: cPos.slice(0,cc), 
+        canchas: canchasAUsar, 
         cupo: cu, 
         inscriptos: [], 
         faseGrupos: null, 
@@ -2041,13 +2079,13 @@
     });
     
     // Bloquear canchas en la grilla
-    cPos.slice(0,cc).forEach(async cId => { 
+    canchasAUsar.forEach(async cId => { 
         await addDoc(collection(db, "reservas"), { 
             clubId: window.clubIdActual, 
             fecha: f, 
             hora: hi, 
             cancha: cId.toString(), 
-            jugador: `🏆 ${n} (${cat})`, // Mostramos la categoría en la grilla
+            jugador: `🏆 ${n} (${cat})`, 
             duracion: (window.aMinutos(hf)-window.aMinutos(hi)), 
             fechaRegistro: serverTimestamp(), 
             fijo: false, 
@@ -2062,6 +2100,7 @@
     document.getElementById('torneo-admin-precio').value = '';
     document.getElementById('torneo-admin-premio').value = '';
 };
+        
         window.renderizarTorneosAdmin = function() {
             const div = document.getElementById('lista-torneos-admin'); if(!div) return; div.innerHTML = '';
             torneosAdminGlobal.sort((a,b) => b.fechaCreacion - a.fechaCreacion).forEach(t => { 
