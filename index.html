@@ -688,10 +688,38 @@
                     <div id="ac-crear-torneo" class="contenido-acordeon">
                         <div style="display: flex; flex-direction: column; gap: 10px;">
                             <div>
-                                <label style="font-size: 0.85em; color: #d1d5db;">Nombre del Torneo:</label>
-                                <input type="text" id="torneo-admin-nombre" class="input-form" placeholder="Ej: Torneo Relámpago">
-                            </div>
+    <label style="font-size: 0.85em; color: #d1d5db;">Nombre del Torneo:</label>
+    <input type="text" id="torneo-admin-nombre" class="input-form" placeholder="Ej: Torneo Relámpago">
+</div>
                             
+<div style="display: flex; gap: 10px; margin-top: 10px;">
+    <div style="flex: 1;">
+        <label style="font-size: 0.85em; color: #d1d5db;">Categoría:</label>
+        <select id="torneo-admin-categoria" class="input-form">
+            <option value="1ra">1ra Categoría</option>
+            <option value="2da">2da Categoría</option>
+            <option value="3ra">3ra Categoría</option>
+            <option value="4ta">4ta Categoría</option>
+            <option value="5ta" selected>5ta Categoría</option>
+            <option value="6ta">6ta Categoría</option>
+            <option value="7ma">7ma Categoría</option>
+            <option value="8va">8va Categoría</option>
+            <option value="Suma">Suma (Ej: Suma 13)</option>
+            <option value="Libre">Libre</option>
+        </select>
+    </div>
+</div>
+
+<div style="display: flex; gap: 10px; margin-top: 10px;">
+    <div style="flex: 1;">
+        <label style="font-size: 0.85em; color: #d1d5db;">Precio Inscripción (Por pareja $):</label>
+        <input type="number" id="torneo-admin-precio" class="input-form" placeholder="Ej: 15000" min="0">
+    </div>
+    <div style="flex: 1;">
+        <label style="font-size: 0.85em; color: #d1d5db;">Premio:</label>
+        <input type="text" id="torneo-admin-premio" class="input-form" placeholder="Ej: Paletas + Indumentaria">
+    </div>
+</div>                            
                             <div style="display: flex; gap: 10px;">
                                 <div style="flex: 1;">
                                     <label style="font-size: 0.85em; color: #d1d5db;">Fecha:</label>
