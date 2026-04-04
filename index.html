@@ -2368,8 +2368,23 @@ div.innerHTML += `<div style="border: 1px solid #44505d; border-radius: 6px; pad
                     accionHtml = `<button class="btn-modal btn-guardar" style="width: auto; padding: 8px 15px; font-size: 0.85em; background-color: #10b981;" onclick="window.abrirModalInscripcionTorneo('${t.id}')">Inscribirse</button>`;
                 }
 
-                div.innerHTML += `<div style="background: #1e252d; border: 1px solid #44505d; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; text-align: left;"><div><div style="color: #f59e0b; font-weight: bold; font-size: 1.1em;">🏆 ${t.nombre}</div><div style="color: #d1d5db; font-size: 0.85em; margin-top: 4px;">📅 ${fechaLegible} | ⌚ ${t.horaInicio} hs</div><div style="color: #10b981; font-size: 0.8em; margin-top: 2px;">Cupos Libres: ${cuposDisponibles}</div></div><div>${accionHtml}</div></div>`; 
-            });
+                let precioFormateado = t.precioInscripcion ? window.formatearDinero(t.precioInscripcion) : "0";
+let premioTxt = t.premio ? t.premio : "Consultar al club";
+
+div.innerHTML += `<div style="background: #1e252d; border: 1px solid #44505d; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; text-align: left;">
+    <div style="flex: 1;">
+        <div style="color: #f59e0b; font-weight: bold; font-size: 1.1em;">🏆 ${t.nombre}</div>
+        <div style="color: #8b5cf6; font-size: 0.95em; font-weight: bold; margin-top: 2px;">Categoría: ${t.categoria || 'Libre'}</div>
+        <div style="color: #d1d5db; font-size: 0.85em; margin-top: 4px;">📅 ${fechaLegible} | ⌚ ${t.horaInicio} hs</div>
+        <div style="color: #10b981; font-size: 0.8em; margin-top: 2px;">Inscripción (pareja): $${precioFormateado}</div>
+        <div style="color: #3b82f6; font-size: 0.8em; margin-top: 2px;">🎁 Premio: ${premioTxt}</div>
+        <div style="color: #9ca3af; font-size: 0.8em; margin-top: 4px; font-style: italic;">Cupos Libres: ${cuposDisponibles}</div>
+    </div>
+    <div style="margin-left: 10px;">
+        ${accionHtml}
+    </div>
+</div>`;
+            });
             if (torneosMostrados === 0) div.innerHTML = '<div style="padding: 20px; color: #9ca3af;">Por el momento no hay torneos disponibles.</div>';
         };
 
