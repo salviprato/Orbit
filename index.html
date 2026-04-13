@@ -1961,7 +1961,13 @@
                     duracionTurno: parseInt(document.getElementById('input-duracion').value)||90, diasAbiertos: dias, 
                     telefonoClub: document.getElementById('input-telefono-club').value.trim(), // <--- AQUI ESTA LA COMA QUE ARREGLA EL ERROR
                     ubicacion: document.getElementById('input-ubicacion-club').value.trim() 
-                }); 
+                    // Dentro de la función que hace el setDoc o updateDoc de la configuración:
+const montoSena = parseInt(document.getElementById('input-monto-sena').value) || 0;
+
+await setDoc(doc(db, "configuracion", "ID_DE_TU_CLUB"), {
+    // ... tus otros datos (nombre, precios, etc)
+    montoSena: montoSena 
+}, { merge: true }); 
                 
                 alert("¡Configuración guardada exitosamente!");
                 window.cerrarModalConfig();
