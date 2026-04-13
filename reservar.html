@@ -325,51 +325,87 @@
 
         window.cerrarModalReservaJugador = function() { reservaEnProcesoHora = null; document.getElementById('modal-reserva-jugador').style.display = 'none'; }
 
-        window.confirmarReservaJugador = async function() {
-            const inputNombre = document.getElementById('input-nombre-jugador').value;
-            const inputTelefono = document.getElementById('input-telefono-jugador').value;
-            const canchaAsignada = document.getElementById('select-cancha-modal').value;
-            const btnConfirmar = document.getElementById('btn-confirmar-reserva');
+       window.confirmarReservaJugador = async function() {
+    // 1. Obtener los inputs del jugador (asegúrate de que los IDs coincidan con tu HTML)
+    const inputNombre = document.getElementById('input-nombre').value.trim();
+    const inputTelefono = document.getElementById('input-telefono').value.trim();
+    const btnConfirmar = document.getElementById('btn-confirmar-reserva'); // Cambia el ID si es distinto
 
-            if (!inputNombre || inputNombre.trim() === "") { alert("Por favor, ingresa Nombre y Apellido."); return; }
-            if (!inputTelefono || inputTelefono.trim() === "") { alert("Por favor, ingresa tu número de Teléfono."); return; }
+    if (!inputNombre || !inputTelefono) {
+        alert("Por favor completa tu nombre y teléfono.");
+        return;
+    }
 
-            btnConfirmar.disabled = true;
-            btnConfirmar.innerText = "Procesando...";
+    btnConfirmar.disabled = true;
+    btnConfirmar.innerText = "Reservando lugar...";
 
-            try {
-                // AQUÍ SE GUARDA LA RESERVA CON EL ID DEL CLUB
-                await addDoc(collection(db, "reservas"), { 
-                    clubId: clubId, // <- ESTO ES CLAVE
-                    fecha: fechaSeleccionada, hora: reservaEnProcesoHora, cancha: canchaAsignada, 
-                    jugador: inputNombre, telefono: inputTelefono, duracion: duracionGlobal, 
-                    fechaRegistro: serverTimestamp(), asistencia: false, fijo: false, fechasCanceladas: [],
-                    pagoEfectivo: 0, pagoTransferencia: 0, descuento: 0, consumos: [],
-                    tipoEvento: "Normal", esClase: false, profe: null
-                });
-
-                let numC = parseInt(canchaAsignada);
-                let maxPadel = canchasIndoorGlobal + canchasOutdoorGlobal;
-                let tipoCanchaStr = numC <= canchasIndoorGlobal ? "indoor" : (numC <= maxPadel ? "outdoor" : "tenis");
-
-                if (telefonoClubGlobal && telefonoClubGlobal.trim() !== "") {
-                    let numeroLimpioClub = telefonoClubGlobal.replace(/\D/g,'');
-                    let mensajeWhatsApp = `reserve una cancha de ${tipoCanchaStr} a las ${reservaEnProcesoHora} a nombre de ${inputNombre}`;
-                    let urlWhatsapp = `https://wa.me/${numeroLimpioClub}?text=${encodeURIComponent(mensajeWhatsApp)}`;
-                    alert("¡Reserva guardada con éxito! Ahora te redirigiremos para que le envíes un mensaje al club.");
-                    window.open(urlWhatsapp, '_blank');
-                } else {
-                    alert("¡Reserva guardada con éxito!\n\nNota: El club no ha configurado su número de WhatsApp.");
-                }
-
-                window.cerrarModalReservaJugador();
-            } catch (error) { 
-                alert("Hubo un error de conexión."); 
-            } finally {
-                btnConfirmar.disabled = false;
-                btnConfirmar.innerText = "Confirmar Reserva";
-            }
+    try {
+        // 2. Leer la configuración del club (para saber cuánto cobrar de seña)
+        // NOTA: Asegúrate de tener disponible la variable window.clubIdActual
+        const configSnap = await getDoc(doc(db, "configuracion", window.clubIdActual));
+        let valorAPagar = 0;
+        if (configSnap.exists()) {
+             valorAPagar = configSnap.data().montoSena || 0; // Leemos el monto que pusiste en el Admin
         }
+
+        // 3. GUARDAMOS LA RESERVA EN ESTADO PENDIENTE
+        // De esta manera, el Cron de 5 minutos la verá y empezará a contar
+        const docRef = await addDoc(collection(db, "reservas"), {
+            clubId: window.clubIdActual,
+            fecha: fechaSeleccionada,
+            hora: reservaEnProcesoHora,
+            cancha: canchaAsignada, // Variable global que debes tener con el número de cancha
+            jugador: inputNombre,
+            telefono: inputTelefono,
+            status: "pendiente", // <--- CRÍTICO PARA EL CRON
+            pagoEfectivo: 0,
+            pagoTransferencia: valorAPagar, // Asumimos que la seña la paga por transferencia/MP
+            fechaRegistro: serverTimestamp(),
+            asistencia: false,
+            fijo: false,
+            tipoEvento: "Normal",
+            descuento: 0,
+            consumos: [],
+            esClase: false,
+            profe: null
+        });
+
+        // 4. SI HAY SEÑA, PEDIMOS EL LINK DE MERCADO PAGO Y REDIRIGIMOS
+        if (valorAPagar > 0) {
+            btnConfirmar.innerText = "Abriendo Mercado Pago...";
+            // Importar httpsCallable desde firebase-functions
+            const { getFunctions, httpsCallable } = require("firebase/functions");
+            const functions = getFunctions(app); // Usa tu app de firebase
+            const crearPreferenciaPago = httpsCallable(functions, 'crearPreferenciaPago');
+
+            const result = await crearPreferenciaPago({
+                reservaId: docRef.id,
+                clubId: window.clubIdActual,
+                precioAPagar: valorAPagar,
+                fecha: fechaSeleccionada,
+                hora: reservaEnProcesoHora,
+                cancha: canchaAsignada,
+                jugador: inputNombre,
+                telefono: inputTelefono
+            });
+
+            // Redirigir al Checkout de Mercado Pago
+            window.location.href = result.data.init_point;
+            
+        } else {
+             // Si pusiste la seña en $0, la reserva se confirma directamente sin cobrar
+             await updateDoc(docRef, { status: "confirmado" });
+             alert("¡Reserva confirmada exitosamente!");
+             window.cerrarModalReserva(); // Función que cierra tu modal
+        }
+
+    } catch (error) {
+        console.error("Error al procesar la reserva:", error);
+        alert("Ocurrió un error al procesar tu reserva.");
+        btnConfirmar.disabled = false;
+        btnConfirmar.innerText = "Confirmar Reserva";
+    }
+}
 
         // --- INICIALIZACIÓN (SOLO SI HAY CLUB ID) ---
         function iniciarAppCliente() {
