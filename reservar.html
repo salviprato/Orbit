@@ -112,8 +112,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
+import { getFirestore, collection, addDoc, onSnapshot, doc, query, where, serverTimestamp, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
+        
         // CONEXIÓN FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyAMRLDlarJiomWY4IX5c6CR3RFWHqmMu30",
@@ -326,10 +327,10 @@
         window.cerrarModalReservaJugador = function() { reservaEnProcesoHora = null; document.getElementById('modal-reserva-jugador').style.display = 'none'; }
 
        window.confirmarReservaJugador = async function() {
-    // 1. Obtener los inputs del jugador (asegúrate de que los IDs coincidan con tu HTML)
-    const inputNombre = document.getElementById('input-nombre').value.trim();
-    const inputTelefono = document.getElementById('input-telefono').value.trim();
-    const btnConfirmar = document.getElementById('btn-confirmar-reserva'); // Cambia el ID si es distinto
+    const inputNombre = document.getElementById('input-nombre-jugador').value.trim();
+    const inputTelefono = document.getElementById('input-telefono-jugador').value.trim();
+    const btnConfirmar = document.getElementById('btn-confirmar-reserva'); 
+    const canchaAsignada = document.getElementById('select-cancha-modal').value; 
 
     if (!inputNombre || !inputTelefono) {
         alert("Por favor completa tu nombre y teléfono.");
@@ -340,26 +341,22 @@
     btnConfirmar.innerText = "Reservando lugar...";
 
     try {
-        // 2. Leer la configuración del club (para saber cuánto cobrar de seña)
-        // NOTA: Asegúrate de tener disponible la variable window.clubIdActual
-        const configSnap = await getDoc(doc(db, "configuracion", window.clubIdActual));
+        const configSnap = await getDoc(doc(db, "configuracion", clubId));
         let valorAPagar = 0;
         if (configSnap.exists()) {
-             valorAPagar = configSnap.data().montoSena || 0; // Leemos el monto que pusiste en el Admin
+             valorAPagar = configSnap.data().montoSena || 0; 
         }
 
-        // 3. GUARDAMOS LA RESERVA EN ESTADO PENDIENTE
-        // De esta manera, el Cron de 5 minutos la verá y empezará a contar
         const docRef = await addDoc(collection(db, "reservas"), {
-            clubId: window.clubIdActual,
+            clubId: clubId, 
             fecha: fechaSeleccionada,
             hora: reservaEnProcesoHora,
-            cancha: canchaAsignada, // Variable global que debes tener con el número de cancha
+            cancha: canchaAsignada, 
             jugador: inputNombre,
             telefono: inputTelefono,
-            status: "pendiente", // <--- CRÍTICO PARA EL CRON
+            status: "pendiente", 
             pagoEfectivo: 0,
-            pagoTransferencia: valorAPagar, // Asumimos que la seña la paga por transferencia/MP
+            pagoTransferencia: valorAPagar, 
             fechaRegistro: serverTimestamp(),
             asistencia: false,
             fijo: false,
@@ -370,17 +367,15 @@
             profe: null
         });
 
-        // 4. SI HAY SEÑA, PEDIMOS EL LINK DE MERCADO PAGO Y REDIRIGIMOS
         if (valorAPagar > 0) {
             btnConfirmar.innerText = "Abriendo Mercado Pago...";
-            // Importar httpsCallable desde firebase-functions
-            const { getFunctions, httpsCallable } = require("firebase/functions");
-            const functions = getFunctions(app); // Usa tu app de firebase
+            
+            const functions = getFunctions(app); 
             const crearPreferenciaPago = httpsCallable(functions, 'crearPreferenciaPago');
 
             const result = await crearPreferenciaPago({
                 reservaId: docRef.id,
-                clubId: window.clubIdActual,
+                clubId: clubId,
                 precioAPagar: valorAPagar,
                 fecha: fechaSeleccionada,
                 hora: reservaEnProcesoHora,
@@ -389,14 +384,15 @@
                 telefono: inputTelefono
             });
 
-            // Redirigir al Checkout de Mercado Pago
             window.location.href = result.data.init_point;
             
         } else {
-             // Si pusiste la seña en $0, la reserva se confirma directamente sin cobrar
              await updateDoc(docRef, { status: "confirmado" });
              alert("¡Reserva confirmada exitosamente!");
-             window.cerrarModalReserva(); // Función que cierra tu modal
+             window.cerrarModalReservaJugador(); 
+             
+             btnConfirmar.disabled = false; 
+             btnConfirmar.innerText = "Confirmar Reserva";
         }
 
     } catch (error) {
