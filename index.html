@@ -1945,38 +1945,42 @@
         window.cerrarModalConfig = function() { document.getElementById('modal-config').style.display = 'none'; }
         
         window.guardarConfiguracion = async function() {
-            try {
-                if (!window.clubIdActual) {
-                    alert("Error: Tu usuario administrador no tiene un club asignado en la base de datos.");
-                    return;
-                }
-                
-                let dias = []; [0,1,2,3,4,5,6].forEach(d => { if(document.getElementById('dia-'+d).checked) dias.push(d); });
-                
-                await setDoc(doc(db, "configuracion", window.clubIdActual), { 
-                    primerTurno: document.getElementById('input-primer-turno').value, ultimoTurno: document.getElementById('input-ultimo-turno').value, 
-                    canchasIndoor: parseInt(document.getElementById('input-canchas-in').value)||0, precioIndoor: document.getElementById('input-precio-in').value||"0",
-                    canchasOutdoor: parseInt(document.getElementById('input-canchas-out').value)||0, precioOutdoor: document.getElementById('input-precio-out').value||"0",
-                    canchasTenis: parseInt(document.getElementById('input-canchas-tenis').value)||0, precioTenis: document.getElementById('input-precio-tenis').value||"0",
-                    duracionTurno: parseInt(document.getElementById('input-duracion').value)||90, diasAbiertos: dias, 
-                    telefonoClub: document.getElementById('input-telefono-club').value.trim(), // <--- AQUI ESTA LA COMA QUE ARREGLA EL ERROR
-                    ubicacion: document.getElementById('input-ubicacion-club').value.trim() 
-                    // Dentro de la función que hace el setDoc o updateDoc de la configuración:
-const montoSena = parseInt(document.getElementById('input-monto-sena').value) || 0;
-
-await setDoc(doc(db, "configuracion", "ID_DE_TU_CLUB"), {
-    // ... tus otros datos (nombre, precios, etc)
-    montoSena: montoSena 
-}, { merge: true }); 
-                
-                alert("¡Configuración guardada exitosamente!");
-                window.cerrarModalConfig();
-                
-            } catch (e) {
-                console.error(e);
-                alert("Hubo un error al guardar la configuración. Revisa que tu usuario tenga los permisos correctos.");
-            }
-        };
+    try {
+        if (!window.clubIdActual) {
+            alert("Error: Tu usuario administrador no tiene un club asignado en la base de datos.");
+            return;
+        }
+        
+        let dias = []; [0,1,2,3,4,5,6].forEach(d => { if(document.getElementById('dia-'+d).checked) dias.push(d); });
+        
+        // 1. Obtenemos el valor de la seña del input
+        const montoSena = parseInt(document.getElementById('input-monto-sena').value) || 0;
+        
+        // 2. Guardamos TODO junto de forma correcta
+        await setDoc(doc(db, "configuracion", window.clubIdActual), { 
+            primerTurno: document.getElementById('input-primer-turno').value, 
+            ultimoTurno: document.getElementById('input-ultimo-turno').value, 
+            canchasIndoor: parseInt(document.getElementById('input-canchas-in').value)||0, 
+            precioIndoor: document.getElementById('input-precio-in').value||"0",
+            canchasOutdoor: parseInt(document.getElementById('input-canchas-out').value)||0, 
+            precioOutdoor: document.getElementById('input-precio-out').value||"0",
+            canchasTenis: parseInt(document.getElementById('input-canchas-tenis').value)||0, 
+            precioTenis: document.getElementById('input-precio-tenis').value||"0",
+            duracionTurno: parseInt(document.getElementById('input-duracion').value)||90, 
+            diasAbiertos: dias, 
+            telefonoClub: document.getElementById('input-telefono-club').value.trim(), 
+            ubicacion: document.getElementById('input-ubicacion-club').value.trim(),
+            montoSena: montoSena // <--- Aquí se guarda la seña correctamente
+        }, { merge: true });
+        
+        alert("¡Configuración guardada exitosamente!");
+        window.cerrarModalConfig();
+        
+    } catch (e) {
+        console.error(e);
+        alert("Hubo un error al guardar la configuración. Revisa que tu usuario tenga los permisos correctos.");
+    }
+};
         
         // --- GESTIÓN DE TORNEOS ADMIN ---
         window.abrirModalAdminTorneos = function() { document.getElementById('modal-admin-torneos').style.display = 'flex'; };
