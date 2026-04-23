@@ -127,9 +127,18 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- 1. LECTURA DEL CLUB DESDE LA URL ---
+       // --- 1. LECTURA DEL CLUB DESDE LA URL ---
         const urlParams = new URLSearchParams(window.location.search);
         const clubId = urlParams.get('club'); // Lee ?club=loquesea
+
+        // --- DETECTOR DE PAGO EXITOSO DE MERCADO PAGO ---
+        const estadoPago = urlParams.get('status') || urlParams.get('collection_status');
+        if (estadoPago === 'approved') {
+            alert("¡Tu turno ha sido reservado con éxito! Ya recibimos tu seña. ¡Te esperamos!");
+            // Limpiamos la URL para que no vuelva a salir el cartel al actualizar con F5
+            window.history.replaceState({}, document.title, window.location.pathname + "?club=" + clubId);
+        }
+        // ------------------------------------------------
 
         if (!clubId) {
             document.getElementById('mensaje-error').style.display = 'block';
