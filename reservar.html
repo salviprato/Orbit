@@ -373,6 +373,12 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
             const functions = getFunctions(app); 
             const crearPreferenciaPago = httpsCallable(functions, 'crearPreferenciaPago');
 
+          console.log("📦 Datos que viajan al servidor:", {
+    precio: valorAPagar,
+    cancha: canchaAsignada,
+    club: clubId
+});
+            
             const result = await crearPreferenciaPago({
                 reservaId: docRef.id,
                 clubId: clubId,
