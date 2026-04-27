@@ -335,9 +335,23 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
             let totalCanchas = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0) + (canchasTenisGlobal || 0);
             let maxPadel = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0);
 
-            let indoorLibres = []; for(let c=1; c<=(canchasIndoorGlobal || 0); c++) { if(!canchasOcupadas.has(c)) indoorLibres.push(c); }
-            let outdoorLibres = []; for(let c=(canchasIndoorGlobal || 0)+1; c<=maxPadel; c++) { if(!canchasOcupadas.has(c)) outdoorLibres.push(c); }
-            let tenisLibres = []; for(let c=maxPadel+1; c<=totalCanchas; c++) { if(!canchasOcupadas.has(c)) tenisLibres.push(c); }
+           if(indoorLibres.length > 0) selectTipo.innerHTML += `<option value="${indoorLibres[0]}" data-deporte="padel" style="color: black;">Pádel Indoor ($${window.formatearDinero(precioIndoorGlobal)})</option>`;
+if(outdoorLibres.length > 0) selectTipo.innerHTML += `<option value="${outdoorLibres[0]}" data-deporte="padel" style="color: black;">Pádel Outdoor ($${window.formatearDinero(precioOutdoorGlobal)})</option>`;
+if(tenisLibres.length > 0) selectTipo.innerHTML += `<option value="${tenisLibres[0]}" data-deporte="tenis" style="color: black;">Tenis ($${window.formatearDinero(precioTenisGlobal)})</option>`;
+
+            const actualizarDuracionBase = () => {
+    const opcionSeleccionada = selectTipo.options[selectTipo.selectedIndex];
+    if (opcionSeleccionada && opcionSeleccionada.getAttribute('data-deporte') === 'tenis') {
+        selectDuracion.value = "60"; // Base Tenis
+    } else {
+        selectDuracion.value = "90"; // Base Pádel
+    }
+};
+
+// Escuchar cambios en el tipo de cancha
+selectTipo.onchange = actualizarDuracionBase;
+// Ejecutar la primera vez al abrir el modal
+actualizarDuracionBase();
 
             const selectTipo = document.getElementById('select-cancha-modal');
             selectTipo.innerHTML = '';
