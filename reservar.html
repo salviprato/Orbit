@@ -118,6 +118,17 @@
         </div>
     </div>
 
+    <div id="modal-exito-pago" class="modal-overlay">
+        <div class="modal-content" style="border: 1px solid #10b981;">
+            <h2 style="color: #10b981; margin-top: 0; margin-bottom: 15px;">¡Reserva Confirmada! ✅</h2>
+            <p style="color: #d1d5db; font-size: 1.1em; line-height: 1.5; margin-bottom: 20px;">
+                Su turno ha sido reservado en la <strong id="exito-cancha" style="color: white;"></strong> <br>
+                a las <strong id="exito-hora" style="color: white;"></strong> hs.
+            </p>
+            <button class="btn-modal btn-guardar" onclick="document.getElementById('modal-exito-pago').style.display='none'">Excelente</button>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, query, where, serverTimestamp, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -142,7 +153,26 @@
         // --- DETECTOR DE PAGO EXITOSO DE MERCADO PAGO ---
         const estadoPago = urlParams.get('status') || urlParams.get('collection_status');
         if (estadoPago === 'approved') {
-            alert("¡Tu turno ha sido reservado con éxito! Ya recibimos tu seña. ¡Te esperamos!");
+            // Buscamos si hay datos guardados de esta reserva
+            let datosGuardados = localStorage.getItem('reservaPendienteMP');
+            
+            if (datosGuardados) {
+                let datos = JSON.parse(datosGuardados);
+                
+                // Escribimos los datos en el modal
+                document.getElementById('exito-cancha').innerText = "Cancha " + datos.cancha;
+                document.getElementById('exito-hora').innerText = datos.hora;
+                
+                // Mostramos el modal
+                document.getElementById('modal-exito-pago').style.display = 'flex';
+                
+                // Borramos los datos para que no se vuelvan a mostrar en el futuro
+                localStorage.removeItem('reservaPendienteMP');
+            } else {
+                // Si por algún motivo no hay datos, mostramos el mensaje genérico
+                alert("¡Tu turno ha sido reservado con éxito! Ya recibimos tu seña. ¡Te esperamos!");
+            }
+
             // Limpiamos la URL para que no vuelva a salir el cartel al actualizar con F5
             window.history.replaceState({}, document.title, window.location.pathname + "?club=" + clubId);
         }
@@ -426,11 +456,23 @@
                         telefono: inputTelefono
                     });
 
+                    // 1. GUARDAMOS EN MEMORIA ANTES DE REDIRIGIR
+                    localStorage.setItem('reservaPendienteMP', JSON.stringify({
+                        cancha: canchaAsignada,
+                        hora: reservaEnProcesoHora
+                    }));
+
+                    // 2. REDIRIGIMOS
                     window.location.href = result.data.init_point;
                     
                 } else {
                      await updateDoc(docRef, { status: "confirmado" });
-                     alert("¡Reserva confirmada exitosamente!");
+                     
+                     // Si la reserva no requiere seña (valorAPagar = 0), mostramos el modal directamente en lugar de alert
+                     document.getElementById('exito-cancha').innerText = "Cancha " + canchaAsignada;
+                     document.getElementById('exito-hora').innerText = reservaEnProcesoHora;
+                     document.getElementById('modal-exito-pago').style.display = 'flex';
+                     
                      window.cerrarModalReservaJugador(); 
                      
                      btnConfirmar.disabled = false; 
