@@ -95,29 +95,20 @@
                     <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">1. Tipo de Cancha:</label>
                     <select id="select-cancha-modal" class="input-form" style="margin-top: 5px;"></select>
                 </div>
-                <div style="text-align: left; display: flex; flex-direction: column; gap: 12px;">
-    <div>
-        <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">1. Tipo de Cancha:</label>
-        <select id="select-cancha-modal" class="input-form" style="margin-top: 5px;"></select>
-    </div>
-    
-    <div>
-        <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">2. Duración del Turno:</label>
-        <select id="select-duracion-modal" class="input-form" style="margin-top: 5px;">
-            <option value="60">1 Hora (60 min)</option>
-            <option value="90">1 Hora y Media (90 min)</option>
-            <option value="120">2 Horas (120 min)</option>
-        </select>
-    </div>
-    <div>
-        <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">3. Nombre y Apellido:</label>
-        ```
                 <div>
-                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">2. Nombre y Apellido:</label>
+                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">2. Duración del Turno:</label>
+                    <select id="select-duracion-modal" class="input-form" style="margin-top: 5px;">
+                        <option value="60">1 Hora (60 min)</option>
+                        <option value="90">1 Hora y Media (90 min)</option>
+                        <option value="120">2 Horas (120 min)</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">3. Nombre y Apellido:</label>
                     <input type="text" id="input-nombre-jugador" class="input-form" placeholder="Ej: Franco Aramayo" style="margin-top: 5px;">
                 </div>
                 <div>
-                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">3. Teléfono (WhatsApp):</label>
+                    <label style="font-size: 0.9em; color: #d1d5db; font-weight: bold;">4. Teléfono (WhatsApp):</label>
                     <input type="tel" id="input-telefono-jugador" class="input-form" placeholder="Ej: 3511234567" style="margin-top: 5px;">
                 </div>
             </div>
@@ -129,8 +120,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, doc, query, where, serverTimestamp, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, query, where, serverTimestamp, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-functions.js";
         
         // CONEXIÓN FIREBASE
         const firebaseConfig = {
@@ -335,30 +326,31 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
             let totalCanchas = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0) + (canchasTenisGlobal || 0);
             let maxPadel = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0);
 
-           if(indoorLibres.length > 0) selectTipo.innerHTML += `<option value="${indoorLibres[0]}" data-deporte="padel" style="color: black;">Pádel Indoor ($${window.formatearDinero(precioIndoorGlobal)})</option>`;
-if(outdoorLibres.length > 0) selectTipo.innerHTML += `<option value="${outdoorLibres[0]}" data-deporte="padel" style="color: black;">Pádel Outdoor ($${window.formatearDinero(precioOutdoorGlobal)})</option>`;
-if(tenisLibres.length > 0) selectTipo.innerHTML += `<option value="${tenisLibres[0]}" data-deporte="tenis" style="color: black;">Tenis ($${window.formatearDinero(precioTenisGlobal)})</option>`;
-
-            const actualizarDuracionBase = () => {
-    const opcionSeleccionada = selectTipo.options[selectTipo.selectedIndex];
-    if (opcionSeleccionada && opcionSeleccionada.getAttribute('data-deporte') === 'tenis') {
-        selectDuracion.value = "60"; // Base Tenis
-    } else {
-        selectDuracion.value = "90"; // Base Pádel
-    }
-};
-
-// Escuchar cambios en el tipo de cancha
-selectTipo.onchange = actualizarDuracionBase;
-// Ejecutar la primera vez al abrir el modal
-actualizarDuracionBase();
+            let indoorLibres = []; for(let c=1; c<=(canchasIndoorGlobal || 0); c++) { if(!canchasOcupadas.has(c)) indoorLibres.push(c); }
+            let outdoorLibres = []; for(let c=(canchasIndoorGlobal || 0)+1; c<=maxPadel; c++) { if(!canchasOcupadas.has(c)) outdoorLibres.push(c); }
+            let tenisLibres = []; for(let c=maxPadel+1; c<=totalCanchas; c++) { if(!canchasOcupadas.has(c)) tenisLibres.push(c); }
 
             const selectTipo = document.getElementById('select-cancha-modal');
+            const selectDuracion = document.getElementById('select-duracion-modal');
             selectTipo.innerHTML = '';
             
-            if(indoorLibres.length > 0) selectTipo.innerHTML += `<option value="${indoorLibres[0]}" style="color: black;">Pádel Indoor ($${window.formatearDinero(precioIndoorGlobal)})</option>`;
-            if(outdoorLibres.length > 0) selectTipo.innerHTML += `<option value="${outdoorLibres[0]}" style="color: black;">Pádel Outdoor ($${window.formatearDinero(precioOutdoorGlobal)})</option>`;
-            if(tenisLibres.length > 0) selectTipo.innerHTML += `<option value="${tenisLibres[0]}" style="color: black;">Tenis ($${window.formatearDinero(precioTenisGlobal)})</option>`;
+            if(indoorLibres.length > 0) selectTipo.innerHTML += `<option value="${indoorLibres[0]}" data-deporte="padel" style="color: black;">Pádel Indoor ($${window.formatearDinero(precioIndoorGlobal)})</option>`;
+            if(outdoorLibres.length > 0) selectTipo.innerHTML += `<option value="${outdoorLibres[0]}" data-deporte="padel" style="color: black;">Pádel Outdoor ($${window.formatearDinero(precioOutdoorGlobal)})</option>`;
+            if(tenisLibres.length > 0) selectTipo.innerHTML += `<option value="${tenisLibres[0]}" data-deporte="tenis" style="color: black;">Tenis ($${window.formatearDinero(precioTenisGlobal)})</option>`;
+
+            const actualizarDuracionBase = () => {
+                const opcionSeleccionada = selectTipo.options[selectTipo.selectedIndex];
+                if (opcionSeleccionada && opcionSeleccionada.getAttribute('data-deporte') === 'tenis') {
+                    selectDuracion.value = "60"; // Base Tenis
+                } else {
+                    selectDuracion.value = "90"; // Base Pádel
+                }
+            };
+
+            // Escuchar cambios en el tipo de cancha
+            selectTipo.onchange = actualizarDuracionBase;
+            // Ejecutar la primera vez al abrir el modal
+            actualizarDuracionBase();
 
             document.getElementById('input-nombre-jugador').value = ""; document.getElementById('input-telefono-jugador').value = ""; 
             document.getElementById('modal-reserva-jugador').style.display = 'flex';
@@ -366,96 +358,96 @@ actualizarDuracionBase();
 
         window.cerrarModalReservaJugador = function() { reservaEnProcesoHora = null; document.getElementById('modal-reserva-jugador').style.display = 'none'; }
 
-       window.confirmarReservaJugador = async function() {
-    const inputNombre = document.getElementById('input-nombre-jugador').value.trim();
-    const inputTelefono = document.getElementById('input-telefono-jugador').value.trim();
-    const btnConfirmar = document.getElementById('btn-confirmar-reserva'); 
-    const canchaAsignada = document.getElementById('select-cancha-modal').value; 
-    const duracionElegida = parseInt(document.getElementById('select-duracion-modal').value);
+        window.confirmarReservaJugador = async function() {
+            const inputNombre = document.getElementById('input-nombre-jugador').value.trim();
+            const inputTelefono = document.getElementById('input-telefono-jugador').value.trim();
+            const btnConfirmar = document.getElementById('btn-confirmar-reserva'); 
+            const canchaAsignada = document.getElementById('select-cancha-modal').value; 
+            const duracionElegida = parseInt(document.getElementById('select-duracion-modal').value);
 
-    if (!inputNombre || !inputTelefono) {
-        alert("Por favor completa tu nombre y teléfono.");
-        return;
-    }
+            if (!inputNombre || !inputTelefono) {
+                alert("Por favor completa tu nombre y teléfono.");
+                return;
+            }
 
-    btnConfirmar.disabled = true;
-    btnConfirmar.innerText = "Reservando lugar...";
+            btnConfirmar.disabled = true;
+            btnConfirmar.innerText = "Reservando lugar...";
 
-    try {
-        const configSnap = await getDoc(doc(db, "configuracion", clubId));
-        let valorAPagar = 0;
-        if (configSnap.exists()) {
-             valorAPagar = configSnap.data().montoSena || 0; 
+            try {
+                const configSnap = await getDoc(doc(db, "configuracion", clubId));
+                let valorAPagar = 0;
+                if (configSnap.exists()) {
+                     valorAPagar = configSnap.data().montoSena || 0; 
+                }
+
+                const docRef = await addDoc(collection(db, "reservas"), {
+                    clubId: clubId, 
+                    fecha: fechaSeleccionada,
+                    hora: reservaEnProcesoHora,
+                    cancha: canchaAsignada, 
+                    duracion: duracionElegida,
+                    jugador: inputNombre,
+                    telefono: inputTelefono,
+                    status: "pendiente", 
+                    pagoEfectivo: 0,
+                    pagoTransferencia: valorAPagar, 
+                    fechaRegistro: serverTimestamp(),
+                    asistencia: false,
+                    fijo: false,
+                    tipoEvento: "Normal",
+                    descuento: 0,
+                    consumos: [],
+                    esClase: false,
+                    profe: null
+                });
+
+                if (valorAPagar > 0) {
+                    btnConfirmar.innerText = "Abriendo Mercado Pago...";
+                    
+                    const functions = getFunctions(app); 
+                    const crearPreferenciaPago = httpsCallable(functions, 'crearPreferenciaPago');
+
+                    console.log("📦 Datos que viajan al servidor:", {
+                        precio: valorAPagar,
+                        cancha: canchaAsignada,
+                        club: clubId,
+                        duracion: duracionElegida
+                    });
+                    
+                    const result = await crearPreferenciaPago({
+                        reservaId: docRef.id,
+                        clubId: clubId,
+                        precioAPagar: valorAPagar,
+                        fecha: fechaSeleccionada,
+                        hora: reservaEnProcesoHora,
+                        duracion: duracionElegida,
+                        cancha: canchaAsignada,
+                        jugador: inputNombre,
+                        telefono: inputTelefono
+                    });
+
+                    window.location.href = result.data.init_point;
+                    
+                } else {
+                     await updateDoc(docRef, { status: "confirmado" });
+                     alert("¡Reserva confirmada exitosamente!");
+                     window.cerrarModalReservaJugador(); 
+                     
+                     btnConfirmar.disabled = false; 
+                     btnConfirmar.innerText = "Confirmar Reserva";
+                }
+
+            } catch (error) {
+                console.error("Error al procesar la reserva:", error);
+                alert("Ocurrió un error al procesar tu reserva.");
+                btnConfirmar.disabled = false;
+                btnConfirmar.innerText = "Confirmar Reserva";
+            }
         }
-
-        const docRef = await addDoc(collection(db, "reservas"), {
-            clubId: clubId, 
-            fecha: fechaSeleccionada,
-            hora: reservaEnProcesoHora,
-            cancha: canchaAsignada, 
-            duracion: duracionElegida,
-            jugador: inputNombre,
-            telefono: inputTelefono,
-            status: "pendiente", 
-            pagoEfectivo: 0,
-            pagoTransferencia: valorAPagar, 
-            fechaRegistro: serverTimestamp(),
-            asistencia: false,
-            fijo: false,
-            tipoEvento: "Normal",
-            descuento: 0,
-            consumos: [],
-            esClase: false,
-            profe: null
-        });
-
-        if (valorAPagar > 0) {
-            btnConfirmar.innerText = "Abriendo Mercado Pago...";
-            
-            const functions = getFunctions(app); 
-            const crearPreferenciaPago = httpsCallable(functions, 'crearPreferenciaPago');
-
-          console.log("📦 Datos que viajan al servidor:", {
-    precio: valorAPagar,
-    cancha: canchaAsignada,
-    club: clubId
-});
-            
-            const result = await crearPreferenciaPago({
-                reservaId: docRef.id,
-                clubId: clubId,
-                precioAPagar: valorAPagar,
-                fecha: fechaSeleccionada,
-                hora: reservaEnProcesoHora,
-                cancha: canchaAsignada,
-                jugador: inputNombre,
-                telefono: inputTelefono
-            });
-
-            window.location.href = result.data.init_point;
-            
-        } else {
-             await updateDoc(docRef, { status: "confirmado" });
-             alert("¡Reserva confirmada exitosamente!");
-             window.cerrarModalReservaJugador(); 
-             
-             btnConfirmar.disabled = false; 
-             btnConfirmar.innerText = "Confirmar Reserva";
-        }
-
-    } catch (error) {
-        console.error("Error al procesar la reserva:", error);
-        alert("Ocurrió un error al procesar tu reserva.");
-        btnConfirmar.disabled = false;
-        btnConfirmar.innerText = "Confirmar Reserva";
-    }
-}
 
         // --- INICIALIZACIÓN (SOLO SI HAY CLUB ID) ---
         function iniciarAppCliente() {
             // 1. Escuchar la configuración ESPECÍFICA de este club
-            // Nota: En tu BD actual guardabas en doc(db, "configuracion", "club"). 
-            // Ahora lo cambiaremos para que cada club tenga su propio documento.
             onSnapshot(doc(db, "configuracion", clubId), (documento) => {
                 if (documento.exists()) {
                     let data = documento.data();
