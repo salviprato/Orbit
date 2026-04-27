@@ -371,6 +371,7 @@ actualizarDuracionBase();
     const inputTelefono = document.getElementById('input-telefono-jugador').value.trim();
     const btnConfirmar = document.getElementById('btn-confirmar-reserva'); 
     const canchaAsignada = document.getElementById('select-cancha-modal').value; 
+    const duracionElegida = parseInt(document.getElementById('select-duracion-modal').value);
 
     if (!inputNombre || !inputTelefono) {
         alert("Por favor completa tu nombre y teléfono.");
@@ -392,6 +393,7 @@ actualizarDuracionBase();
             fecha: fechaSeleccionada,
             hora: reservaEnProcesoHora,
             cancha: canchaAsignada, 
+            duracion: duracionElegida,
             jugador: inputNombre,
             telefono: inputTelefono,
             status: "pendiente", 
