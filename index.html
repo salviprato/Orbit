@@ -3418,6 +3418,7 @@ window.invitarAmigoPendiente = async function(matchId, miEquipo, selectId) {
                         canchasIndoorGlobal = isNaN(parseInt(data.canchasIndoor)) ? 1 : parseInt(data.canchasIndoor); canchasOutdoorGlobal = isNaN(parseInt(data.canchasOutdoor)) ? 0 : parseInt(data.canchasOutdoor); canchasTenisGlobal = isNaN(parseInt(data.canchasTenis)) ? 0 : parseInt(data.canchasTenis);
                         precioIndoorGlobal = data.precioIndoor || "15000"; precioOutdoorGlobal = data.precioOutdoor || "12000"; precioTenisGlobal = data.precioTenis || "10000";
                         diasAbiertosGlobal = data.diasAbiertos || [0,1,2,3,4,5,6]; telefonoClubGlobal = data.telefonoClub || ""; 
+                        nombresCanchasGlobal = data.nombresCanchas || [];
                     }
                     if(document.getElementById('input-primer-turno')) {
                         document.getElementById('input-primer-turno').value = primerTurno; document.getElementById('input-ultimo-turno').value = ultimoTurno; document.getElementById('input-duracion').value = duracionGlobal;
