@@ -3428,6 +3428,7 @@ window.invitarAmigoPendiente = async function(matchId, miEquipo, selectId) {
                         [0,1,2,3,4,5,6].forEach(d => { const cb = document.getElementById('dia-'+d); if(cb) cb.checked = diasAbiertosGlobal.includes(d); });
                         let ubicacionC = data.ubicacion || "";
                         if(document.getElementById('input-ubicacion-club')) document.getElementById('input-ubicacion-club').value = ubicacionC;
+                        if(document.getElementById('input-nombres-canchas')) document.getElementById('input-nombres-canchas').value = nombresCanchasGlobal.join(", ");
                     }
                     if(typeof window.renderizarPantallas === 'function') window.renderizarPantallas(); 
                     
