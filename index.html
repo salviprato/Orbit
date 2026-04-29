@@ -1978,6 +1978,8 @@ window.abrirModalConfig = async function() {
         
         // 1. Obtenemos el valor de la seña del input
         const montoSena = parseInt(document.getElementById('input-monto-sena').value) || 0;
+        const txtNombres = document.getElementById('input-nombres-canchas').value.trim();
+const arrNombres = txtNombres ? txtNombres.split(',').map(s => s.trim()) : [];
         
         // 2. Guardamos TODO junto de forma correcta
         await setDoc(doc(db, "configuracion", window.clubIdActual), { 
@@ -1993,7 +1995,8 @@ window.abrirModalConfig = async function() {
             diasAbiertos: dias, 
             telefonoClub: document.getElementById('input-telefono-club').value.trim(), 
             ubicacion: document.getElementById('input-ubicacion-club').value.trim(),
-            montoSena: montoSena // <--- Aquí se guarda la seña correctamente
+            montoSena: montoSena,
+            nombresCanchas: arrNombres
         }, { merge: true });
         
         alert("¡Configuración guardada exitosamente!");
