@@ -1513,8 +1513,8 @@
                     if(c <= (canchasIndoorGlobal || 0)) { tipoLabel = "Pádel Indoor"; colorTipo = "#d1d5db"; } 
                     else if(c <= maxPadel) { tipoLabel = "Pádel Outdoor"; colorTipo = "#9ca3af"; } 
                     else { tipoLabel = "Tenis"; colorTipo = "#f59e0b"; }
-                    htmlGrilla += `<div style="height: 50px; border-bottom: 1px solid #2c3540; text-align: center; background: #242c36; font-size: 0.9em; display:flex; flex-direction:column; justify-content:center;"><span style="font-weight: bold;" class="text-neutral-main">Cancha ${c}</span><span style="font-size: 0.8em; color:${colorTipo};">${tipoLabel}</span></div>`;
-                    
+                    let numeroPersonalizado = nombresCanchasGlobal[c - 1] || c; // <-- Busca el nombre, si no existe usa el default
+htmlGrilla += `<div style="height: 50px; border-bottom: 1px solid #2c3540; text-align: center; background: #242c36; font-size: 0.9em; display:flex; flex-direction:column; justify-content:center;"><span style="font-weight: bold;" class="text-neutral-main">Cancha ${numeroPersonalizado}</span><span style="font-size: 0.8em; color:${colorTipo};">${tipoLabel}</span></div>`;
                     let reservasCancha = reservasAMostrar.filter(r => (r.cancha || "1") == c);
                     let bloquesOcupadosCancha = new Set();
                     
