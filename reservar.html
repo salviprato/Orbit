@@ -364,9 +364,9 @@
             const selectDuracion = document.getElementById('select-duracion-modal');
             selectTipo.innerHTML = '';
             
-            if(indoorLibres.length > 0) selectTipo.innerHTML += `<option value="${indoorLibres[0]}" data-deporte="padel" style="color: black;">Pádel Indoor ($${window.formatearDinero(precioIndoorGlobal)})</option>`;
-            if(outdoorLibres.length > 0) selectTipo.innerHTML += `<option value="${outdoorLibres[0]}" data-deporte="padel" style="color: black;">Pádel Outdoor ($${window.formatearDinero(precioOutdoorGlobal)})</option>`;
-            if(tenisLibres.length > 0) selectTipo.innerHTML += `<option value="${tenisLibres[0]}" data-deporte="tenis" style="color: black;">Tenis ($${window.formatearDinero(precioTenisGlobal)})</option>`;
+            if(indoorLibres.length > 0) selectTipo.innerHTML += `<option value="${indoorLibres[0]}" data-deporte="padel" style="color: black;">Pádel Indoor</option>`;
+if(outdoorLibres.length > 0) selectTipo.innerHTML += `<option value="${outdoorLibres[0]}" data-deporte="padel" style="color: black;">Pádel Outdoor</option>`;
+if(tenisLibres.length > 0) selectTipo.innerHTML += `<option value="${tenisLibres[0]}" data-deporte="tenis" style="color: black;">Tenis</option>`;
 
             const actualizarDuracionBase = () => {
                 const opcionSeleccionada = selectTipo.options[selectTipo.selectedIndex];
