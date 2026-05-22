@@ -389,20 +389,6 @@ document.addEventListener("DOMContentLoaded", () => {
 if(outdoorLibres.length > 0) selectTipo.innerHTML += `<option value="${outdoorLibres[0]}" data-deporte="padel" style="color: black;">Pádel Outdoor</option>`;
 if(tenisLibres.length > 0) selectTipo.innerHTML += `<option value="${tenisLibres[0]}" data-deporte="tenis" style="color: black;">Tenis</option>`;
 
-            const actualizarDuracionBase = () => {
-                const opcionSeleccionada = selectTipo.options[selectTipo.selectedIndex];
-                if (opcionSeleccionada && opcionSeleccionada.getAttribute('data-deporte') === 'tenis') {
-                    selectDuracion.value = "60"; // Base Tenis
-                } else {
-                    selectDuracion.value = "90"; // Base Pádel
-                }
-            };
-
-            // Escuchar cambios en el tipo de cancha
-            selectTipo.onchange = actualizarDuracionBase;
-            // Ejecutar la primera vez al abrir el modal
-            actualizarDuracionBase();
-
             document.getElementById('input-nombre-jugador').value = ""; document.getElementById('input-telefono-jugador').value = ""; 
             document.getElementById('modal-reserva-jugador').style.display = 'flex';
         }
