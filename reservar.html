@@ -548,6 +548,10 @@ if (conflicto) {
                     let data = documento.data();
                     primerTurno = data.primerTurno || "08:00"; ultimoTurno = data.ultimoTurno || "21:30";
                     duracionGlobal = parseInt(data.duracionTurno) || 90; 
+                    duracionSeleccionada = duracionGlobal;
+
+document.getElementById('selector-duracion-general').value =
+duracionGlobal.toString();
                     canchasIndoorGlobal = isNaN(parseInt(data.canchasIndoor)) ? 1 : parseInt(data.canchasIndoor); 
                     canchasOutdoorGlobal = isNaN(parseInt(data.canchasOutdoor)) ? 0 : parseInt(data.canchasOutdoor);
                     canchasTenisGlobal = isNaN(parseInt(data.canchasTenis)) ? 0 : parseInt(data.canchasTenis);
