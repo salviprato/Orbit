@@ -383,7 +383,6 @@ document.addEventListener("DOMContentLoaded", () => {
             let tenisLibres = []; for(let c=maxPadel+1; c<=totalCanchas; c++) { if(!canchasOcupadas.has(c)) tenisLibres.push(c); }
 
             const selectTipo = document.getElementById('select-cancha-modal');
-            const selectDuracion = document.getElementById('select-duracion-modal');
             selectTipo.innerHTML = '';
             
             if(indoorLibres.length > 0) selectTipo.innerHTML += `<option value="${indoorLibres[0]}" data-deporte="padel" style="color: black;">Pádel Indoor</option>`;
