@@ -355,7 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Lógica simplificada para obtener canchas libres
             const dowNumSelected = window.getDayOfWeekFromDate(fechaSeleccionada);
-            const numBloquesNuevo = duracionGlobal / 30;
+            const numBloquesNuevo = duracionSeleccionada / 30;
             let bloquesNuevos = [];
             for(let b=0; b < numBloquesNuevo; b++) { bloquesNuevos.push(window.sumarMinutos(hora, b * 30)); }
 
