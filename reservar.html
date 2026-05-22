@@ -400,8 +400,7 @@ if(tenisLibres.length > 0) selectTipo.innerHTML += `<option value="${tenisLibres
             const inputTelefono = document.getElementById('input-telefono-jugador').value.trim();
             const btnConfirmar = document.getElementById('btn-confirmar-reserva'); 
             const canchaAsignada = document.getElementById('select-cancha-modal').value; 
-            const duracionElegida = parseInt(document.getElementById('select-duracion-modal').value);
-
+            const duracionElegida = duracionSeleccionada;
             // 1. AGREGA ESTO JUSTO DEBAJO para calcular el precio dinámico:
 let precioTotalTurno = 0;
 if (duracionElegida === 60) precioTotalTurno = 32000;
