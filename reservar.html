@@ -350,7 +350,8 @@ document.addEventListener("DOMContentLoaded", () => {
             reservaEnProcesoHora = hora;
             let pF = fechaSeleccionada.split('-');
             document.getElementById('reserva-fecha-display').innerText = `${pF[2]}/${pF[1]}/${pF[0]}`;
-            document.getElementById('reserva-hora-display').innerText = `${hora} hs (${duracionGlobal/60}h)`;
+           document.getElementById('reserva-hora-display').innerText =
+`${hora} hs (${duracionSeleccionada/60}h)`;
 
             // Lógica simplificada para obtener canchas libres
             const dowNumSelected = window.getDayOfWeekFromDate(fechaSeleccionada);
