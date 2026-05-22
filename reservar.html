@@ -423,6 +423,45 @@ else if (duracionElegida === 120) precioTotalTurno = 64000;
                      valorAPagar = configSnap.data().montoSena || 0; 
                 }
 
+                let bloquesNueva = [];
+
+for(let b = 0; b < duracionElegida / 30; b++) {
+    bloquesNueva.push(window.sumarMinutos(reservaEnProcesoHora, b * 30));
+}
+
+let conflicto = false;
+
+reservasGlobales.forEach(r => {
+
+    if (r.fecha !== fechaSeleccionada) return;
+
+    if (parseInt(r.cancha) !== parseInt(canchaAsignada)) return;
+
+    let bloquesReserva = [];
+
+    let duracionReserva = r.duracion || 90;
+
+    for(let b = 0; b < duracionReserva / 30; b++) {
+        bloquesReserva.push(window.sumarMinutos(r.hora, b * 30));
+    }
+
+    if (bloquesNueva.some(b => bloquesReserva.includes(b))) {
+        conflicto = true;
+    }
+});
+
+if (conflicto) {
+
+    alert("Ese horario acaba de ocuparse.");
+
+    btnConfirmar.disabled = false;
+    btnConfirmar.innerText = "Confirmar Reserva";
+
+    renderizarPantallas();
+
+    return;
+}
+                
                 const docRef = await addDoc(collection(db, "reservas"), {
                     clubId: clubId, 
                     fecha: fechaSeleccionada,
