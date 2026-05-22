@@ -336,7 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     for(let c=maxPadel+1; c<=totalCanchas; c++) { if(!canchasOcupadas.has(c)) tenisLibres.push(c); }
 
                     let canchasLibresTotal = totalCanchas - canchasOcupadas.size;
-                   let hsTexto = duracionSeleccionada % 60 === 0 ? (duracionGlobal/60) : (duracionGlobal/60).toFixed(1);
+                   let hsTexto = duracionSeleccionada % 60 === 0 ? (duracionSeleccionada/60) : (duracionSeleccionada/60).toFixed(1);
 
                     if (canchasLibresTotal > 0) {
                         const div = document.createElement('div'); div.className = 'turno-item';
