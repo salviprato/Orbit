@@ -299,8 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 contenedorHorarios.innerHTML = '<div style="text-align:center; padding: 30px; color:#9ca3af; font-size: 1.1em; background: #242c36; border-radius: 8px;">El club se encuentra cerrado este día.</div>';
             } else {
                 const horariosFiltrados = horariosBase.filter(h => h >= primerTurno && h <= ultimoTurno);
-                const numBloquesNuevo = duracionGlobal / 30;
-
+                const numBloquesNuevo = duracionSeleccionada / 30;
                 horariosFiltrados.forEach(hora => {
                     if(validarEsHoraPasada(hora)) return; 
 
