@@ -282,7 +282,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
         
         window.renderizarPantallas = function() {
-            let totalCanchas = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0) + (canchasTenisGlobal || 0);
+            let totalCanchas =
+canchasIndoorIDs.length +
+(canchasOutdoorGlobal || 0) +
+(canchasTenisGlobal || 0);
             if (totalCanchas <= 0) totalCanchas = 1; 
             const dowNumSelected = window.getDayOfWeekFromDate(fechaSeleccionada);
             const contenedorHorarios = document.getElementById('lista-horarios');
@@ -382,7 +385,10 @@ canchasIndoorIDs.forEach(c => {
                 }
             });
 
-            let totalCanchas = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0) + (canchasTenisGlobal || 0);
+            let totalCanchas =
+canchasIndoorIDs.length +
+(canchasOutdoorGlobal || 0) +
+(canchasTenisGlobal || 0);
             let maxPadel = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0);
 
             let indoorLibres = [];
