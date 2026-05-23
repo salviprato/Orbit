@@ -564,7 +564,7 @@ if (conflicto) {
                      await updateDoc(docRef, { status: "confirmado" });
                      
                      // Si la reserva no requiere seña (valorAPagar = 0), mostramos el modal directamente en lugar de alert
-                     document.getElementById('exito-cancha').innerText = "Cancha " + canchaAsignada;
+                     document.getElementById('exito-cancha').innerText = nombreCancha;
                      document.getElementById('exito-hora').innerText = reservaEnProcesoHora;
                      document.getElementById('modal-exito-pago').style.display = 'flex';
                      
