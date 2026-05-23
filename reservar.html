@@ -553,9 +553,9 @@ if (conflicto) {
 
                     // 1. GUARDAMOS EN MEMORIA ANTES DE REDIRIGIR
                     localStorage.setItem('reservaPendienteMP', JSON.stringify({
-                        cancha: canchaAsignada,
-                        hora: reservaEnProcesoHora
-                    }));
+    cancha: nombreCancha,
+    hora: reservaEnProcesoHora
+}));
 
                     // 2. REDIRIGIMOS
                     window.location.href = result.data.init_point;
