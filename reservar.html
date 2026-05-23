@@ -385,7 +385,13 @@ canchasIndoorIDs.forEach(c => {
             let totalCanchas = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0) + (canchasTenisGlobal || 0);
             let maxPadel = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0);
 
-            let indoorLibres = []; for(let c=1; c<=(canchasIndoorGlobal || 0); c++) { if(!canchasOcupadas.has(c)) indoorLibres.push(c); }
+            let indoorLibres = [];
+
+canchasIndoorIDs.forEach(c => {
+    if(!canchasOcupadas.has(c)) {
+        indoorLibres.push(c);
+    }
+});
             let outdoorLibres = []; for(let c=(canchasIndoorGlobal || 0)+1; c<=maxPadel; c++) { if(!canchasOcupadas.has(c)) outdoorLibres.push(c); }
             let tenisLibres = []; for(let c=maxPadel+1; c<=totalCanchas; c++) { if(!canchasOcupadas.has(c)) tenisLibres.push(c); }
 
