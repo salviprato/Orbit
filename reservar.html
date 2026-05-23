@@ -387,19 +387,22 @@ document.addEventListener("DOMContentLoaded", () => {
             selectTipo.innerHTML = '';
             
             if(indoorLibres.length > 0) {
-    let cancha = indoorLibres[0];
+
+    let canchaReal = indoorLibres[0];
+
+    // SOLO VISUAL
+    let canchaVisual = canchaReal + 5;
 
     selectTipo.innerHTML += `
     <option 
-        value="${cancha}" 
-        data-nombre="Cancha ${cancha}"
+        value="${canchaReal}" 
+        data-nombre="Cancha ${canchaVisual}"
         data-deporte="padel"
         style="color: black;"
     >
-        Cancha ${cancha} - Pádel Indoor
+        Cancha ${canchaVisual} - Pádel Indoor
     </option>`;
 }
-
 if(outdoorLibres.length > 0) {
     let cancha = outdoorLibres[0];
 
