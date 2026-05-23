@@ -318,8 +318,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     });
 
-                    let indoorLibres = [];
-                    for(let c=1; c<=(canchasIndoorGlobal || 0); c++) { if(!canchasOcupadas.has(c)) indoorLibres.push(c); }
+                   let indoorLibres = [];
+
+canchasIndoorIDs.forEach(c => {
+    if(!canchasOcupadas.has(c)) {
+        indoorLibres.push(c);
+    }
+});
                     
                     let outdoorLibres = [];
                     let maxPadel = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0);
