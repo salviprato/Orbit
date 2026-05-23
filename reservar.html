@@ -162,7 +162,7 @@
                 let datos = JSON.parse(datosGuardados);
                 
                 // Escribimos los datos en el modal
-                document.getElementById('exito-cancha').innerText = datos.cancha;
+                document.getElementById('exito-cancha').innerText = "Cancha " + datos.cancha;
                 document.getElementById('exito-hora').innerText = datos.hora;
                 
                 // Mostramos el modal
@@ -219,7 +219,6 @@ let duracionSeleccionada = 90;
         let telefonoClubGlobal = "";
         let reservasGlobales = [];
         let reservaEnProcesoHora = null;
-        const canchasIndoorIDs = [6, 7, 8, 9];
 
         // --- FUNCIONES AUXILIARES ---
         window.aMinutos = function(horaStr) { 
@@ -282,10 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
         
         window.renderizarPantallas = function() {
-            let totalCanchas =
-canchasIndoorIDs.length +
-(canchasOutdoorGlobal || 0) +
-(canchasTenisGlobal || 0);
+            let totalCanchas = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0) + (canchasTenisGlobal || 0);
             if (totalCanchas <= 0) totalCanchas = 1; 
             const dowNumSelected = window.getDayOfWeekFromDate(fechaSeleccionada);
             const contenedorHorarios = document.getElementById('lista-horarios');
@@ -321,13 +317,8 @@ canchasIndoorIDs.length +
                         }
                     });
 
-                   let indoorLibres = [];
-
-canchasIndoorIDs.forEach(c => {
-    if(!canchasOcupadas.has(c)) {
-        indoorLibres.push(c);
-    }
-});
+                    let indoorLibres = [];
+                    for(let c=1; c<=(canchasIndoorGlobal || 0); c++) { if(!canchasOcupadas.has(c)) indoorLibres.push(c); }
                     
                     let outdoorLibres = [];
                     let maxPadel = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0);
@@ -385,19 +376,10 @@ canchasIndoorIDs.forEach(c => {
                 }
             });
 
-            let totalCanchas =
-canchasIndoorIDs.length +
-(canchasOutdoorGlobal || 0) +
-(canchasTenisGlobal || 0);
+            let totalCanchas = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0) + (canchasTenisGlobal || 0);
             let maxPadel = (canchasIndoorGlobal || 0) + (canchasOutdoorGlobal || 0);
 
-            let indoorLibres = [];
-
-canchasIndoorIDs.forEach(c => {
-    if(!canchasOcupadas.has(c)) {
-        indoorLibres.push(c);
-    }
-});
+            let indoorLibres = []; for(let c=1; c<=(canchasIndoorGlobal || 0); c++) { if(!canchasOcupadas.has(c)) indoorLibres.push(c); }
             let outdoorLibres = []; for(let c=(canchasIndoorGlobal || 0)+1; c<=maxPadel; c++) { if(!canchasOcupadas.has(c)) outdoorLibres.push(c); }
             let tenisLibres = []; for(let c=maxPadel+1; c<=totalCanchas; c++) { if(!canchasOcupadas.has(c)) tenisLibres.push(c); }
 
